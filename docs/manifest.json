@@ -1,0 +1,18 @@
+{
+  "name": "سامانه مدیریت تردد و کارکرد",
+  "short_name": "ورود و خروج",
+  "description": "ثبت ورود و خروج، محاسبه اضافه کاری، تاخیر و مرخصی بر پایه تقویم شمسی",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0f17",
+  "theme_color": "#0b0f17",
+  "dir": "rtl",
+  "lang": "fa",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
