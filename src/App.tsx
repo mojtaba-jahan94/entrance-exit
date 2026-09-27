@@ -296,7 +296,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans pb-24 md:pb-16 transition-colors duration-300">
+    <div data-theme={currentTheme} className="min-h-screen flex flex-col font-sans pb-24 md:pb-16 transition-colors duration-300">
       {/* Top Navigation Bar with Tabs & Theme Switcher */}
       <Navbar
         activeTab={activeTab}

@@ -90,11 +90,26 @@ export function saveStoredTheme(theme: AppTheme): void {
 export function applyThemeToDOM(theme: AppTheme): void {
   const root = document.documentElement;
   root.setAttribute('data-theme', theme);
+  if (document.body) {
+    document.body.setAttribute('data-theme', theme);
+  }
+  const rootEl = document.getElementById('root');
+  if (rootEl) {
+    rootEl.setAttribute('data-theme', theme);
+  }
   if (theme === 'light') {
     root.classList.remove('dark');
     root.classList.add('light');
+    if (document.body) {
+      document.body.classList.remove('dark');
+      document.body.classList.add('light');
+    }
   } else {
     root.classList.remove('light');
     root.classList.add('dark');
+    if (document.body) {
+      document.body.classList.remove('light');
+      document.body.classList.add('dark');
+    }
   }
 }

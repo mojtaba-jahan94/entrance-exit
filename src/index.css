@@ -3,85 +3,6 @@
 @layer base {
   :root {
     --font-vazir: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-
-    /* Default Theme: Obsidian */
-    --app-bg: #090b14;
-    --app-bg-secondary: #0f1220;
-    --app-surface: #121526;
-    --app-surface-card: rgba(18, 21, 38, 0.75);
-    --app-surface-hover: #191e36;
-    --app-border: rgba(99, 102, 241, 0.15);
-    --app-border-strong: rgba(99, 102, 241, 0.3);
-    --app-accent: #6366f1;
-    --app-accent-hover: #4f46e5;
-    --app-accent-glow: rgba(99, 102, 241, 0.25);
-    --app-text: #f8fafc;
-    --app-text-secondary: #cbd5e1;
-    --app-text-muted: #64748b;
-  }
-
-  [data-theme="emerald"] {
-    --app-bg: #05110a;
-    --app-bg-secondary: #0a1810;
-    --app-surface: #0c1f15;
-    --app-surface-card: rgba(12, 31, 21, 0.75);
-    --app-surface-hover: #122b1f;
-    --app-border: rgba(16, 185, 129, 0.15);
-    --app-border-strong: rgba(16, 185, 129, 0.3);
-    --app-accent: #10b981;
-    --app-accent-hover: #059669;
-    --app-accent-glow: rgba(16, 185, 129, 0.25);
-    --app-text: #f0fdf4;
-    --app-text-secondary: #bbf7d0;
-    --app-text-muted: #4ade80;
-  }
-
-  [data-theme="sunset"] {
-    --app-bg: #11090f;
-    --app-bg-secondary: #190e16;
-    --app-surface: #1d101a;
-    --app-surface-card: rgba(29, 16, 26, 0.75);
-    --app-surface-hover: #291725;
-    --app-border: rgba(249, 115, 22, 0.15);
-    --app-border-strong: rgba(249, 115, 22, 0.3);
-    --app-accent: #f97316;
-    --app-accent-hover: #ea580c;
-    --app-accent-glow: rgba(249, 115, 22, 0.25);
-    --app-text: #fff1f2;
-    --app-text-secondary: #fed7aa;
-    --app-text-muted: #fb923c;
-  }
-
-  [data-theme="espresso"] {
-    --app-bg: #100b08;
-    --app-bg-secondary: #17110c;
-    --app-surface: #1c1510;
-    --app-surface-card: rgba(28, 21, 16, 0.75);
-    --app-surface-hover: #261d16;
-    --app-border: rgba(245, 158, 11, 0.15);
-    --app-border-strong: rgba(245, 158, 11, 0.3);
-    --app-accent: #f59e0b;
-    --app-accent-hover: #d97706;
-    --app-accent-glow: rgba(245, 158, 11, 0.25);
-    --app-text: #fffbeb;
-    --app-text-secondary: #fde68a;
-    --app-text-muted: #b45309;
-  }
-
-  [data-theme="light"] {
-    --app-bg: #f8fafc;
-    --app-bg-secondary: #f1f5f9;
-    --app-surface: #ffffff;
-    --app-surface-card: rgba(255, 255, 255, 0.9);
-    --app-surface-hover: #f1f5f9;
-    --app-border: rgba(226, 232, 240, 0.9);
-    --app-border-strong: rgba(79, 70, 229, 0.25);
-    --app-accent: #4f46e5;
-    --app-accent-hover: #4338ca;
-    --app-accent-glow: rgba(79, 70, 229, 0.15);
-    --app-text: #0f172a;
-    --app-text-secondary: #334155;
-    --app-text-muted: #64748b;
   }
 
   * {
@@ -89,14 +10,327 @@
   }
 
   body {
-    background-color: var(--app-bg);
-    color: var(--app-text);
     min-height: 100vh;
     overflow-x: hidden;
     direction: rtl;
     text-align: right;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.3s ease, color 0.3s ease;
   }
+}
+
+/* ======================================================== */
+/* 1. OBSIDIAN AURORA (شفق نوکتورن - تیره لوکس پیش‌فرض) */
+/* ======================================================== */
+:root,
+[data-theme="obsidian"],
+body[data-theme="obsidian"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #171d38 0%, #090b14 65%);
+  --theme-card-bg: rgba(18, 22, 42, 0.75);
+  --theme-surface-bg: rgba(12, 15, 28, 0.9);
+  --theme-border: rgba(99, 102, 241, 0.2);
+  --theme-border-highlight: rgba(99, 102, 241, 0.4);
+  --theme-accent: #6366f1;
+  --theme-accent-hover: #4f46e5;
+  --theme-text: #f8fafc;
+  --theme-text-muted: #94a3b8;
+}
+
+[data-theme="obsidian"] body,
+body[data-theme="obsidian"],
+[data-theme="obsidian"] #root > div {
+  background: radial-gradient(circle at 50% 0%, #171d38 0%, #090b14 65%) !important;
+  color: #f8fafc !important;
+}
+
+/* ======================================================== */
+/* 2. NORDIC FOREST (زمرد نوردیک - سبز جنگلی متالیک) */
+/* ======================================================== */
+[data-theme="emerald"],
+body[data-theme="emerald"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #0d3822 0%, #04120a 65%);
+  --theme-card-bg: rgba(10, 31, 19, 0.8);
+  --theme-surface-bg: rgba(6, 20, 12, 0.92);
+  --theme-border: rgba(16, 185, 129, 0.22);
+  --theme-border-highlight: rgba(52, 211, 153, 0.45);
+  --theme-accent: #10b981;
+  --theme-accent-hover: #059669;
+  --theme-text: #f0fdf4;
+  --theme-text-muted: #86efac;
+}
+
+[data-theme="emerald"] body,
+body[data-theme="emerald"],
+[data-theme="emerald"] #root > div {
+  background: radial-gradient(circle at 50% 0%, #0d3822 0%, #04120a 65%) !important;
+  color: #f0fdf4 !important;
+}
+
+[data-theme="emerald"] .bg-slate-900,
+[data-theme="emerald"] .bg-slate-900\/50,
+[data-theme="emerald"] .bg-slate-900\/60,
+[data-theme="emerald"] .bg-slate-900\/70,
+[data-theme="emerald"] .bg-slate-900\/80,
+[data-theme="emerald"] .bg-slate-900\/90,
+[data-theme="emerald"] .bg-slate-850 {
+  background-color: rgba(10, 31, 19, 0.8) !important;
+  border-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+[data-theme="emerald"] .bg-slate-950,
+[data-theme="emerald"] .bg-slate-950\/40,
+[data-theme="emerald"] .bg-slate-950\/50,
+[data-theme="emerald"] .bg-slate-950\/60,
+[data-theme="emerald"] .bg-slate-950\/70,
+[data-theme="emerald"] .bg-slate-950\/80,
+[data-theme="emerald"] .bg-slate-950\/85,
+[data-theme="emerald"] .bg-slate-950\/90,
+[data-theme="emerald"] .bg-slate-950\/95 {
+  background-color: rgba(6, 20, 12, 0.92) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+[data-theme="emerald"] .border-slate-800,
+[data-theme="emerald"] .border-slate-800\/40,
+[data-theme="emerald"] .border-slate-800\/60,
+[data-theme="emerald"] .border-slate-800\/80,
+[data-theme="emerald"] .border-slate-800\/90,
+[data-theme="emerald"] .border-slate-700,
+[data-theme="emerald"] .border-slate-700\/60 {
+  border-color: rgba(16, 185, 129, 0.22) !important;
+}
+
+[data-theme="emerald"] .bg-indigo-600,
+[data-theme="emerald"] .bg-indigo-500 {
+  background-color: #059669 !important;
+}
+
+[data-theme="emerald"] .text-indigo-400,
+[data-theme="emerald"] .text-indigo-300 {
+  color: #34d399 !important;
+}
+
+/* ======================================================== */
+/* 3. CYBER SUNSET (غروب سایبر - نارنجی و بنفش نئونی) */
+/* ======================================================== */
+[data-theme="sunset"],
+body[data-theme="sunset"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #381228 0%, #12070e 65%);
+  --theme-card-bg: rgba(36, 16, 29, 0.8);
+  --theme-surface-bg: rgba(24, 10, 19, 0.92);
+  --theme-border: rgba(249, 115, 22, 0.22);
+  --theme-border-highlight: rgba(249, 115, 22, 0.45);
+  --theme-accent: #f97316;
+  --theme-accent-hover: #ea580c;
+  --theme-text: #fff1f2;
+  --theme-text-muted: #fda4af;
+}
+
+[data-theme="sunset"] body,
+body[data-theme="sunset"],
+[data-theme="sunset"] #root > div {
+  background: radial-gradient(circle at 50% 0%, #381228 0%, #12070e 65%) !important;
+  color: #fff1f2 !important;
+}
+
+[data-theme="sunset"] .bg-slate-900,
+[data-theme="sunset"] .bg-slate-900\/50,
+[data-theme="sunset"] .bg-slate-900\/60,
+[data-theme="sunset"] .bg-slate-900\/70,
+[data-theme="sunset"] .bg-slate-900\/80,
+[data-theme="sunset"] .bg-slate-900\/90,
+[data-theme="sunset"] .bg-slate-850 {
+  background-color: rgba(36, 16, 29, 0.8) !important;
+  border-color: rgba(249, 115, 22, 0.22) !important;
+}
+
+[data-theme="sunset"] .bg-slate-950,
+[data-theme="sunset"] .bg-slate-950\/40,
+[data-theme="sunset"] .bg-slate-950\/50,
+[data-theme="sunset"] .bg-slate-950\/60,
+[data-theme="sunset"] .bg-slate-950\/70,
+[data-theme="sunset"] .bg-slate-950\/80,
+[data-theme="sunset"] .bg-slate-950\/85,
+[data-theme="sunset"] .bg-slate-950\/90,
+[data-theme="sunset"] .bg-slate-950\/95 {
+  background-color: rgba(24, 10, 19, 0.92) !important;
+  border-color: rgba(249, 115, 22, 0.18) !important;
+}
+
+[data-theme="sunset"] .border-slate-800,
+[data-theme="sunset"] .border-slate-800\/40,
+[data-theme="sunset"] .border-slate-800\/60,
+[data-theme="sunset"] .border-slate-800\/80,
+[data-theme="sunset"] .border-slate-800\/90,
+[data-theme="sunset"] .border-slate-700,
+[data-theme="sunset"] .border-slate-700\/60 {
+  border-color: rgba(249, 115, 22, 0.22) !important;
+}
+
+[data-theme="sunset"] .bg-indigo-600,
+[data-theme="sunset"] .bg-indigo-500 {
+  background-color: #ea580c !important;
+}
+
+[data-theme="sunset"] .text-indigo-400,
+[data-theme="sunset"] .text-indigo-300 {
+  color: #fb923c !important;
+}
+
+/* ======================================================== */
+/* 4. WARM ESPRESSO (اسپرسو و کهربا - گرم کلاسیک چوب و قهوه) */
+/* ======================================================== */
+[data-theme="espresso"],
+body[data-theme="espresso"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #382414 0%, #120c08 65%);
+  --theme-card-bg: rgba(33, 22, 15, 0.8);
+  --theme-surface-bg: rgba(22, 14, 10, 0.92);
+  --theme-border: rgba(245, 158, 11, 0.22);
+  --theme-border-highlight: rgba(245, 158, 11, 0.45);
+  --theme-accent: #f59e0b;
+  --theme-accent-hover: #d97706;
+  --theme-text: #fffbeb;
+  --theme-text-muted: #fde68a;
+}
+
+[data-theme="espresso"] body,
+body[data-theme="espresso"],
+[data-theme="espresso"] #root > div {
+  background: radial-gradient(circle at 50% 0%, #382414 0%, #120c08 65%) !important;
+  color: #fffbeb !important;
+}
+
+[data-theme="espresso"] .bg-slate-900,
+[data-theme="espresso"] .bg-slate-900\/50,
+[data-theme="espresso"] .bg-slate-900\/60,
+[data-theme="espresso"] .bg-slate-900\/70,
+[data-theme="espresso"] .bg-slate-900\/80,
+[data-theme="espresso"] .bg-slate-900\/90,
+[data-theme="espresso"] .bg-slate-850 {
+  background-color: rgba(33, 22, 15, 0.8) !important;
+  border-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+[data-theme="espresso"] .bg-slate-950,
+[data-theme="espresso"] .bg-slate-950\/40,
+[data-theme="espresso"] .bg-slate-950\/50,
+[data-theme="espresso"] .bg-slate-950\/60,
+[data-theme="espresso"] .bg-slate-950\/70,
+[data-theme="espresso"] .bg-slate-950\/80,
+[data-theme="espresso"] .bg-slate-950\/85,
+[data-theme="espresso"] .bg-slate-950\/90,
+[data-theme="espresso"] .bg-slate-950\/95 {
+  background-color: rgba(22, 14, 10, 0.92) !important;
+  border-color: rgba(245, 158, 11, 0.18) !important;
+}
+
+[data-theme="espresso"] .border-slate-800,
+[data-theme="espresso"] .border-slate-800\/40,
+[data-theme="espresso"] .border-slate-800\/60,
+[data-theme="espresso"] .border-slate-800\/80,
+[data-theme="espresso"] .border-slate-800\/90,
+[data-theme="espresso"] .border-slate-700,
+[data-theme="espresso"] .border-slate-700\/60 {
+  border-color: rgba(245, 158, 11, 0.22) !important;
+}
+
+[data-theme="espresso"] .bg-indigo-600,
+[data-theme="espresso"] .bg-indigo-500 {
+  background-color: #d97706 !important;
+}
+
+[data-theme="espresso"] .text-indigo-400,
+[data-theme="espresso"] .text-indigo-300 {
+  color: #fbbf24 !important;
+}
+
+/* ======================================================== */
+/* 5. ALABASTER LIGHT (سفید عاجی و کریستالی اداری) */
+/* ======================================================== */
+[data-theme="light"],
+body[data-theme="light"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #e2e8f0 0%, #f8fafc 70%);
+  --theme-card-bg: #ffffff;
+  --theme-surface-bg: rgba(255, 255, 255, 0.95);
+  --theme-border: #e2e8f0;
+  --theme-border-highlight: rgba(79, 70, 229, 0.3);
+  --theme-accent: #4f46e5;
+  --theme-accent-hover: #4338ca;
+  --theme-text: #0f172a;
+  --theme-text-muted: #64748b;
+}
+
+[data-theme="light"] body,
+body[data-theme="light"],
+[data-theme="light"] #root > div {
+  background-color: #f1f5f9 !important;
+  background-image: radial-gradient(circle at 50% 0%, #e2e8f0 0%, #f8fafc 70%) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-slate-100 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-slate-200 {
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .text-slate-300 {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .text-slate-400 {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .bg-slate-900,
+[data-theme="light"] .bg-slate-900\/50,
+[data-theme="light"] .bg-slate-900\/60,
+[data-theme="light"] .bg-slate-900\/70,
+[data-theme="light"] .bg-slate-900\/80,
+[data-theme="light"] .bg-slate-900\/90,
+[data-theme="light"] .bg-slate-850 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-slate-950,
+[data-theme="light"] .bg-slate-950\/40,
+[data-theme="light"] .bg-slate-950\/50,
+[data-theme="light"] .bg-slate-950\/60,
+[data-theme="light"] .bg-slate-950\/70,
+[data-theme="light"] .bg-slate-950\/80,
+[data-theme="light"] .bg-slate-950\/85,
+[data-theme="light"] .bg-slate-950\/90,
+[data-theme="light"] .bg-slate-950\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .border-slate-800,
+[data-theme="light"] .border-slate-800\/40,
+[data-theme="light"] .border-slate-800\/60,
+[data-theme="light"] .border-slate-800\/80,
+[data-theme="light"] .border-slate-800\/90,
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] select,
+[data-theme="light"] input:not([type="checkbox"]) {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
 }
 
 /* Custom scrollbars */
@@ -106,47 +340,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--app-bg-secondary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--app-border-strong);
+  background: rgba(148, 163, 184, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--app-accent);
-}
-
-/* Glassmorphism helpers using active theme variables */
-.theme-panel {
-  background-color: var(--app-surface-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--app-border);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-}
-
-.theme-card {
-  background-color: var(--app-surface-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--app-border);
-}
-
-.theme-card-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.theme-card-hover:hover {
-  background-color: var(--app-surface-hover);
-  border-color: var(--app-border-strong);
-  transform: translateY(-1px);
-}
-
-/* Smooth active tab pill transitions */
-.tab-active-indicator {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(148, 163, 184, 0.6);
 }
 
 /* Hide scrollbar for tabs */
