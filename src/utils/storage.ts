@@ -21,7 +21,29 @@ export function getStoredShiftConfig(): ShiftConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (raw) {
-      return { ...DEFAULT_SHIFT_CONFIG, ...JSON.parse(raw) };
+      const parsed = JSON.parse(raw);
+      // If legacy config without flexible shift settings, automatically upgrade to new workplace defaults
+      if (!parsed.isFlexibleShift || parsed.startTime === '08:00') {
+        const upgraded: ShiftConfig = {
+          ...DEFAULT_SHIFT_CONFIG,
+          ...parsed,
+          startTime: '08:30',
+          endTime: '17:00',
+          isFlexibleShift: true,
+          flexStartTimeMin: '08:30',
+          flexStartTimeMax: '09:30',
+          flexDepartureMin: '17:00',
+          flexDepartureMax: '18:00',
+          requiredDailyMinutes: 510,
+          defaultBreakMinutes: 30,
+          thursdayMinutes: 270,
+          monthlyLeaveDays: 2.5,
+          monthlyLeaveQuotaHours: 20,
+        };
+        saveShiftConfig(upgraded);
+        return upgraded;
+      }
+      return { ...DEFAULT_SHIFT_CONFIG, ...parsed };
     }
   } catch (e) {
     console.error('Error reading shift config from storage', e);
@@ -111,7 +133,7 @@ export function initializeSampleDataIfEmpty(): {
             date: dateStr,
             breakMinutes: 0,
             status: 'weekend',
-            note: 'تعطیل پایان هفته',
+            note: 'تعطیل پایان هفته (جمعه)',
           },
           config
         )
@@ -129,33 +151,48 @@ export function initializeSampleDataIfEmpty(): {
           config
         )
       );
+    } else if (isThursday && config.thursdayStatus === 'half_day') {
+      // Thursday 4.5 hours presence: e.g. 08:35 to 13:05
+      sampleRecords.push(
+        calculateAttendanceMetrics(
+          {
+            id: `seed_${day}`,
+            date: dateStr,
+            checkIn: '08:35',
+            checkOut: '13:05',
+            breakMinutes: 0,
+            note: 'شیفت نیمه‌وقت پنج‌شنبه (۴.۵ ساعت)',
+          },
+          config
+        )
+      );
     } else {
-      // Simulate realistic checkin/checkout
-      let checkIn = '07:55';
-      let checkOut = '16:35';
-      let note = 'حضور عادی';
+      // Simulate realistic checkin/checkout for flexible 8:30-9:30 shift
+      let checkIn = '08:35';
+      let checkOut = '17:10';
+      let breakMinutes = config.defaultBreakMinutes || 30;
+      let note = 'حضور عادی و به موقع';
 
       if (day % 7 === 1) {
-        // Late arrival
-        checkIn = '08:25';
-        checkOut = '16:45';
-        note = 'تاخیر به علت ترافیک صبحگاهی';
-      } else if (day % 7 === 3) {
-        // Good overtime
-        checkIn = '07:50';
+        // Late arrival (after 09:30)
+        checkIn = '09:45';
         checkOut = '18:15';
-        note = 'اضافه کاری پروژه';
+        note = 'تاخیر به علت ترافیک صبحگاهی (۱۵ دقیقه)';
+      } else if (day % 7 === 3) {
+        // High productive overtime
+        checkIn = '08:30';
+        checkOut = '18:30';
+        note = 'اضافه کاری برای تحویل تسک‌های پروژه';
       } else if (day % 9 === 0) {
         // Early leave
-        checkIn = '08:00';
-        checkOut = '15:10';
-        note = 'خروج زودهنگام با هماهنگی';
-      }
-
-      if (isThursday && config.thursdayStatus === 'half_day') {
-        checkIn = '08:00';
-        checkOut = '12:15';
-        note = 'شیفت نیمه‌وقت پنج‌شنبه';
+        checkIn = '08:40';
+        checkOut = '16:30';
+        note = 'خروج زودهنگام با هماهنگی مدیریت';
+      } else if (day % 5 === 2) {
+        // Checked in at 09:15, left at 17:45 (perfect flexible shift)
+        checkIn = '09:15';
+        checkOut = '17:45';
+        note = 'استفاده از فرجه شناوری مجاز صبح';
       }
 
       sampleRecords.push(
@@ -165,7 +202,7 @@ export function initializeSampleDataIfEmpty(): {
             date: dateStr,
             checkIn,
             checkOut,
-            breakMinutes: 30,
+            breakMinutes,
             note,
           },
           config
@@ -224,13 +261,15 @@ export function exportMonthToExcel(
       'وضعیت': statusText,
       'ساعت ورود': r.checkIn || '-',
       'ساعت خروج': r.checkOut || '-',
-      'استراحت (دقیقه)': r.breakMinutes,
-      'کارکرد مفید (ساعت)': formatMinutesToTimeString(r.workedMinutes),
+      'خروج موظفی هدف': r.targetCheckOut || '-',
+      'استراحت/ناهار (دقیقه)': r.breakMinutes,
+      'کارکرد مفید خالص (ساعت)': formatMinutesToTimeString(r.workedMinutes),
       'تاخیر ورود (دقیقه)': r.delayMinutes > 0 ? r.delayMinutes : '-',
       'تعجیل خروج (دقیقه)': r.earlyLeaveMinutes > 0 ? r.earlyLeaveMinutes : '-',
       'اضافه کار عادی (ساعت)': r.overtimeMinutes > 0 ? formatMinutesToTimeString(r.overtimeMinutes) : '-',
       'اضافه کار تعطیل (ساعت)': r.holidayOvertimeMinutes > 0 ? formatMinutesToTimeString(r.holidayOvertimeMinutes) : '-',
       'کسر کار (دقیقه)': r.deficitMinutes > 0 ? r.deficitMinutes : '-',
+      'تراز روز (دقیقه)': r.netBalanceMinutes,
       'توضیحات و یادداشت': r.note || '',
     };
   });

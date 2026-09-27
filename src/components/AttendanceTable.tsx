@@ -68,10 +68,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     }
 
     if (filterType === 'delays') {
-      return r.delayMinutes > 0;
+      return r.delayMinutes > 0 || r.earlyLeaveMinutes > 0;
     }
     if (filterType === 'overtime') {
       return r.overtimeMinutes > 0 || r.holidayOvertimeMinutes > 0;
+    }
+    if (filterType === 'thursdays') {
+      return r.dayOfWeek === 5;
     }
     if (filterType === 'leaves') {
       return r.status === 'leave';
@@ -81,6 +84,19 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     }
     return true;
   });
+
+  // Calculate visible totals for the footer
+  const visibleTotals = filteredRecords.reduce(
+    (acc, r) => {
+      acc.worked += r.workedMinutes;
+      acc.delay += r.delayMinutes;
+      acc.overtime += r.overtimeMinutes + r.holidayOvertimeMinutes;
+      acc.deficit += r.deficitMinutes;
+      acc.balance += r.netBalanceMinutes;
+      return acc;
+    },
+    { worked: 0, delay: 0, overtime: 0, deficit: 0, balance: 0 }
+  );
 
   const handlePrevMonth = () => {
     if (selectedMonth === 1) {
@@ -157,7 +173,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </div>
 
           <span className="text-xs text-slate-400 px-2 hidden sm:inline">
-            تعداد روزهای ثبت‌شده: <strong className="text-white font-mono">{toPersianDigits(monthRecords.length)}</strong>
+            روزهای ثبت‌شده: <strong className="text-white font-mono">{toPersianDigits(monthRecords.length)}</strong>
           </span>
         </div>
 
@@ -181,7 +197,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 : 'text-slate-400 hover:text-rose-400'
             }`}
           >
-            دارای تاخیر
+            تاخیر / تعجیل
           </button>
           <button
             onClick={() => setFilterType('overtime')}
@@ -192,6 +208,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             }`}
           >
             اضافه کاری
+          </button>
+          <button
+            onClick={() => setFilterType('thursdays')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              filterType === 'thursdays'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold'
+                : 'text-slate-400 hover:text-cyan-400'
+            }`}
+          >
+            پنج‌شنبه‌ها
           </button>
           <button
             onClick={() => setFilterType('leaves')}
@@ -237,11 +263,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <th className="py-3.5 px-3 font-semibold text-center">وضعیت</th>
               <th className="py-3.5 px-3 font-semibold text-center">ورود</th>
               <th className="py-3.5 px-3 font-semibold text-center">خروج</th>
-              <th className="py-3.5 px-3 font-semibold text-center">استراحت</th>
+              <th className="py-3.5 px-3 font-semibold text-center">خروج هدف</th>
+              <th className="py-3.5 px-3 font-semibold text-center">ناهار</th>
               <th className="py-3.5 px-3 font-semibold text-center">کارکرد مفید</th>
               <th className="py-3.5 px-3 font-semibold text-center">تاخیر</th>
               <th className="py-3.5 px-3 font-semibold text-center">اضافه کاری</th>
               <th className="py-3.5 px-3 font-semibold text-center">کسر کار</th>
+              <th className="py-3.5 px-3 font-semibold text-center">تراز روز</th>
               <th className="py-3.5 px-4 font-semibold">یادداشت</th>
               <th className="py-3.5 px-3 font-semibold text-center">عملیات</th>
             </tr>
@@ -249,7 +277,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <tbody className="divide-y divide-slate-800/60">
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={12} className="py-12 text-center text-slate-400">
+                <td colSpan={14} className="py-12 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Calendar className="h-8 w-8 text-slate-600" />
                     <span>هیچ ترددی برای این ماه یا فیلتر انتخابی ثبت نشده است.</span>
@@ -276,7 +304,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
                     {/* Weekday */}
                     <td className="py-3 px-3 text-slate-300">
-                      <span className={r.dayOfWeek === 6 ? 'text-rose-400 font-bold' : ''}>
+                      <span className={r.dayOfWeek === 6 ? 'text-rose-400 font-bold' : r.dayOfWeek === 5 ? 'text-cyan-400 font-medium' : ''}>
                         {weekdayName}
                       </span>
                     </td>
@@ -320,6 +348,11 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     {/* Check Out */}
                     <td className="py-3 px-3 text-center font-mono font-semibold text-slate-200">
                       {r.checkOut ? toPersianDigits(r.checkOut) : '-'}
+                    </td>
+
+                    {/* Target Check Out */}
+                    <td className="py-3 px-3 text-center font-mono text-cyan-300">
+                      {r.targetCheckOut ? toPersianDigits(r.targetCheckOut) : '-'}
                     </td>
 
                     {/* Break */}
@@ -374,6 +407,21 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       )}
                     </td>
 
+                    {/* Net Balance */}
+                    <td className="py-3 px-3 text-center font-mono font-bold">
+                      {r.netBalanceMinutes > 0 ? (
+                        <span className="text-emerald-400">
+                          +{toPersianDigits(formatMinutesToTimeString(r.netBalanceMinutes))}
+                        </span>
+                      ) : r.netBalanceMinutes < 0 ? (
+                        <span className="text-rose-400">
+                          -{toPersianDigits(formatMinutesToTimeString(Math.abs(r.netBalanceMinutes)))}
+                        </span>
+                      ) : (
+                        <span className="text-slate-600">۰</span>
+                      )}
+                    </td>
+
                     {/* Note */}
                     <td className="py-3 px-4 text-slate-400 max-w-xs truncate text-[11px]">
                       {r.note || '-'}
@@ -403,8 +451,38 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               })
             )}
           </tbody>
+          {/* Table Summary Footer */}
+          {filteredRecords.length > 0 && (
+            <tfoot className="bg-slate-950 font-semibold text-slate-300 border-t-2 border-slate-800">
+              <tr>
+                <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white">
+                  مجموع اقلام جدول:
+                </td>
+                <td className="py-3.5 px-3 text-center font-mono text-emerald-300 font-bold">
+                  {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} س
+                </td>
+                <td className="py-3.5 px-3 text-center font-mono text-rose-300">
+                  {toPersianDigits(visibleTotals.delay)} د
+                </td>
+                <td className="py-3.5 px-3 text-center font-mono text-indigo-300 font-bold">
+                  {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
+                </td>
+                <td className="py-3.5 px-3 text-center font-mono text-amber-300">
+                  {toPersianDigits(visibleTotals.deficit)} د
+                </td>
+                <td className="py-3.5 px-3 text-center font-mono font-black">
+                  <span className={visibleTotals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                    {visibleTotals.balance >= 0 ? '+' : '-'}
+                    {toPersianDigits((Math.abs(visibleTotals.balance) / 60).toFixed(1))} س
+                  </span>
+                </td>
+                <td colSpan={2}></td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
     </div>
   );
 };
+

@@ -304,6 +304,7 @@ export function App() {
         onAddLeave={handleAddLeave}
         onDeleteLeave={handleDeleteLeave}
         monthlyQuotaHours={config.monthlyLeaveQuotaHours}
+        monthlyQuotaDays={config.monthlyLeaveDays || 2.5}
       />
 
       <SettingsModal

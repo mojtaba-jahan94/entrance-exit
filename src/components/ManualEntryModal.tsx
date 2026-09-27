@@ -30,11 +30,16 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
   const [month, setMonth] = useState<number>(curM);
   const [day, setDay] = useState<number>(curD);
 
-  const [checkIn, setCheckIn] = useState<string>('08:00');
-  const [checkOut, setCheckOut] = useState<string>('16:30');
+  const [checkIn, setCheckIn] = useState<string>('08:30');
+  const [checkOut, setCheckOut] = useState<string>('17:00');
   const [breakMinutes, setBreakMinutes] = useState<number>(30);
   const [status, setStatus] = useState<DayStatus>('present');
   const [note, setNote] = useState<string>('');
+
+  const dateStr = formatJalaliDate(year, month, day);
+  const weekdayIdx = getJalaliWeekdayIndex(dateStr);
+  const weekdayName = PERSIAN_WEEKDAY_NAMES[weekdayIdx] || '';
+  const isThursday = weekdayIdx === 5;
 
   useEffect(() => {
     if (initialRecord) {
@@ -44,7 +49,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       setDay(parsed.jd);
       setCheckIn(initialRecord.checkIn || '');
       setCheckOut(initialRecord.checkOut || '');
-      setBreakMinutes(initialRecord.breakMinutes || 0);
+      setBreakMinutes(initialRecord.breakMinutes !== undefined ? initialRecord.breakMinutes : 30);
       setStatus(initialRecord.status || 'present');
       setNote(initialRecord.note || '');
     } else {
@@ -52,19 +57,21 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       setYear(today.jy);
       setMonth(today.jm);
       setDay(today.jd);
-      setCheckIn('08:00');
-      setCheckOut('16:30');
-      setBreakMinutes(30);
+      setCheckIn('08:30');
+      setCheckOut(isThursday ? '13:00' : '17:00');
+      setBreakMinutes(isThursday ? 0 : 30);
       setStatus('present');
       setNote('');
     }
-  }, [initialRecord, isOpen]);
+  }, [initialRecord, isOpen, isThursday]);
 
   if (!isOpen) return null;
 
-  const dateStr = formatJalaliDate(year, month, day);
-  const weekdayIdx = getJalaliWeekdayIndex(dateStr);
-  const weekdayName = PERSIAN_WEEKDAY_NAMES[weekdayIdx] || '';
+  // Live calculation for preview
+  const inMins = checkIn ? timeStringToMinutes(checkIn) : 0;
+  const outMins = checkOut ? timeStringToMinutes(checkOut) : 0;
+  const rawPresence = Math.max(0, outMins - inMins);
+  const netWorked = Math.max(0, rawPresence - breakMinutes);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,6 +240,21 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none resize-none"
             />
           </div>
+
+          {/* Live Calculation Preview Banner */}
+          {checkIn && checkOut && (
+            <div className="flex items-center justify-between rounded-xl bg-slate-950 p-2.5 border border-slate-800 text-[11px] text-slate-300">
+              <span>
+                کل حضور: <strong className="font-mono text-white">{toPersianDigits(Math.floor(rawPresence / 60))}س و {toPersianDigits(rawPresence % 60)}د</strong>
+              </span>
+              <span>
+                کسر ناهار: <strong className="font-mono text-amber-400">{toPersianDigits(breakMinutes)}د</strong>
+              </span>
+              <span>
+                کارکرد مفید خالص: <strong className="font-mono text-emerald-400 font-bold">{toPersianDigits(Math.floor(netWorked / 60))}س و {toPersianDigits(netWorked % 60)}د</strong>
+              </span>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
