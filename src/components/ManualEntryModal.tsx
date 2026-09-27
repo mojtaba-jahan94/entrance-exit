@@ -9,6 +9,7 @@ import {
   PERSIAN_WEEKDAY_NAMES,
   getJalaliWeekdayIndex,
   toPersianDigits,
+  timeStringToMinutes,
 } from '../utils/jalali';
 
 interface ManualEntryModalProps {
