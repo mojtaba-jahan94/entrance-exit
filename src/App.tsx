@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Clock, PlusCircle, Coffee, Calendar, Settings } from 'lucide-react';
+import {
+  Clock,
+  PlusCircle,
+  Coffee,
+  Calendar,
+  Settings,
+  LayoutDashboard,
+  Table as TableIcon,
+  TrendingUp,
+} from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
   getCurrentJalaliDate,
@@ -22,11 +31,21 @@ import {
   saveLeaveRecords,
   exportMonthToExcel,
 } from './utils/storage';
+import {
+  getStoredTheme,
+  saveStoredTheme,
+  applyThemeToDOM,
+  AppTheme,
+} from './utils/theme';
 
-import { Navbar } from './components/Navbar';
+import { Navbar, ActiveTab } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
 import { AttendanceTable } from './components/AttendanceTable';
+import { DashboardCharts } from './components/DashboardCharts';
+import { RecentActivityCard } from './components/RecentActivityCard';
+import { LeavesTab } from './components/LeavesTab';
+import { ReportsTab } from './components/ReportsTab';
 import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -35,6 +54,12 @@ import { BackupModal } from './components/BackupModal';
 export function App() {
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
+
+  // Theme State
+  const [currentTheme, setCurrentTheme] = useState<AppTheme>(getStoredTheme);
+
+  // Active Tab State (dashboard, timesheet, leaves, reports)
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
@@ -47,8 +72,19 @@ export function App() {
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
+  const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    applyThemeToDOM(currentTheme);
+  }, [currentTheme]);
+
+  const handleSelectTheme = (theme: AppTheme) => {
+    setCurrentTheme(theme);
+    saveStoredTheme(theme);
+  };
 
   // Initialize and load data
   useEffect(() => {
@@ -199,7 +235,6 @@ export function App() {
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves);
 
-    // Synchronize and recalculate attendance record for this day
     const updatedRecords = syncRecordWithLeaves(leaveData.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
     saveAttendanceRecords(updatedRecords);
@@ -210,7 +245,6 @@ export function App() {
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves);
 
-    // Synchronize and recalculate attendance record for this day
     const updatedRecords = syncRecordWithLeaves(updatedLeave.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
     saveAttendanceRecords(updatedRecords);
@@ -235,7 +269,6 @@ export function App() {
     setConfig(newConfig);
     saveShiftConfig(newConfig);
 
-    // Recalculate metrics for all existing records with new policy & corresponding leaves
     const recalculated = records.map((r) =>
       calculateAttendanceMetrics(r, newConfig, leaves.filter((l) => l.date === r.date))
     );
@@ -263,125 +296,213 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans pb-24 md:pb-16">
-      {/* Top Navigation Bar */}
+    <div className="min-h-screen flex flex-col font-sans pb-24 md:pb-16 transition-colors duration-300">
+      {/* Top Navigation Bar with Tabs & Theme Switcher */}
       <Navbar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        currentTheme={currentTheme}
+        onSelectTheme={handleSelectTheme}
         onOpenManualEntry={() => {
           setEditingRecord(null);
           setIsManualModalOpen(true);
         }}
-        onOpenLeaves={() => setIsLeaveModalOpen(true)}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         isWorkingNow={isWorkingNow}
       />
 
-      {/* Main Content Area */}
+      {/* Main Tabbed Content Area */}
       <main className="mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 pt-3 sm:pt-6 space-y-4 sm:space-y-6 flex-1">
-        {/* Hero Section: Today's Clock In / Clock Out & Live Stopwatch */}
-        <section id="today-section">
-          <ClockCard
-            todayRecord={todayRecord}
-            config={config}
-            onCheckIn={handleCheckIn}
-            onCheckOut={handleCheckOut}
-            onResetToday={handleResetToday}
-            onOpenEdit={() => {
-              setEditingRecord(todayRecord);
-              setIsManualModalOpen(true);
-            }}
-          />
-        </section>
+        {/* ======================================================== */}
+        {/* TAB 1: پیشخوان (Dashboard - Uncluttered Executive View) */}
+        {/* ======================================================== */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            {/* Quick Hero: Today's Clock In / Clock Out Card */}
+            <section id="today-section">
+              <ClockCard
+                todayRecord={todayRecord}
+                config={config}
+                onCheckIn={handleCheckIn}
+                onCheckOut={handleCheckOut}
+                onResetToday={handleResetToday}
+                onOpenEdit={() => {
+                  setEditingRecord(todayRecord);
+                  setIsManualModalOpen(true);
+                }}
+              />
+            </section>
 
-        {/* Bento Grid: Monthly Statistics Cards */}
-        <section aria-label="آمار و شاخص‌های ماهانه">
-          <StatsCards
-            stats={monthlyStats}
-            monthName={selectedMonthName}
-            year={selectedYear}
-          />
-        </section>
+            {/* Bento Grid: Monthly Statistics Highlights */}
+            <section aria-label="خلاصه شاخص‌های ماهانه">
+              <StatsCards
+                stats={monthlyStats}
+                monthName={selectedMonthName}
+                year={selectedYear}
+              />
+            </section>
 
-        {/* Monthly Attendance Table & Filters */}
-        <section id="attendance-section" aria-label="جدول تردد و فیلترها">
-          <AttendanceTable
-            records={records}
-            selectedYear={selectedYear}
-            selectedMonth={selectedMonth}
-            config={config}
-            onYearChange={setSelectedYear}
-            onMonthChange={setSelectedMonth}
-            onEditRecord={(rec) => {
-              setEditingRecord(rec);
-              setIsManualModalOpen(true);
-            }}
-            onDeleteRecord={handleDeleteRecord}
-            onAddNewForDate={(date) => {
-              setEditingRecord({ date } as any);
-              setIsManualModalOpen(true);
-            }}
-            onExportExcel={handleExportExcel}
-          />
-        </section>
+            {/* Interactive Charts: Work Hours Trends & Donut Distribution */}
+            <section aria-label="نمودارهای تحلیلی روند کارکرد">
+              <DashboardCharts
+                records={records}
+                stats={monthlyStats}
+                config={config}
+                selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+              />
+            </section>
+
+            {/* Recent Activity Mini-Table */}
+            <section aria-label="آخرین ترددهای ثبت‌شده">
+              <RecentActivityCard
+                records={records}
+                onNavigateToTimesheet={() => setActiveTab('timesheet')}
+                onEditRecord={(rec) => {
+                  setEditingRecord(rec);
+                  setIsManualModalOpen(true);
+                }}
+              />
+            </section>
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 2: کارنامه تردد (Full Monthly Timesheet & Records) */}
+        {/* ======================================================== */}
+        {activeTab === 'timesheet' && (
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            <AttendanceTable
+              records={records}
+              selectedYear={selectedYear}
+              selectedMonth={selectedMonth}
+              config={config}
+              onYearChange={setSelectedYear}
+              onMonthChange={setSelectedMonth}
+              onEditRecord={(rec) => {
+                setEditingRecord(rec);
+                setIsManualModalOpen(true);
+              }}
+              onDeleteRecord={handleDeleteRecord}
+              onAddNewForDate={(date) => {
+                setEditingRecord({ date } as any);
+                setIsManualModalOpen(true);
+              }}
+              onExportExcel={handleExportExcel}
+            />
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 3: کاردکس و مرخصی‌ها (Dedicated Leaves Management) */}
+        {/* ======================================================== */}
+        {activeTab === 'leaves' && (
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            <LeavesTab
+              leaves={leaves.filter((l) =>
+                l.date.startsWith(`${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`)
+              )}
+              onOpenAddModal={() => {
+                setEditingLeave(null);
+                setIsLeaveModalOpen(true);
+              }}
+              onEditLeave={(leave) => {
+                setEditingLeave(leave);
+                setIsLeaveModalOpen(true);
+              }}
+              onDeleteLeave={handleDeleteLeave}
+              monthlyQuotaHours={config.monthlyLeaveQuotaHours}
+              monthlyQuotaDays={config.monthlyLeaveDays || 2.5}
+              selectedMonthName={selectedMonthName}
+            />
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB 4: گزارشات تحلیلی و مالی (Reports & Financial Overview) */}
+        {/* ======================================================== */}
+        {activeTab === 'reports' && (
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            <ReportsTab
+              stats={monthlyStats}
+              records={records}
+              config={config}
+              selectedMonthName={selectedMonthName}
+              selectedYear={selectedYear}
+              onExportExcel={handleExportExcel}
+            />
+          </div>
+        )}
       </main>
 
       {/* Footer */}
-      <footer className="mt-8 sm:mt-12 text-center text-[11px] sm:text-xs text-slate-600 border-t border-slate-900 pt-5 pb-2">
-        <p>سامانه مدیریت تردد و کارکرد | طراحی شده با تقویم شمسی و استانداردهای قانون کار</p>
+      <footer className="mt-8 sm:mt-12 text-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-800/80 pt-5 pb-2">
+        <p>سامانه مدیریت تردد و کارکرد | طراحی مدرن با تقویم شمسی و استانداردهای قانون کار</p>
       </footer>
 
-      {/* Mobile Bottom Navigation Bar (Thumb friendly for phones) */}
+      {/* Mobile Bottom Navigation Bar (Touch & Thumb friendly with 4 Tabs) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around text-[10px] text-slate-400 shadow-2xl">
         <button
-          onClick={() => {
-            const el = document.getElementById('today-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-            else window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-indigo-400 active:scale-95 transition-all"
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+            activeTab === 'dashboard'
+              ? 'text-indigo-400 font-bold scale-105'
+              : 'text-slate-400 hover:text-white'
+          }`}
         >
-          <Clock className="h-4 w-4" />
-          <span>میز کار</span>
+          <LayoutDashboard className="h-4 w-4" />
+          <span>پیشخوان</span>
         </button>
 
+        <button
+          onClick={() => setActiveTab('timesheet')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+            activeTab === 'timesheet'
+              ? 'text-indigo-400 font-bold scale-105'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <TableIcon className="h-4 w-4" />
+          <span>کارنامه</span>
+        </button>
+
+        {/* Center Quick Add Punch */}
         <button
           onClick={() => {
             setEditingRecord(null);
             setIsManualModalOpen(true);
           }}
-          className="flex flex-col items-center gap-1 py-1 px-2.5 text-indigo-400 font-bold active:scale-95 transition-all"
+          className="flex flex-col items-center gap-1 py-0.5 px-2 text-indigo-400 font-bold active:scale-95 transition-all"
         >
-          <div className="h-7 w-7 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-            <PlusCircle className="h-4 w-4" />
+          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-600 to-cyan-500 shadow-md shadow-indigo-500/30 flex items-center justify-center text-white">
+            <PlusCircle className="h-5 w-5" />
           </div>
-          <span>ثبت دستی</span>
+          <span className="text-[9px]">ثبت تردد</span>
         </button>
 
         <button
-          onClick={() => setIsLeaveModalOpen(true)}
-          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-amber-400 active:scale-95 transition-all"
+          onClick={() => setActiveTab('leaves')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+            activeTab === 'leaves'
+              ? 'text-amber-400 font-bold scale-105'
+              : 'text-slate-400 hover:text-white'
+          }`}
         >
-          <Coffee className="h-4 w-4 text-amber-400" />
+          <Coffee className="h-4 w-4" />
           <span>مرخصی</span>
         </button>
 
         <button
-          onClick={() => {
-            const el = document.getElementById('attendance-section');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-cyan-400 active:scale-95 transition-all"
+          onClick={() => setActiveTab('reports')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+            activeTab === 'reports'
+              ? 'text-indigo-400 font-bold scale-105'
+              : 'text-slate-400 hover:text-white'
+          }`}
         >
-          <Calendar className="h-4 w-4" />
-          <span>کارکرد</span>
-        </button>
-
-        <button
-          onClick={() => setIsSettingsModalOpen(true)}
-          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-white active:scale-95 transition-all"
-        >
-          <Settings className="h-4 w-4" />
-          <span>تنظیمات</span>
+          <TrendingUp className="h-4 w-4" />
+          <span>گزارشات</span>
         </button>
       </div>
 
@@ -398,7 +519,10 @@ export function App() {
 
       <LeaveModal
         isOpen={isLeaveModalOpen}
-        onClose={() => setIsLeaveModalOpen(false)}
+        onClose={() => {
+          setIsLeaveModalOpen(false);
+          setEditingLeave(null);
+        }}
         leaves={leaves.filter((l) =>
           l.date.startsWith(`${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`)
         )}
