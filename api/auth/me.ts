@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserById } from '../_lib/db';
-import { verifyToken, extractBearerToken } from '../_lib/auth';
-import { setCorsHeaders, sendJson } from '../_lib/response';
+import { getUserById, getTursoEnv } from '../_lib/db.js';
+import { verifyToken, extractBearerToken } from '../_lib/auth.js';
+import { setCorsHeaders, sendJson } from '../_lib/response.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
@@ -12,6 +12,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'GET') {
     return sendJson(res, 405, { success: false, error: 'Method not allowed' });
+  }
+
+  const { url } = getTursoEnv();
+  if (!url) {
+    return sendJson(res, 401, {
+      success: false,
+      error: 'دیتابیس متصل نیست.',
+    });
   }
 
   try {

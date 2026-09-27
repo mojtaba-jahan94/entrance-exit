@@ -1,37 +1,36 @@
-import { createClient, Client } from '@libsql/client';
+import { createClient, type Client } from '@libsql/client/web';
 import dotenv from 'dotenv';
 
-// Load environment variables for local dev / scripts
 dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 let dbInstance: Client | null = null;
 let isInitialized = false;
 
-export function getDb(): Client {
-  let url =
+export function getTursoEnv() {
+  const url =
     process.env.TURSO_DATABASE_URL ||
     process.env.TURSO_DB_URL ||
     process.env.LIBSQL_URL ||
     process.env.TURSO_URL ||
     process.env.DATABASE_URL;
 
-  let authToken =
+  const authToken =
     process.env.TURSO_AUTH_TOKEN ||
     process.env.TURSO_TOKEN ||
     process.env.TURSO_DB_AUTH_TOKEN ||
     process.env.LIBSQL_AUTH_TOKEN;
 
-  // Fallback to local SQLite file during local development if cloud credentials are not yet entered
-  if (!url || url.trim() === '') {
-    if (process.env.NODE_ENV !== 'production') {
-      url = 'file:dev_local.db';
-      authToken = undefined;
-    } else {
-      throw new Error(
-        'TURSO_DATABASE_URL در متغیرهای محیطی Vercel یافت نشد. لطفاً در پنل Vercel آن را مقداردهی فرمایید.'
-      );
-    }
+  return { url: url?.trim() || null, authToken: authToken?.trim() || null };
+}
+
+export function getDb(): Client {
+  const { url, authToken } = getTursoEnv();
+
+  if (!url) {
+    throw new Error(
+      'متغیر TURSO_DATABASE_URL در پنل Vercel یافت نشد. لطفاً در Project Settings > Environment Variables آن را اضافه نمایید.'
+    );
   }
 
   if (!dbInstance) {
@@ -44,9 +43,6 @@ export function getDb(): Client {
   return dbInstance;
 }
 
-/**
- * Initializes the users table in Turso if not already present
- */
 export async function initDb(): Promise<void> {
   if (isInitialized) return;
 

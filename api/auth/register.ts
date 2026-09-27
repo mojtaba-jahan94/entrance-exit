@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserByUsername, createUser } from '../_lib/db';
-import { hashPassword, generateToken } from '../_lib/auth';
-import { setCorsHeaders, sendJson, parseRequestBody } from '../_lib/response';
+import { getUserByUsername, createUser, getTursoEnv } from '../_lib/db.js';
+import { hashPassword, generateToken } from '../_lib/auth.js';
+import { setCorsHeaders, sendJson, parseRequestBody } from '../_lib/response.js';
 import crypto from 'crypto';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -13,6 +13,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'POST') {
     return sendJson(res, 405, { success: false, error: 'Method not allowed' });
+  }
+
+  const { url } = getTursoEnv();
+  if (!url) {
+    return sendJson(res, 400, {
+      success: false,
+      error: 'دیتابیس ابری Turso هنوز در Vercel متصل نشده است. لطفاً ابتدا TURSO_DATABASE_URL را در تنظیمات Vercel اضافه فرمایید.',
+    });
   }
 
   try {
@@ -87,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Registration error:', err);
     return sendJson(res, 500, {
       success: false,
-      error: err.message || 'خطا در برقراری ارتباط با دیتابیس یا سرور.',
+      error: err.message || 'خطا در ارتباط با دیتابیس Turso.',
     });
   }
 }

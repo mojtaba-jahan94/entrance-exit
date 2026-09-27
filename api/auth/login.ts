@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserByUsername, updateLastLogin } from '../_lib/db';
-import { verifyPassword, generateToken } from '../_lib/auth';
-import { setCorsHeaders, sendJson, parseRequestBody } from '../_lib/response';
+import { getUserByUsername, updateLastLogin, getTursoEnv } from '../_lib/db.js';
+import { verifyPassword, generateToken } from '../_lib/auth.js';
+import { setCorsHeaders, sendJson, parseRequestBody } from '../_lib/response.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
@@ -12,6 +12,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'POST') {
     return sendJson(res, 405, { success: false, error: 'Method not allowed' });
+  }
+
+  const { url } = getTursoEnv();
+  if (!url) {
+    return sendJson(res, 400, {
+      success: false,
+      error: 'دیتابیس ابری Turso هنوز در Vercel متصل نشده است. لطفاً ابتدا TURSO_DATABASE_URL را در تنظیمات Vercel اضافه فرمایید.',
+    });
   }
 
   try {
