@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Clock,
   Calendar,
@@ -10,6 +10,11 @@ import {
   LayoutDashboard,
   Table as TableIcon,
   TrendingUp,
+  User as UserIcon,
+  LogOut,
+  KeyRound,
+  ShieldCheck,
+  ChevronDown,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -19,6 +24,7 @@ import {
 } from '../utils/jalali';
 import { AppTheme } from '../utils/theme';
 import { ThemeSelector } from './ThemeSelector';
+import { useAuth } from '../context/AuthContext';
 
 export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports';
 
@@ -30,6 +36,7 @@ interface NavbarProps {
   onOpenManualEntry: () => void;
   onOpenSettings: () => void;
   onOpenBackup: () => void;
+  onOpenChangePassword?: () => void;
   isWorkingNow?: boolean;
 }
 
@@ -41,9 +48,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenManualEntry,
   onOpenSettings,
   onOpenBackup,
+  onOpenChangePassword,
   isWorkingNow,
 }) => {
+  const { user, logout, dbStatus } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   const todayStr = getTodayJalaliString();
   const weekdayName = getJalaliWeekdayName(todayStr);
 
@@ -52,6 +64,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       setLiveTime(getCurrentTimeString(true));
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Close user dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const navTabs: { id: ActiveTab; label: string; icon: React.ReactNode }[] = [
@@ -128,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
         </nav>
 
-        {/* Action Controls & Theme Selector */}
+        {/* Action Controls, Theme Selector & User Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Theme Selector Palette */}
           <ThemeSelector
@@ -163,6 +186,82 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Database className="h-4 w-4 text-cyan-400" />
           </button>
+
+          {/* User Profile Dropdown */}
+          {user && (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 pr-2 pl-2.5 py-1 rounded-xl bg-slate-900/90 border border-slate-700/70 hover:border-indigo-500/60 transition-all text-xs font-medium text-white shadow-sm"
+                title="حساب کاربری"
+              >
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 font-bold text-white text-xs shadow-inner">
+                  {user.displayName ? user.displayName.charAt(0) : user.username.charAt(0).toUpperCase()}
+                  {/* Status dot */}
+                  <span
+                    className={`absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full border border-slate-900 ${
+                      dbStatus === 'connected' ? 'bg-emerald-400' : 'bg-amber-400'
+                    }`}
+                  />
+                </div>
+                <span className="hidden sm:inline max-w-[110px] truncate">{user.displayName || user.username}</span>
+                <ChevronDown className="h-3 w-3 text-slate-400" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-800 shadow-2xl p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-slate-800/80">
+                    <p className="font-bold text-white truncate text-sm">{user.displayName}</p>
+                    <p className="text-slate-400 font-mono text-[11px] truncate dir-ltr text-right">@{user.username}</p>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-400">
+                      <ShieldCheck className="h-3 w-3 text-emerald-400" />
+                      <span>متصل به دیتابیس Turso</span>
+                    </div>
+                  </div>
+
+                  <div className="py-1">
+                    {onOpenChangePassword && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          onOpenChangePassword();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-right"
+                      >
+                        <KeyRound className="h-4 w-4 text-indigo-400" />
+                        <span>تغییر رمز عبور</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenBackup();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-right"
+                    >
+                      <Database className="h-4 w-4 text-cyan-400" />
+                      <span>پشتیبان‌گیری از اطلاعات</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-1 border-t border-slate-800/80">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-right font-medium"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>خروج از حساب کاربری</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>

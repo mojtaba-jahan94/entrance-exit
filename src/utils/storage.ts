@@ -6,20 +6,35 @@ import {
   formatJalaliDate,
   PERSIAN_WEEKDAY_NAMES,
   getJalaliWeekdayIndex,
-  getDaysInJalaliMonth,
   toPersianDigits,
   formatMinutesToTimeString,
 } from './jalali';
 
-const STORAGE_KEYS = {
-  RECORDS: 'shamsi_attendance_records_v1',
-  CONFIG: 'shamsi_shift_config_v1',
-  LEAVES: 'shamsi_leave_records_v1',
-};
+function getStorageKeys(userId?: string) {
+  if (userId) {
+    return {
+      RECORDS: `shamsi_attendance_records_${userId}`,
+      CONFIG: `shamsi_shift_config_${userId}`,
+      LEAVES: `shamsi_leave_records_${userId}`,
+    };
+  }
+  return {
+    RECORDS: 'shamsi_attendance_records_v1',
+    CONFIG: 'shamsi_shift_config_v1',
+    LEAVES: 'shamsi_leave_records_v1',
+  };
+}
 
-export function getStoredShiftConfig(): ShiftConfig {
+export function getStoredShiftConfig(userId?: string): ShiftConfig {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
+    const keys = getStorageKeys(userId);
+    let raw = localStorage.getItem(keys.CONFIG);
+
+    // If scoped config not found, check legacy config
+    if (!raw && userId) {
+      raw = localStorage.getItem('shamsi_shift_config_v1');
+    }
+
     if (raw) {
       const parsed = JSON.parse(raw);
       // If legacy config without flexible shift settings, automatically upgrade to new workplace defaults
@@ -40,7 +55,7 @@ export function getStoredShiftConfig(): ShiftConfig {
           monthlyLeaveDays: 2.5,
           monthlyLeaveQuotaHours: 20,
         };
-        saveShiftConfig(upgraded);
+        saveShiftConfig(upgraded, userId);
         return upgraded;
       }
       return { ...DEFAULT_SHIFT_CONFIG, ...parsed };
@@ -51,17 +66,29 @@ export function getStoredShiftConfig(): ShiftConfig {
   return DEFAULT_SHIFT_CONFIG;
 }
 
-export function saveShiftConfig(config: ShiftConfig): void {
+export function saveShiftConfig(config: ShiftConfig, userId?: string): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
+    const keys = getStorageKeys(userId);
+    localStorage.setItem(keys.CONFIG, JSON.stringify(config));
   } catch (e) {
     console.error('Error saving shift config', e);
   }
 }
 
-export function getStoredAttendanceRecords(): AttendanceRecord[] {
+export function getStoredAttendanceRecords(userId?: string): AttendanceRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.RECORDS);
+    const keys = getStorageKeys(userId);
+    let raw = localStorage.getItem(keys.RECORDS);
+
+    // Migration: If logged-in user has no records yet, migrate legacy records
+    if (!raw && userId) {
+      const legacyRaw = localStorage.getItem('shamsi_attendance_records_v1');
+      if (legacyRaw) {
+        localStorage.setItem(keys.RECORDS, legacyRaw);
+        raw = legacyRaw;
+      }
+    }
+
     if (raw) {
       return JSON.parse(raw);
     }
@@ -71,17 +98,28 @@ export function getStoredAttendanceRecords(): AttendanceRecord[] {
   return [];
 }
 
-export function saveAttendanceRecords(records: AttendanceRecord[]): void {
+export function saveAttendanceRecords(records: AttendanceRecord[], userId?: string): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
+    const keys = getStorageKeys(userId);
+    localStorage.setItem(keys.RECORDS, JSON.stringify(records));
   } catch (e) {
     console.error('Error saving attendance records', e);
   }
 }
 
-export function getStoredLeaveRecords(): LeaveRecord[] {
+export function getStoredLeaveRecords(userId?: string): LeaveRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.LEAVES);
+    const keys = getStorageKeys(userId);
+    let raw = localStorage.getItem(keys.LEAVES);
+
+    if (!raw && userId) {
+      const legacyRaw = localStorage.getItem('shamsi_leave_records_v1');
+      if (legacyRaw) {
+        localStorage.setItem(keys.LEAVES, legacyRaw);
+        raw = legacyRaw;
+      }
+    }
+
     if (raw) {
       return JSON.parse(raw);
     }
@@ -91,9 +129,10 @@ export function getStoredLeaveRecords(): LeaveRecord[] {
   return [];
 }
 
-export function saveLeaveRecords(leaves: LeaveRecord[]): void {
+export function saveLeaveRecords(leaves: LeaveRecord[], userId?: string): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.LEAVES, JSON.stringify(leaves));
+    const keys = getStorageKeys(userId);
+    localStorage.setItem(keys.LEAVES, JSON.stringify(leaves));
   } catch (e) {
     console.error('Error saving leaves', e);
   }
@@ -102,14 +141,14 @@ export function saveLeaveRecords(leaves: LeaveRecord[]): void {
 /**
  * Initializes mock/sample records for the current Jalali month if storage is empty
  */
-export function initializeSampleDataIfEmpty(): {
+export function initializeSampleDataIfEmpty(userId?: string): {
   records: AttendanceRecord[];
   leaves: LeaveRecord[];
   config: ShiftConfig;
 } {
-  const existingRecords = getStoredAttendanceRecords();
-  const config = getStoredShiftConfig();
-  const existingLeaves = getStoredLeaveRecords();
+  const existingRecords = getStoredAttendanceRecords(userId);
+  const config = getStoredShiftConfig(userId);
+  const existingLeaves = getStoredLeaveRecords(userId);
 
   if (existingRecords.length > 0) {
     return { records: existingRecords, leaves: existingLeaves, config };
@@ -226,9 +265,9 @@ export function initializeSampleDataIfEmpty(): {
     },
   ];
 
-  saveAttendanceRecords(sampleRecords);
-  saveLeaveRecords(sampleLeaves);
-  saveShiftConfig(config);
+  saveAttendanceRecords(sampleRecords, userId);
+  saveLeaveRecords(sampleLeaves, userId);
+  saveShiftConfig(config, userId);
 
   return { records: sampleRecords, leaves: sampleLeaves, config };
 }
@@ -290,11 +329,12 @@ export function exportMonthToExcel(
 /**
  * Backup all data to a JSON file
  */
-export function exportAllDataBackup(): void {
+export function exportAllDataBackup(userId?: string): void {
   const data = {
-    records: getStoredAttendanceRecords(),
-    leaves: getStoredLeaveRecords(),
-    config: getStoredShiftConfig(),
+    records: getStoredAttendanceRecords(userId),
+    leaves: getStoredLeaveRecords(userId),
+    config: getStoredShiftConfig(userId),
+    userId: userId || null,
     exportedAt: new Date().toISOString(),
   };
 
@@ -302,7 +342,7 @@ export function exportAllDataBackup(): void {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `backup_entrance_exit_${Date.now()}.json`;
+  link.download = `backup_entrance_exit_${userId ? userId + '_' : ''}${Date.now()}.json`;
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -310,17 +350,17 @@ export function exportAllDataBackup(): void {
 /**
  * Restore data from a JSON file
  */
-export function importDataBackup(jsonString: string): boolean {
+export function importDataBackup(jsonString: string, userId?: string): boolean {
   try {
     const parsed = JSON.parse(jsonString);
     if (parsed.records && Array.isArray(parsed.records)) {
-      saveAttendanceRecords(parsed.records);
+      saveAttendanceRecords(parsed.records, userId);
     }
     if (parsed.leaves && Array.isArray(parsed.leaves)) {
-      saveLeaveRecords(parsed.leaves);
+      saveLeaveRecords(parsed.leaves, userId);
     }
     if (parsed.config) {
-      saveShiftConfig(parsed.config);
+      saveShiftConfig(parsed.config, userId);
     }
     return true;
   } catch (e) {

@@ -94,3 +94,18 @@ export interface MonthlyStats {
   estimatedOvertimePay?: number; // برآورد ریالی اضافه کار (در صورت تعیین دستمزد)
 }
 
+export interface User {
+  id: string;
+  username: string;
+  displayName: string;
+  createdAt: string;
+  lastLoginAt?: string | null;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+

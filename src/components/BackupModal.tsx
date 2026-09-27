@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { X, Database, Download, Upload, AlertTriangle, Check, RefreshCw } from 'lucide-react';
 import { exportAllDataBackup, importDataBackup } from '../utils/storage';
+import { useAuth } from '../context/AuthContext';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   onDataRestored,
   onResetAllData,
 }) => {
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -23,7 +25,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
 
   const handleExport = () => {
     try {
-      exportAllDataBackup();
+      exportAllDataBackup(user?.id);
       setSuccessMessage('فایل پشتیبان با موفقیت دانلود شد.');
       setTimeout(() => setSuccessMessage(''), 4000);
     } catch (e) {
@@ -39,7 +41,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
     reader.onload = (event) => {
       const content = event.target?.result as string;
       if (content) {
-        const ok = importDataBackup(content);
+        const ok = importDataBackup(content, user?.id);
         if (ok) {
           setSuccessMessage('داده‌ها با موفقیت بازیابی شدند.');
           onDataRestored();
@@ -81,7 +83,9 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-white">پشتیبان‌گیری و مدیریت داده‌ها</h3>
-              <p className="text-[11px] sm:text-xs text-slate-400">انتقال، دانلود و بازیابی اطلاعات تردد</p>
+              <p className="text-[11px] sm:text-xs text-slate-400">
+                انتقال، دانلود و بازیابی اطلاعات تردد {user ? `(حساب ${user.displayName})` : ''}
+              </p>
             </div>
           </div>
           <button
@@ -159,7 +163,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
             >
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="h-4 w-4 text-rose-400" />
-                <span className="text-xs font-semibold">پاک‌سازی کلیه اطلاعات و شروع مجدد</span>
+                <span className="text-xs font-semibold">پاک‌سازی کلیه اطلاعات این حساب و شروع مجدد</span>
               </div>
             </button>
           </div>

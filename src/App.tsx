@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Table as TableIcon,
   TrendingUp,
+  CalendarClock,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
@@ -38,6 +39,10 @@ import {
   AppTheme,
 } from './utils/theme';
 
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthScreen } from './components/AuthScreen';
+import { ChangePasswordModal } from './components/ChangePasswordModal';
+
 import { Navbar, ActiveTab } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
@@ -51,7 +56,10 @@ import { LeaveModal } from './components/LeaveModal';
 import { SettingsModal } from './components/SettingsModal';
 import { BackupModal } from './components/BackupModal';
 
-export function App() {
+function DashboardApp() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
 
@@ -75,6 +83,7 @@ export function App() {
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -86,13 +95,14 @@ export function App() {
     saveStoredTheme(theme);
   };
 
-  // Initialize and load data
+  // Initialize and load data scoped to current user
   useEffect(() => {
-    const initial = initializeSampleDataIfEmpty();
+    if (!userId) return;
+    const initial = initializeSampleDataIfEmpty(userId);
     setRecords(initial.records);
     setLeaves(initial.leaves);
     setConfig(initial.config);
-  }, []);
+  }, [userId]);
 
   // Today's record
   const todayRecord = useMemo(() => {
@@ -159,7 +169,7 @@ export function App() {
       : [updatedRecord, ...records];
 
     setRecords(updatedList);
-    saveAttendanceRecords(updatedList);
+    saveAttendanceRecords(updatedList, userId);
   };
 
   // 2. Clock out today
@@ -181,7 +191,7 @@ export function App() {
 
     const updatedList = records.map((r) => (r.date === todayStr ? updatedRecord : r));
     setRecords(updatedList);
-    saveAttendanceRecords(updatedList);
+    saveAttendanceRecords(updatedList, userId);
   };
 
   // 3. Reset today
@@ -189,7 +199,7 @@ export function App() {
     if (window.confirm('آیا از بازنشانی ثبت ورود/خروج امروز مطمئن هستید؟')) {
       const updatedList = records.filter((r) => r.date !== todayStr);
       setRecords(updatedList);
-      saveAttendanceRecords(updatedList);
+      saveAttendanceRecords(updatedList, userId);
     }
   };
 
@@ -211,7 +221,7 @@ export function App() {
     }
 
     setRecords(updatedList);
-    saveAttendanceRecords(updatedList);
+    saveAttendanceRecords(updatedList, userId);
     setEditingRecord(null);
   };
 
@@ -220,7 +230,7 @@ export function App() {
     if (window.confirm('آیا از حذف این تردد مطمئن هستید؟')) {
       const updatedList = records.filter((r) => r.id !== id);
       setRecords(updatedList);
-      saveAttendanceRecords(updatedList);
+      saveAttendanceRecords(updatedList, userId);
     }
   };
 
@@ -233,21 +243,21 @@ export function App() {
     };
     const updatedLeaves = [newLeave, ...leaves];
     setLeaves(updatedLeaves);
-    saveLeaveRecords(updatedLeaves);
+    saveLeaveRecords(updatedLeaves, userId);
 
     const updatedRecords = syncRecordWithLeaves(leaveData.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
-    saveAttendanceRecords(updatedRecords);
+    saveAttendanceRecords(updatedRecords, userId);
   };
 
   const handleUpdateLeave = (updatedLeave: LeaveRecord) => {
     const updatedLeaves = leaves.map((l) => (l.id === updatedLeave.id ? updatedLeave : l));
     setLeaves(updatedLeaves);
-    saveLeaveRecords(updatedLeaves);
+    saveLeaveRecords(updatedLeaves, userId);
 
     const updatedRecords = syncRecordWithLeaves(updatedLeave.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
-    saveAttendanceRecords(updatedRecords);
+    saveAttendanceRecords(updatedRecords, userId);
   };
 
   const handleDeleteLeave = (id: string) => {
@@ -255,25 +265,25 @@ export function App() {
     const dateStr = targetLeave?.date;
     const updatedLeaves = leaves.filter((l) => l.id !== id);
     setLeaves(updatedLeaves);
-    saveLeaveRecords(updatedLeaves);
+    saveLeaveRecords(updatedLeaves, userId);
 
     if (dateStr) {
       const updatedRecords = syncRecordWithLeaves(dateStr, records, updatedLeaves, config);
       setRecords(updatedRecords);
-      saveAttendanceRecords(updatedRecords);
+      saveAttendanceRecords(updatedRecords, userId);
     }
   };
 
   // 7. Update Shift settings & recalculate all records
   const handleSaveConfig = (newConfig: ShiftConfig) => {
     setConfig(newConfig);
-    saveShiftConfig(newConfig);
+    saveShiftConfig(newConfig, userId);
 
     const recalculated = records.map((r) =>
       calculateAttendanceMetrics(r, newConfig, leaves.filter((l) => l.date === r.date))
     );
     setRecords(recalculated);
-    saveAttendanceRecords(recalculated);
+    saveAttendanceRecords(recalculated, userId);
   };
 
   // 8. Excel Export
@@ -283,13 +293,15 @@ export function App() {
 
   // 9. Data restore & Reset
   const handleDataRestored = () => {
-    setRecords(getStoredAttendanceRecords());
-    setLeaves(getStoredLeaveRecords());
-    setConfig(getStoredShiftConfig());
+    setRecords(getStoredAttendanceRecords(userId));
+    setLeaves(getStoredLeaveRecords(userId));
+    setConfig(getStoredShiftConfig(userId));
   };
 
   const handleResetAllData = () => {
-    localStorage.clear();
+    saveAttendanceRecords([], userId);
+    saveLeaveRecords([], userId);
+    saveShiftConfig(DEFAULT_SHIFT_CONFIG, userId);
     setRecords([]);
     setLeaves([]);
     setConfig(DEFAULT_SHIFT_CONFIG);
@@ -297,7 +309,7 @@ export function App() {
 
   return (
     <div data-theme={currentTheme} className="min-h-screen flex flex-col font-sans pb-24 md:pb-16 transition-colors duration-300">
-      {/* Top Navigation Bar with Tabs & Theme Switcher */}
+      {/* Top Navigation Bar with Tabs & User Profile */}
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -309,18 +321,17 @@ export function App() {
         }}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
+        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         isWorkingNow={isWorkingNow}
       />
 
-      {/* Main Tabbed Content Area */}
-      <main className="mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 pt-3 sm:pt-6 space-y-4 sm:space-y-6 flex-1">
-        {/* ======================================================== */}
-        {/* TAB 1: پیشخوان (Dashboard - Uncluttered Executive View) */}
-        {/* ======================================================== */}
+      {/* Main Content Area */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6">
+        {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-            {/* Quick Hero: Today's Clock In / Clock Out Card */}
-            <section id="today-section">
+            {/* Live Clock Card */}
+            <section aria-label="ثبت زنده تردد">
               <ClockCard
                 todayRecord={todayRecord}
                 config={config}
@@ -328,14 +339,14 @@ export function App() {
                 onCheckOut={handleCheckOut}
                 onResetToday={handleResetToday}
                 onOpenEdit={() => {
-                  setEditingRecord(todayRecord);
+                  setEditingRecord(todayRecord || ({ date: todayStr } as any));
                   setIsManualModalOpen(true);
                 }}
               />
             </section>
 
-            {/* Bento Grid: Monthly Statistics Highlights */}
-            <section aria-label="خلاصه شاخص‌های ماهانه">
+            {/* Quick KPI Stats Summary */}
+            <section aria-label="خلاصه آماری ماه جاری">
               <StatsCards
                 stats={monthlyStats}
                 monthName={selectedMonthName}
@@ -368,9 +379,7 @@ export function App() {
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 2: کارنامه تردد (Full Monthly Timesheet & Records) */}
-        {/* ======================================================== */}
+        {/* Tab 2: Timesheet Table */}
         {activeTab === 'timesheet' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <AttendanceTable
@@ -394,9 +403,7 @@ export function App() {
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 3: کاردکس و مرخصی‌ها (Dedicated Leaves Management) */}
-        {/* ======================================================== */}
+        {/* Tab 3: Leaves Management */}
         {activeTab === 'leaves' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <LeavesTab
@@ -419,9 +426,7 @@ export function App() {
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 4: گزارشات تحلیلی و مالی (Reports & Financial Overview) */}
-        {/* ======================================================== */}
+        {/* Tab 4: Comprehensive Reports */}
         {activeTab === 'reports' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <ReportsTab
@@ -436,13 +441,8 @@ export function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="mt-8 sm:mt-12 text-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-800/80 pt-5 pb-2">
-        <p>سامانه مدیریت تردد و کارکرد | طراحی مدرن با تقویم شمسی و استانداردهای قانون کار</p>
-      </footer>
-
-      {/* Mobile Bottom Navigation Bar (Touch & Thumb friendly with 4 Tabs) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around text-[10px] text-slate-400 shadow-2xl">
+      {/* Mobile Sticky Bottom Navigation Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex items-center justify-around text-[10px]">
         <button
           onClick={() => setActiveTab('dashboard')}
           className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
@@ -548,7 +548,46 @@ export function App() {
         onDataRestored={handleDataRestored}
         onResetAllData={handleResetAllData}
       />
+
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </div>
+  );
+}
+
+function AppWithAuth() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-4">
+        <div className="relative flex items-center justify-center mb-4">
+          <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-xl shadow-indigo-500/25">
+            <CalendarClock className="h-8 w-8 text-white animate-pulse" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-400 font-medium">
+          <span className="h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+          <span>در حال بارگذاری سامانه تردد و بررسی نشست امن...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
+
+  return <DashboardApp />;
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <AppWithAuth />
+    </AuthProvider>
   );
 }
 
