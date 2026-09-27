@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { ShiftConfig } from '../types';
 import { DEFAULT_SHIFT_CONFIG } from '../utils/calculator';
-import { toPersianDigits, timeStringToMinutes } from '../utils/jalali';
+import { toPersianDigits, toEnglishDigits, timeStringToMinutes } from '../utils/jalali';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -445,26 +445,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* Optional Hourly Wage for Estimation */}
               <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800">
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  نرخ دستمزد ساعتی تخمینی (اختیاری - تومان)
-                </label>
-                <input
-                  type="number"
-                  step="5000"
-                  min="0"
-                  placeholder="مثال: ۸۰,۰۰۰ تومان"
-                  value={formData.hourlyRateToman || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      hourlyRateToman: Math.max(0, parseInt(e.target.value) || 0),
-                    })
-                  }
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-mono text-white text-center focus:border-indigo-500 focus:outline-none"
-                />
-                <span className="text-[10px] text-slate-500 mt-1 block">
-                  در صورت وارد کردن، تخمین مبلغ اضافه کاری ماه در داشبورد نمایش داده می‌شود.
-                </span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    نرخ دستمزد ساعتی تخمینی (اختیاری - تومان)
+                  </label>
+                  {formData.hourlyRateToman ? (
+                    <span className="text-[11px] text-emerald-400 font-bold font-mono">
+                      {toPersianDigits(formData.hourlyRateToman.toLocaleString())} تومان
+                    </span>
+                  ) : null}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="مثال: ۸۳,۴۵۰ تومان (هر رقم دلخواه بدون محدودیت)"
+                    value={
+                      formData.hourlyRateToman
+                        ? formData.hourlyRateToman.toLocaleString('en-US')
+                        : ''
+                    }
+                    onChange={(e) => {
+                      const cleanStr = toEnglishDigits(e.target.value).replace(/[^0-9]/g, '');
+                      const val = cleanStr ? parseInt(cleanStr, 10) : 0;
+                      setFormData({
+                        ...formData,
+                        hourlyRateToman: val,
+                      });
+                    }}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs font-mono text-white text-center focus:border-indigo-500 focus:outline-none tracking-wider"
+                  />
+                  {formData.hourlyRateToman ? (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, hourlyRateToman: 0 })}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-rose-400 text-xs p-1"
+                      title="پاک کردن"
+                    >
+                      ✕
+                    </button>
+                  ) : null}
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1.5">
+                  <span>امکان وارد کردن هر عدد دلخواه (بدون اجبار به عدد رند)</span>
+                  {formData.hourlyRateToman ? (
+                    <span className="text-indigo-400 font-medium font-mono">
+                      معادل دقیقه: {toPersianDigits(Math.round(formData.hourlyRateToman / 60).toLocaleString())} ت
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </div>
           )}
