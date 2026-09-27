@@ -57,6 +57,7 @@ export interface LeaveRecord {
   date: string; // "1403/07/05"
   type: LeaveType;
   hours: number; // Hours or fractional hours
+  minutes?: number; // Exact total minutes of leave
   startTime?: string;
   endTime?: string;
   reason: string;
@@ -79,8 +80,10 @@ export interface MonthlyStats {
   totalDelayMinutes: number;
   totalEarlyLeaveMinutes: number;
   totalDeficitMinutes: number;
+  totalLeaveMinutes: number; // Exact minutes
   totalLeaveHours: number;
   totalLeaveDays: number;
+  remainingLeaveMinutes: number; // Exact minutes
   remainingLeaveHours: number;
   remainingLeaveDays: number;
   netBalanceMinutes: number; // اضافه کاری منهای کسر کار

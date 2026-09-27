@@ -24,6 +24,7 @@ import {
   PERSIAN_WEEKDAY_NAMES,
   toPersianDigits,
   formatMinutesToTimeString,
+  formatMinutesToPersianReadable,
 } from '../utils/jalali';
 
 interface AttendanceTableProps {
@@ -388,8 +389,11 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         </span>
                       )}
                       {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
-                        <span className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-300 font-semibold border border-amber-500/30">
-                          مرخصی: {toPersianDigits(r.leaveMinutes)}د
+                        <span
+                          className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-300 font-semibold border border-amber-500/30"
+                          title={`مرخصی ساعتی: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
+                        >
+                          مرخصی: {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
                         </span>
                       )}
                       {r.breakMinutes > 0 && (
@@ -587,8 +591,11 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                             </span>
                           )}
                           {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20" title={`مرخصی ساعتی ثبت شده: ${toPersianDigits(r.leaveMinutes)} دقیقه`}>
-                              مرخصی {toPersianDigits(r.leaveMinutes)}د
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20"
+                              title={`مرخصی ساعتی ثبت شده: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
+                            >
+                              مرخصی {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
                             </span>
                           )}
                           {r.status === 'in_progress' && (

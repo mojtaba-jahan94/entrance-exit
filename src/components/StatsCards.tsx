@@ -147,8 +147,19 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
               {toPersianDigits(stats.remainingLeaveDays)}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-300 font-semibold">روز</span>
-            <span className="text-[9px] sm:text-xs text-slate-400 font-mono truncate">
-              ({toPersianDigits(stats.remainingLeaveHours.toFixed(1))} س)
+            <span
+              className="text-[9px] sm:text-xs text-slate-400 font-mono truncate"
+              title={
+                stats.remainingLeaveMinutes !== undefined
+                  ? formatMinutesToPersianReadable(stats.remainingLeaveMinutes)
+                  : `${toPersianDigits(stats.remainingLeaveHours.toFixed(1))} ساعت`
+              }
+            >
+              (
+              {stats.remainingLeaveMinutes !== undefined
+                ? toPersianDigits(formatMinutesToTimeString(stats.remainingLeaveMinutes))
+                : toPersianDigits(stats.remainingLeaveHours.toFixed(1))}
+              )
             </span>
           </div>
 

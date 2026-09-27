@@ -34,6 +34,39 @@ export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
 /**
  * Calculates attendance metrics for a single day record, taking into account any approved leaves for that day
  */
+/**
+ * Calculates the exact duration of a leave in minutes based on clock logic
+ */
+export function getLeaveDurationMinutes(
+  leave: Partial<LeaveRecord>,
+  standardDailyNetMinutes: number = 480
+): number {
+  if (leave.type === 'daily' || leave.type === 'sick' || leave.type === 'unpaid') {
+    return standardDailyNetMinutes;
+  }
+  if (leave.type === 'half_day') {
+    return Math.round(standardDailyNetMinutes / 2);
+  }
+  // Hourly leave:
+  // 1. Clock times (از ساعت ... تا ساعت ...)
+  if (leave.startTime && leave.endTime) {
+    const s = timeStringToMinutes(leave.startTime);
+    const e = timeStringToMinutes(leave.endTime);
+    if (e > s) {
+      return e - s;
+    }
+  }
+  // 2. Exact stored minutes
+  if (typeof leave.minutes === 'number' && leave.minutes > 0) {
+    return leave.minutes;
+  }
+  // 3. Fractional hours
+  if (typeof leave.hours === 'number' && leave.hours > 0) {
+    return Math.round(leave.hours * 60);
+  }
+  return 0;
+}
+
 export function calculateAttendanceMetrics(
   record: Partial<AttendanceRecord> & { date: string },
   config: ShiftConfig,
@@ -46,6 +79,26 @@ export function calculateAttendanceMetrics(
   const isThursday = weekday === 5;
   const isHoliday = isFriday || holidayInfo.isHoliday || false;
 
+  // Determine required presence minutes and net working minutes for this day
+  let requiredPresenceMinutes = config.requiredDailyMinutes || 510;
+  let netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30)); // 480 mins (8 hours)
+
+  if (isFriday || holidayInfo.isHoliday) {
+    requiredPresenceMinutes = 0;
+    netRequiredMinutes = 0;
+  } else if (isThursday) {
+    if (config.thursdayStatus === 'off') {
+      requiredPresenceMinutes = 0;
+      netRequiredMinutes = 0;
+    } else if (config.thursdayStatus === 'half_day') {
+      requiredPresenceMinutes = config.thursdayMinutes || 270;
+      netRequiredMinutes = config.thursdayMinutes || 270; // 4.5 hours net
+    } else {
+      requiredPresenceMinutes = config.requiredDailyMinutes || 510;
+      netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30));
+    }
+  }
+
   // Relevant approved leaves for this specific day
   const relevantLeaves = (dayLeaves || []).filter(
     (l) => l.date === record.date && l.approved !== false
@@ -57,13 +110,9 @@ export function calculateAttendanceMetrics(
     (l) => l.type === 'hourly' || l.type === 'half_day'
   );
   const totalHourlyLeaveMinutes = hourlyLeaves.reduce(
-    (sum, l) => sum + Math.round((l.hours || (l.type === 'half_day' ? 4 : 0)) * 60),
+    (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
     0
   );
-
-  // Determine required presence minutes and net working minutes for this day
-  let requiredPresenceMinutes = config.requiredDailyMinutes || 510;
-  let netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30)); // 480 mins (8 hours)
 
   if (isFriday || holidayInfo.isHoliday) {
     requiredPresenceMinutes = 0;
@@ -271,6 +320,7 @@ export function calculateAttendanceMetrics(
     deficitMinutes,
     targetCheckOut,
     netBalanceMinutes,
+    leaveMinutes: totalHourlyLeaveMinutes > 0 ? totalHourlyLeaveMinutes : undefined,
     note: record.note || '',
     isHoliday: holidayInfo.isHoliday || isFriday,
     holidayTitle: holidayInfo.title || (isFriday ? 'جمعه (تعطیل هفتگی)' : undefined),
@@ -341,17 +391,23 @@ export function calculateMonthlyStats(
     }
   });
 
-  // Calculate leaves in hours and days
-  const totalLeaveHours = monthLeaves.reduce((sum, l) => sum + (l.hours || 0), 0);
+  // Calculate leaves in exact minutes and days based on clock logic
+  const totalLeaveMinutes = monthLeaves.reduce(
+    (sum, l) => sum + getLeaveDurationMinutes(l, standardDailyNetMinutes),
+    0
+  );
+  const totalLeaveHours = parseFloat((totalLeaveMinutes / 60).toFixed(2));
   const standardDayHours = standardDailyNetMinutes / 60; // 8 hours
-  const totalLeaveDays = parseFloat((totalLeaveHours / standardDayHours).toFixed(1));
+  const totalLeaveDays = parseFloat((totalLeaveMinutes / standardDailyNetMinutes).toFixed(1));
 
   const monthlyQuotaHours =
     config.monthlyLeaveQuotaHours ||
     (config.monthlyLeaveDays ? config.monthlyLeaveDays * standardDayHours : 20);
+  const monthlyQuotaMinutes = monthlyQuotaHours * 60;
 
-  const remainingLeaveHours = Math.max(0, monthlyQuotaHours - totalLeaveHours);
-  const remainingLeaveDays = parseFloat((remainingLeaveHours / standardDayHours).toFixed(1));
+  const remainingLeaveMinutes = Math.max(0, monthlyQuotaMinutes - totalLeaveMinutes);
+  const remainingLeaveHours = parseFloat((remainingLeaveMinutes / 60).toFixed(2));
+  const remainingLeaveDays = parseFloat((remainingLeaveMinutes / standardDailyNetMinutes).toFixed(1));
 
   // Net balance (اضافه کاری منهای کسر کار)
   const netBalanceMinutes = totalOvertimeMinutes + totalHolidayOvertimeMinutes - totalDeficitMinutes;
@@ -380,8 +436,10 @@ export function calculateMonthlyStats(
     totalDelayMinutes,
     totalEarlyLeaveMinutes,
     totalDeficitMinutes,
+    totalLeaveMinutes,
     totalLeaveHours,
     totalLeaveDays,
+    remainingLeaveMinutes,
     remainingLeaveHours,
     remainingLeaveDays,
     netBalanceMinutes,

@@ -261,6 +261,14 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               </div>
             )}
 
+            {todayRecord && todayRecord.leaveMinutes !== undefined && todayRecord.leaveMinutes > 0 && (
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-300 flex items-center justify-center gap-1">
+                <Coffee className="h-3.5 w-3.5 shrink-0" />
+                <span>مرخصی: </span>
+                <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.leaveMinutes)}</strong>
+              </div>
+            )}
+
             {todayRecord && (todayRecord.overtimeMinutes > 0 || todayRecord.holidayOvertimeMinutes > 0) && (
               <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1.5 text-xs text-indigo-300 flex items-center justify-center gap-1 col-span-2 sm:col-span-1">
                 <TrendingUp className="h-3.5 w-3.5 shrink-0" />
