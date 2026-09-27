@@ -44,6 +44,7 @@ export interface AttendanceRecord {
   deficitMinutes: number; // کسر کار
   targetCheckOut?: string; // ساعت خروج موظفی پیشنهادی روز (مثلاً "17:05")
   netBalanceMinutes: number; // تراز روزانه: اضافه کاری منهای کسر کار
+  leaveMinutes?: number; // دقایق مرخصی ساعتی ثبت‌شده در این روز
   note?: string;
   isHoliday?: boolean;
   holidayTitle?: string;

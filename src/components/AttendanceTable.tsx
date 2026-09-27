@@ -374,16 +374,22 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Badges row: Delays, Overtime, Deficit, Target Departure */}
+                  {/* Badges row: Delays, Overtime, Deficit, Target Departure, Leave */}
                   {(isLate ||
                     hasOT ||
                     r.deficitMinutes > 0 ||
                     r.earlyLeaveMinutes > 0 ||
-                    r.breakMinutes > 0) && (
+                    r.breakMinutes > 0 ||
+                    (r.leaveMinutes !== undefined && r.leaveMinutes > 0)) && (
                     <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-[10px]">
                       {r.targetCheckOut && (
                         <span className="rounded-lg bg-slate-900 px-2 py-0.5 text-cyan-300 border border-slate-800 font-mono">
                           خروج هدف: {toPersianDigits(r.targetCheckOut)}
+                        </span>
+                      )}
+                      {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
+                        <span className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-300 font-semibold border border-amber-500/30">
+                          مرخصی: {toPersianDigits(r.leaveMinutes)}د
                         </span>
                       )}
                       {r.breakMinutes > 0 && (
@@ -573,33 +579,40 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
                       {/* Status Badge */}
                       <td className="py-3 px-3 text-center">
-                        {r.status === 'present' && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle2 className="h-3 w-3" />
-                            حاضر
-                          </span>
-                        )}
-                        {r.status === 'in_progress' && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2 py-0.5 text-[11px] font-medium text-cyan-400 border border-cyan-500/20">
-                            <Clock className="h-3 w-3 animate-pulse" />
-                            در حال کار
-                          </span>
-                        )}
-                        {r.status === 'leave' && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400 border border-amber-500/20">
-                            مرخصی
-                          </span>
-                        )}
-                        {r.status === 'absent' && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-400 border border-rose-500/20">
-                            غایب
-                          </span>
-                        )}
-                        {(r.status === 'holiday' || r.status === 'weekend') && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-400 border border-slate-700">
-                            {r.holidayTitle || (r.dayOfWeek === 6 ? 'جمعه' : 'تعطیل')}
-                          </span>
-                        )}
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                          {r.status === 'present' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400 border border-emerald-500/20">
+                              <CheckCircle2 className="h-3 w-3" />
+                              حاضر
+                            </span>
+                          )}
+                          {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20" title={`مرخصی ساعتی ثبت شده: ${toPersianDigits(r.leaveMinutes)} دقیقه`}>
+                              مرخصی {toPersianDigits(r.leaveMinutes)}د
+                            </span>
+                          )}
+                          {r.status === 'in_progress' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2 py-0.5 text-[11px] font-medium text-cyan-400 border border-cyan-500/20">
+                              <Clock className="h-3 w-3 animate-pulse" />
+                              در حال کار
+                            </span>
+                          )}
+                          {r.status === 'leave' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400 border border-amber-500/20">
+                              مرخصی
+                            </span>
+                          )}
+                          {r.status === 'absent' && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-400 border border-rose-500/20">
+                              غایب
+                            </span>
+                          )}
+                          {(r.status === 'holiday' || r.status === 'weekend') && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-400 border border-slate-700">
+                              {r.holidayTitle || (r.dayOfWeek === 6 ? 'جمعه' : 'تعطیل')}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Check In */}

@@ -31,9 +31,13 @@ export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
 /**
  * Calculates attendance metrics for a single day record
  */
+/**
+ * Calculates attendance metrics for a single day record, taking into account any approved leaves for that day
+ */
 export function calculateAttendanceMetrics(
   record: Partial<AttendanceRecord> & { date: string },
-  config: ShiftConfig
+  config: ShiftConfig,
+  dayLeaves?: LeaveRecord[]
 ): AttendanceRecord {
   const { jy, jm, jd } = parseJalaliDate(record.date);
   const weekday = getJalaliWeekdayIndex(record.date);
@@ -41,6 +45,21 @@ export function calculateAttendanceMetrics(
   const isFriday = weekday === 6;
   const isThursday = weekday === 5;
   const isHoliday = isFriday || holidayInfo.isHoliday || false;
+
+  // Relevant approved leaves for this specific day
+  const relevantLeaves = (dayLeaves || []).filter(
+    (l) => l.date === record.date && l.approved !== false
+  );
+  const fullDayLeave = relevantLeaves.find(
+    (l) => l.type === 'daily' || l.type === 'sick' || l.type === 'unpaid'
+  );
+  const hourlyLeaves = relevantLeaves.filter(
+    (l) => l.type === 'hourly' || l.type === 'half_day'
+  );
+  const totalHourlyLeaveMinutes = hourlyLeaves.reduce(
+    (sum, l) => sum + Math.round((l.hours || (l.type === 'half_day' ? 4 : 0)) * 60),
+    0
+  );
 
   // Determine required presence minutes and net working minutes for this day
   let requiredPresenceMinutes = config.requiredDailyMinutes || 510;
@@ -60,6 +79,33 @@ export function calculateAttendanceMetrics(
       requiredPresenceMinutes = config.requiredDailyMinutes || 510;
       netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30));
     }
+  }
+
+  // Handle Full-Day Leave
+  if (fullDayLeave) {
+    const leaveNote = fullDayLeave.reason ? `مرخصی: ${fullDayLeave.reason}` : 'مرخصی روزانه';
+    return {
+      id: record.id || `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      date: record.date,
+      gregorianDate: record.gregorianDate || '',
+      dayOfWeek: weekday,
+      checkIn: null,
+      checkOut: null,
+      breakMinutes: 0,
+      status: 'leave',
+      delayMinutes: 0,
+      earlyLeaveMinutes: 0,
+      workedMinutes: netRequiredMinutes, // Credited full standard net day
+      overtimeMinutes: 0,
+      holidayOvertimeMinutes: 0,
+      deficitMinutes: 0,
+      targetCheckOut: undefined,
+      netBalanceMinutes: 0,
+      leaveMinutes: netRequiredMinutes,
+      note: record.note ? `${record.note} (${leaveNote})` : leaveNote,
+      isHoliday: holidayInfo.isHoliday || isFriday,
+      holidayTitle: holidayInfo.title || (isFriday ? 'جمعه (تعطیل هفتگی)' : undefined),
+    };
   }
 
   const checkIn = record.checkIn || null;
@@ -90,11 +136,14 @@ export function calculateAttendanceMetrics(
       status = 'holiday';
     } else if (isThursday && config.thursdayStatus === 'off') {
       status = 'weekend';
+    } else if (totalHourlyLeaveMinutes >= netRequiredMinutes) {
+      status = 'leave';
+      workedMinutes = netRequiredMinutes;
     } else {
       status = record.status === 'leave' ? 'leave' : 'absent';
       if (status === 'absent') {
-        deficitMinutes = netRequiredMinutes;
-        netBalanceMinutes = -netRequiredMinutes;
+        deficitMinutes = Math.max(0, netRequiredMinutes - totalHourlyLeaveMinutes);
+        netBalanceMinutes = -deficitMinutes;
       }
     }
   } else if (checkIn && !checkOut) {
@@ -103,21 +152,28 @@ export function calculateAttendanceMetrics(
     const checkInMins = timeStringToMinutes(checkIn);
 
     if (!isHoliday) {
-      // Calculate delay based on flexible arrival (08:30 - 09:30)
+      // Calculate raw delay based on flexible arrival (08:30 - 09:30)
+      let rawDelay = 0;
       if (config.isFlexibleShift) {
         const maxFlexInMins = timeStringToMinutes(config.flexStartTimeMax || '09:30');
         if (checkInMins > maxFlexInMins) {
-          delayMinutes = checkInMins - maxFlexInMins;
+          rawDelay = checkInMins - maxFlexInMins;
         }
       } else {
         const startMins = timeStringToMinutes(config.startTime);
         if (checkInMins > startMins + (config.graceMinutes || 0)) {
-          delayMinutes = checkInMins - startMins;
+          rawDelay = checkInMins - startMins;
         }
       }
 
-      // Calculate expected target check-out time based on presence requirement
-      const targetMins = checkInMins + requiredPresenceMinutes;
+      // Deduct hourly leave from delay
+      delayMinutes = Math.max(0, rawDelay - totalHourlyLeaveMinutes);
+
+      // Target checkout adjusted for leave (e.g. taking 2h leave allows leaving 2h earlier)
+      const targetMins = Math.max(
+        checkInMins,
+        checkInMins + requiredPresenceMinutes - totalHourlyLeaveMinutes
+      );
       targetCheckOut = formatMinutesToTimeString(targetMins);
     }
   } else if (checkIn && checkOut) {
@@ -128,7 +184,7 @@ export function calculateAttendanceMetrics(
 
     // Raw presence time (مدت حضور فیزیکی در محل کار)
     const rawPresenceMinutes = Math.max(0, checkOutMins - checkInMins);
-    // Net worked time (کارکرد مفید موثر پس از کسر تایم ناهار/استراحت)
+    // Net worked time (کارکرد فیزیکی مفید پس از کسر ناهار)
     workedMinutes = Math.max(0, rawPresenceMinutes - breakMinutes);
 
     if (isHoliday) {
@@ -136,40 +192,64 @@ export function calculateAttendanceMetrics(
       holidayOvertimeMinutes = workedMinutes;
       netBalanceMinutes = holidayOvertimeMinutes;
     } else {
-      // 1. Calculate Delay (تاخیر ورود)
+      // 1. Calculate Raw Delay (تاخیر ورود)
+      let rawDelay = 0;
       if (config.isFlexibleShift) {
-        // Floating arrival between flexStartTimeMin (08:30) and flexStartTimeMax (09:30)
         const maxFlexInMins = timeStringToMinutes(config.flexStartTimeMax || '09:30');
         if (checkInMins > maxFlexInMins) {
-          delayMinutes = checkInMins - maxFlexInMins;
+          rawDelay = checkInMins - maxFlexInMins;
         }
       } else {
         const startMins = timeStringToMinutes(config.startTime);
         if (checkInMins > startMins + (config.graceMinutes || 0)) {
-          delayMinutes = checkInMins - startMins;
+          rawDelay = checkInMins - startMins;
         }
       }
 
       // 2. Target Check Out Time
-      const targetMins = checkInMins + requiredPresenceMinutes;
-      targetCheckOut = formatMinutesToTimeString(targetMins);
+      const standardTargetMins = checkInMins + requiredPresenceMinutes;
+      const rawEarlyLeave = Math.max(0, standardTargetMins - checkOutMins);
 
-      // 3. Early Leave (تعجیل خروج)
-      if (checkOutMins < targetMins) {
-        earlyLeaveMinutes = targetMins - checkOutMins;
+      // 3. Offset Delay & Early Exit from Hourly Leave Time
+      let remainingLeaveForOffsets = totalHourlyLeaveMinutes;
+
+      // First offset delay
+      if (rawDelay > 0 && remainingLeaveForOffsets > 0) {
+        const delayOffset = Math.min(rawDelay, remainingLeaveForOffsets);
+        delayMinutes = rawDelay - delayOffset;
+        remainingLeaveForOffsets -= delayOffset;
+      } else {
+        delayMinutes = rawDelay;
       }
 
-      // 4. Overtime (اضافه کاری عادی)
+      // Then offset early exit
+      if (rawEarlyLeave > 0 && remainingLeaveForOffsets > 0) {
+        const earlyOffset = Math.min(rawEarlyLeave, remainingLeaveForOffsets);
+        earlyLeaveMinutes = rawEarlyLeave - earlyOffset;
+        remainingLeaveForOffsets -= earlyOffset;
+      } else {
+        earlyLeaveMinutes = rawEarlyLeave;
+      }
+
+      // Adjusted target checkout accounting for hourly leave
+      targetCheckOut = formatMinutesToTimeString(
+        Math.max(checkInMins, standardTargetMins - totalHourlyLeaveMinutes)
+      );
+
+      // 4. Overtime & Deficit:
+      // Effective worked time = physical worked + approved hourly leave
+      const effectiveWorked = workedMinutes + totalHourlyLeaveMinutes;
+
       if (workedMinutes > netRequiredMinutes) {
         overtimeMinutes = workedMinutes - netRequiredMinutes;
       }
 
-      // 5. Deficit (کسر کار)
-      if (workedMinutes < netRequiredMinutes) {
-        deficitMinutes = netRequiredMinutes - workedMinutes;
+      if (effectiveWorked < netRequiredMinutes) {
+        deficitMinutes = netRequiredMinutes - effectiveWorked;
+      } else {
+        deficitMinutes = 0;
       }
 
-      // 6. Net balance
       netBalanceMinutes = overtimeMinutes - deficitMinutes;
     }
   }

@@ -72,9 +72,40 @@ export function App() {
 
   const selectedMonthName = PERSIAN_MONTH_NAMES[selectedMonth - 1] || '';
 
+  // Synchronize and recalculate an attendance record for a specific date using its leaves
+  const syncRecordWithLeaves = (
+    dateStr: string,
+    currentRecords: AttendanceRecord[],
+    currentLeaves: LeaveRecord[],
+    cfg: ShiftConfig
+  ): AttendanceRecord[] => {
+    const dayLeaves = currentLeaves.filter((l) => l.date === dateStr);
+    const existing = currentRecords.find((r) => r.date === dateStr);
+    const hasFullDay = dayLeaves.some(
+      (l) => l.type === 'daily' || l.type === 'sick' || l.type === 'unpaid'
+    );
+
+    const baseData: Partial<AttendanceRecord> & { date: string } = existing
+      ? { ...existing }
+      : {
+          date: dateStr,
+          status: hasFullDay ? 'leave' : 'present',
+        };
+
+    const recalculated = calculateAttendanceMetrics(baseData, cfg, dayLeaves);
+
+    if (existing) {
+      return currentRecords.map((r) => (r.date === dateStr ? recalculated : r));
+    } else if (dayLeaves.length > 0) {
+      return [recalculated, ...currentRecords];
+    }
+    return currentRecords;
+  };
+
   // 1. Clock in today
   const handleCheckIn = (time: string) => {
     let existing = records.find((r) => r.date === todayStr);
+    const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
         ...(existing || { id: `att_${Date.now()}` }),
@@ -83,7 +114,8 @@ export function App() {
         checkOut: null,
         status: 'in_progress',
       },
-      config
+      config,
+      dayLeaves
     );
 
     const updatedList = existing
@@ -99,6 +131,7 @@ export function App() {
     let existing = records.find((r) => r.date === todayStr);
     if (!existing) return;
 
+    const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
         ...existing,
@@ -106,7 +139,8 @@ export function App() {
         breakMinutes: breakMinutes,
         status: 'present',
       },
-      config
+      config,
+      dayLeaves
     );
 
     const updatedList = records.map((r) => (r.date === todayStr ? updatedRecord : r));
@@ -127,7 +161,8 @@ export function App() {
   const handleSaveManualRecord = (data: Partial<AttendanceRecord>) => {
     if (!data.date) return;
 
-    const calculated = calculateAttendanceMetrics(data as any, config);
+    const dayLeaves = leaves.filter((l) => l.date === data.date);
+    const calculated = calculateAttendanceMetrics(data as any, config, dayLeaves);
     const exists = records.some((r) => r.id === calculated.id || r.date === calculated.date);
 
     let updatedList: AttendanceRecord[];
@@ -164,29 +199,35 @@ export function App() {
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves);
 
-    // If it's a full-day leave, also update the attendance day record
-    if (leaveData.type === 'daily' || leaveData.type === 'sick') {
-      const dayRec = calculateAttendanceMetrics(
-        {
-          date: leaveData.date,
-          status: 'leave',
-          note: `مرخصی: ${leaveData.reason}`,
-        },
-        config
-      );
-      const exists = records.some((r) => r.date === leaveData.date);
-      const updatedRecords = exists
-        ? records.map((r) => (r.date === leaveData.date ? dayRec : r))
-        : [dayRec, ...records];
-      setRecords(updatedRecords);
-      saveAttendanceRecords(updatedRecords);
-    }
+    // Synchronize and recalculate attendance record for this day
+    const updatedRecords = syncRecordWithLeaves(leaveData.date, records, updatedLeaves, config);
+    setRecords(updatedRecords);
+    saveAttendanceRecords(updatedRecords);
+  };
+
+  const handleUpdateLeave = (updatedLeave: LeaveRecord) => {
+    const updatedLeaves = leaves.map((l) => (l.id === updatedLeave.id ? updatedLeave : l));
+    setLeaves(updatedLeaves);
+    saveLeaveRecords(updatedLeaves);
+
+    // Synchronize and recalculate attendance record for this day
+    const updatedRecords = syncRecordWithLeaves(updatedLeave.date, records, updatedLeaves, config);
+    setRecords(updatedRecords);
+    saveAttendanceRecords(updatedRecords);
   };
 
   const handleDeleteLeave = (id: string) => {
+    const targetLeave = leaves.find((l) => l.id === id);
+    const dateStr = targetLeave?.date;
     const updatedLeaves = leaves.filter((l) => l.id !== id);
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves);
+
+    if (dateStr) {
+      const updatedRecords = syncRecordWithLeaves(dateStr, records, updatedLeaves, config);
+      setRecords(updatedRecords);
+      saveAttendanceRecords(updatedRecords);
+    }
   };
 
   // 7. Update Shift settings & recalculate all records
@@ -194,8 +235,10 @@ export function App() {
     setConfig(newConfig);
     saveShiftConfig(newConfig);
 
-    // Recalculate metrics for all existing records with new policy
-    const recalculated = records.map((r) => calculateAttendanceMetrics(r, newConfig));
+    // Recalculate metrics for all existing records with new policy & corresponding leaves
+    const recalculated = records.map((r) =>
+      calculateAttendanceMetrics(r, newConfig, leaves.filter((l) => l.date === r.date))
+    );
     setRecords(recalculated);
     saveAttendanceRecords(recalculated);
   };
@@ -360,9 +403,12 @@ export function App() {
           l.date.startsWith(`${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`)
         )}
         onAddLeave={handleAddLeave}
+        onUpdateLeave={handleUpdateLeave}
         onDeleteLeave={handleDeleteLeave}
         monthlyQuotaHours={config.monthlyLeaveQuotaHours}
         monthlyQuotaDays={config.monthlyLeaveDays || 2.5}
+        todayRecord={todayRecord}
+        shiftConfig={config}
       />
 
       <SettingsModal
