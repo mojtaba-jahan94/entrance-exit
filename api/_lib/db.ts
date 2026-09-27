@@ -29,7 +29,7 @@ export function getDb(): Client {
 
   if (!url) {
     throw new Error(
-      'متغیر TURSO_DATABASE_URL در پنل Vercel یافت نشد. لطفاً در Project Settings > Environment Variables آن را اضافه نمایید.'
+      'پایگاه داده سرور پیکربندی نشده است. لطفاً متغیرهای اتصال را در پنل سرور وارد نمایید.'
     );
   }
 
@@ -62,6 +62,16 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
   `);
 
+  // Table for user cloud storage (supports encrypted payload sync)
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS user_cloud_data (
+      user_id TEXT PRIMARY KEY,
+      storage_mode TEXT NOT NULL DEFAULT 'local',
+      encrypted_payload TEXT,
+      updated_at TEXT NOT NULL
+    );
+  `);
+
   isInitialized = true;
 }
 
@@ -72,6 +82,13 @@ export interface UserRow {
   password_hash: string;
   created_at: string;
   last_login_at: string | null;
+}
+
+export interface UserCloudDataRow {
+  user_id: string;
+  storage_mode: 'local' | 'cloud_encrypted';
+  encrypted_payload: string | null;
+  updated_at: string;
 }
 
 export async function getUserByUsername(username: string): Promise<UserRow | null> {
@@ -146,4 +163,44 @@ export async function updateLastLogin(id: string): Promise<void> {
     sql: 'UPDATE users SET last_login_at = ? WHERE id = ?',
     args: [new Date().toISOString(), id],
   });
+}
+
+export async function getUserCloudData(userId: string): Promise<UserCloudDataRow | null> {
+  await initDb();
+  const db = getDb();
+  const result = await db.execute({
+    sql: 'SELECT user_id, storage_mode, encrypted_payload, updated_at FROM user_cloud_data WHERE user_id = ? LIMIT 1',
+    args: [userId],
+  });
+
+  if (result.rows.length === 0) return null;
+  const row = result.rows[0];
+  return {
+    user_id: String(row.user_id),
+    storage_mode: (row.storage_mode as 'local' | 'cloud_encrypted') || 'local',
+    encrypted_payload: row.encrypted_payload ? String(row.encrypted_payload) : null,
+    updated_at: String(row.updated_at),
+  };
+}
+
+export async function saveUserCloudData(
+  userId: string,
+  storageMode: 'local' | 'cloud_encrypted',
+  encryptedPayload?: string | null
+): Promise<string> {
+  await initDb();
+  const db = getDb();
+  const now = new Date().toISOString();
+
+  await db.execute({
+    sql: `INSERT INTO user_cloud_data (user_id, storage_mode, encrypted_payload, updated_at)
+          VALUES (?, ?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET
+            storage_mode = excluded.storage_mode,
+            encrypted_payload = excluded.encrypted_payload,
+            updated_at = excluded.updated_at`,
+    args: [userId, storageMode, encryptedPayload || null, now],
+  });
+
+  return now;
 }

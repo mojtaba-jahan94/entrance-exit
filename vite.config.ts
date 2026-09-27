@@ -30,6 +30,10 @@ function apiDevServerPlugin(): Plugin {
             targetFile = '/api/auth/change-password.ts';
           } else if (pathname === '/api/status') {
             targetFile = '/api/status.ts';
+          } else if (pathname === '/api/sync/save') {
+            targetFile = '/api/sync/save.ts';
+          } else if (pathname === '/api/sync/load') {
+            targetFile = '/api/sync/load.ts';
           }
 
           if (targetFile) {

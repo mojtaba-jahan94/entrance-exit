@@ -97,4 +97,30 @@ export const authApi = {
       method: 'GET',
     });
   },
+
+  async saveCloudData(params: {
+    storageMode: 'local' | 'cloud_encrypted';
+    encryptedPayload?: string | null;
+  }): Promise<{ success: boolean; updatedAt: string; storageMode: string }> {
+    return request<{ success: boolean; updatedAt: string; storageMode: string }>('/api/sync/save', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
+  async loadCloudData(): Promise<{
+    success: boolean;
+    storageMode: 'local' | 'cloud_encrypted';
+    encryptedPayload: string | null;
+    updatedAt: string | null;
+  }> {
+    return request<{
+      success: boolean;
+      storageMode: 'local' | 'cloud_encrypted';
+      encryptedPayload: string | null;
+      updatedAt: string | null;
+    }>('/api/sync/load', {
+      method: 'GET',
+    });
+  },
 };

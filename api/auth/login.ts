@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!url) {
     return sendJson(res, 400, {
       success: false,
-      error: 'دیتابیس ابری Turso هنوز در Vercel متصل نشده است. لطفاً ابتدا TURSO_DATABASE_URL را در تنظیمات Vercel اضافه فرمایید.',
+      error: 'پایگاه داده سرور در حال حاضر در دسترس نیست. لطفاً دقایقی دیگر مجدداً تلاش نمایید.',
     });
   }
 

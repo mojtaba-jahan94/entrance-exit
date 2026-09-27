@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Clock,
   PlusCircle,
@@ -42,6 +42,7 @@ import {
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthScreen } from './components/AuthScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
+import { StorageModeModal } from './components/StorageModeModal';
 
 import { Navbar, ActiveTab } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
@@ -57,7 +58,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { BackupModal } from './components/BackupModal';
 
 function DashboardApp() {
-  const { user } = useAuth();
+  const { user, storageMode, syncDataToCloud, loadDataFromCloud } = useAuth();
   const userId = user?.id;
 
   const todayStr = useMemo(() => getTodayJalaliString(), []);
@@ -84,6 +85,7 @@ function DashboardApp() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
+  const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
 
   // Initialize theme on mount
   useEffect(() => {
@@ -95,14 +97,72 @@ function DashboardApp() {
     saveStoredTheme(theme);
   };
 
+  // Auto-sync helper to cloud if user opted into cloud_encrypted
+  const triggerAutoSync = useCallback(
+    (updatedRecords: AttendanceRecord[], updatedLeaves: LeaveRecord[], updatedConfig: ShiftConfig) => {
+      if (storageMode === 'cloud_encrypted') {
+        syncDataToCloud({
+          records: updatedRecords,
+          leaves: updatedLeaves,
+          config: updatedConfig,
+        }).catch((e) => console.warn('Auto cloud sync notice:', e));
+      }
+    },
+    [storageMode, syncDataToCloud]
+  );
+
   // Initialize and load data scoped to current user
   useEffect(() => {
     if (!userId) return;
+
+    // Load local data first
     const initial = initializeSampleDataIfEmpty(userId);
     setRecords(initial.records);
     setLeaves(initial.leaves);
     setConfig(initial.config);
-  }, [userId]);
+
+    // If user has cloud sync enabled, attempt to load cloud data if local was default or empty
+    if (storageMode === 'cloud_encrypted') {
+      loadDataFromCloud().then((cloudData) => {
+        if (cloudData && cloudData.records && cloudData.records.length > 0) {
+          setRecords(cloudData.records);
+          saveAttendanceRecords(cloudData.records, userId);
+          if (cloudData.leaves) {
+            setLeaves(cloudData.leaves);
+            saveLeaveRecords(cloudData.leaves, userId);
+          }
+          if (cloudData.config) {
+            setConfig(cloudData.config);
+            saveShiftConfig(cloudData.config, userId);
+          }
+        }
+      }).catch((e) => console.warn('Cloud initial load notice:', e));
+    }
+  }, [userId, storageMode]);
+
+  // Manual trigger to push local data to encrypted cloud
+  const handleTriggerSync = async () => {
+    await syncDataToCloud({ records, leaves, config });
+  };
+
+  // Manual trigger to pull data from encrypted cloud
+  const handleTriggerPull = async () => {
+    const cloudData = await loadDataFromCloud();
+    if (cloudData) {
+      if (cloudData.records && Array.isArray(cloudData.records)) {
+        setRecords(cloudData.records);
+        saveAttendanceRecords(cloudData.records, userId);
+      }
+      if (cloudData.leaves && Array.isArray(cloudData.leaves)) {
+        setLeaves(cloudData.leaves);
+        saveLeaveRecords(cloudData.leaves, userId);
+      }
+      if (cloudData.config) {
+        setConfig(cloudData.config);
+        saveShiftConfig(cloudData.config, userId);
+      }
+    }
+  };
 
   // Today's record
   const todayRecord = useMemo(() => {
@@ -170,6 +230,7 @@ function DashboardApp() {
 
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
+    triggerAutoSync(updatedList, leaves, config);
   };
 
   // 2. Clock out today
@@ -192,6 +253,7 @@ function DashboardApp() {
     const updatedList = records.map((r) => (r.date === todayStr ? updatedRecord : r));
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
+    triggerAutoSync(updatedList, leaves, config);
   };
 
   // 3. Reset today
@@ -200,6 +262,7 @@ function DashboardApp() {
       const updatedList = records.filter((r) => r.date !== todayStr);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
+      triggerAutoSync(updatedList, leaves, config);
     }
   };
 
@@ -222,6 +285,7 @@ function DashboardApp() {
 
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
+    triggerAutoSync(updatedList, leaves, config);
     setEditingRecord(null);
   };
 
@@ -231,6 +295,7 @@ function DashboardApp() {
       const updatedList = records.filter((r) => r.id !== id);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
+      triggerAutoSync(updatedList, leaves, config);
     }
   };
 
@@ -248,6 +313,7 @@ function DashboardApp() {
     const updatedRecords = syncRecordWithLeaves(leaveData.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
     saveAttendanceRecords(updatedRecords, userId);
+    triggerAutoSync(updatedRecords, updatedLeaves, config);
   };
 
   const handleUpdateLeave = (updatedLeave: LeaveRecord) => {
@@ -258,6 +324,7 @@ function DashboardApp() {
     const updatedRecords = syncRecordWithLeaves(updatedLeave.date, records, updatedLeaves, config);
     setRecords(updatedRecords);
     saveAttendanceRecords(updatedRecords, userId);
+    triggerAutoSync(updatedRecords, updatedLeaves, config);
   };
 
   const handleDeleteLeave = (id: string) => {
@@ -271,6 +338,7 @@ function DashboardApp() {
       const updatedRecords = syncRecordWithLeaves(dateStr, records, updatedLeaves, config);
       setRecords(updatedRecords);
       saveAttendanceRecords(updatedRecords, userId);
+      triggerAutoSync(updatedRecords, updatedLeaves, config);
     }
   };
 
@@ -284,6 +352,7 @@ function DashboardApp() {
     );
     setRecords(recalculated);
     saveAttendanceRecords(recalculated, userId);
+    triggerAutoSync(recalculated, leaves, newConfig);
   };
 
   // 8. Excel Export
@@ -293,9 +362,13 @@ function DashboardApp() {
 
   // 9. Data restore & Reset
   const handleDataRestored = () => {
-    setRecords(getStoredAttendanceRecords(userId));
-    setLeaves(getStoredLeaveRecords(userId));
-    setConfig(getStoredShiftConfig(userId));
+    const storedRecs = getStoredAttendanceRecords(userId);
+    const storedLeaves = getStoredLeaveRecords(userId);
+    const storedCfg = getStoredShiftConfig(userId);
+    setRecords(storedRecs);
+    setLeaves(storedLeaves);
+    setConfig(storedCfg);
+    triggerAutoSync(storedRecs, storedLeaves, storedCfg);
   };
 
   const handleResetAllData = () => {
@@ -305,6 +378,7 @@ function DashboardApp() {
     setRecords([]);
     setLeaves([]);
     setConfig(DEFAULT_SHIFT_CONFIG);
+    triggerAutoSync([], [], DEFAULT_SHIFT_CONFIG);
   };
 
   return (
@@ -322,6 +396,7 @@ function DashboardApp() {
         onOpenSettings={() => setIsSettingsModalOpen(true)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+        onOpenStorageMode={() => setIsStorageModalOpen(true)}
         isWorkingNow={isWorkingNow}
       />
 
@@ -553,6 +628,13 @@ function DashboardApp() {
         isOpen={isChangePasswordOpen}
         onClose={() => setIsChangePasswordOpen(false)}
       />
+
+      <StorageModeModal
+        isOpen={isStorageModalOpen}
+        onClose={() => setIsStorageModalOpen(false)}
+        onTriggerSync={handleTriggerSync}
+        onTriggerPull={handleTriggerPull}
+      />
     </div>
   );
 }
@@ -570,7 +652,7 @@ function AppWithAuth() {
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-400 font-medium">
           <span className="h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <span>در حال بارگذاری سامانه تردد و بررسی نشست امن...</span>
+          <span>در حال بررسی امنیت و بارگذاری سامانه...</span>
         </div>
       </div>
     );

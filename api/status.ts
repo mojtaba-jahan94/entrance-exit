@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return sendJson(res, 200, {
       success: false,
       database: 'not_configured',
-      message: 'متغیر TURSO_DATABASE_URL هنوز در تنظیمات Vercel یا .env.local وارد نشده است.',
+      message: 'پایگاه داده سرور مرکزی در دسترس نیست.',
     });
   }
 
@@ -27,8 +27,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return sendJson(res, 200, {
       success: true,
       database: 'connected',
-      provider: 'turso_cloud',
-      message: 'متصل به پایگاه داده ابری Turso',
+      provider: 'cloud_cluster',
+      message: 'سرور مرکزی آنلاین و متصل',
       time: new Date().toISOString(),
     });
   } catch (err: any) {
@@ -36,7 +36,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return sendJson(res, 200, {
       success: false,
       database: 'error',
-      error: err.message || 'خطا در برقراری ارتباط با پایگاه داده Turso',
+      error: err.message || 'خطا در برقراری ارتباط با سرور مرکزی',
     });
   }
 }

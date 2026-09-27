@@ -109,3 +109,13 @@ export interface AuthState {
   isLoading: boolean;
 }
 
+export type StorageMode = 'local' | 'cloud_encrypted';
+
+export interface SyncState {
+  storageMode: StorageMode;
+  lastSyncedAt: string | null;
+  isSyncing: boolean;
+  syncError: string | null;
+}
+
+

@@ -10,7 +10,7 @@ import {
   UserPlus,
   AlertCircle,
   CheckCircle2,
-  Database,
+  Server,
   KeyRound,
   Sparkles,
 } from 'lucide-react';
@@ -89,40 +89,40 @@ export const AuthScreen: React.FC = () => {
             <CalendarClock className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
-            سامانه جامع مدیریت تردد و کارکرد
+            سامانه یکپارچه مدیریت کارکرد و تردد
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            احراز هویت ابری امن با رمزنگاری پیشرفته (Bcrypt & JWT)
+            احراز هویت امن با استانداردهای نوین حفاظت از اطلاعات
           </p>
         </div>
 
-        {/* Database Status Ribbon */}
+        {/* Server Status Ribbon */}
         <div className="mb-4 flex items-center justify-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-[11px] font-medium shadow-sm">
-            <Database className="h-3.5 w-3.5 text-cyan-400" />
-            <span className="text-slate-400">وضعیت پایگاه داده:</span>
+            <Server className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="text-slate-400">وضعیت سامانه:</span>
             {dbStatus === 'connected' && (
               <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                دیتابیس ابری Turso آنلاین
+                سرور مرکزی فعال و متصل
               </span>
             )}
             {dbStatus === 'not_configured' && (
-              <span className="flex items-center gap-1.5 text-amber-400 font-semibold" title="متغیرهای TURSO_DATABASE_URL را تنظیم کنید">
+              <span className="flex items-center gap-1.5 text-amber-400 font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
                 <span className="h-2 w-2 rounded-full bg-amber-400" />
-                در انتظار تنظیم دیتابیس ابری
+                در انتظار راه‌اندازی سرور مرکزی
               </span>
             )}
             {dbStatus === 'error' && (
               <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
                 <span className="h-2 w-2 rounded-full bg-rose-400" />
-                خطای اتصال به سرور
+                عدم اتصال به سرور مرکزی
               </span>
             )}
             {dbStatus === 'checking' && (
               <span className="flex items-center gap-1.5 text-slate-400">
                 <span className="h-2 w-2 rounded-full bg-slate-400 animate-ping" />
-                بررسی اتصال...
+                بررسی وضعیت اتصال...
               </span>
             )}
           </div>
@@ -196,7 +196,7 @@ export const AuthScreen: React.FC = () => {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="مثال: مجتبی جهان"
+                    placeholder="مثال: علی احمدی"
                     required
                     className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
                   />
@@ -216,7 +216,7 @@ export const AuthScreen: React.FC = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="مثال: mojtaba or user123"
+                  placeholder="مثال: user_admin"
                   dir="ltr"
                   required
                   className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
@@ -291,7 +291,7 @@ export const AuthScreen: React.FC = () => {
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  <span>ثبت‌نام و ایجاد اکانت در Turso</span>
+                  <span>ثبت‌نام و ایجاد حساب کاربری</span>
                 </>
               )}
             </button>
@@ -301,7 +301,7 @@ export const AuthScreen: React.FC = () => {
           <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-start gap-2.5 text-[11px] text-slate-400 leading-relaxed">
             <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
             <span>
-              امنیت کامل: کلمات عبور با سالت چندمرحله‌ای (Bcrypt) رمزنگاری شده و نشست‌ها با توکن رمزگذاری‌شده JWT محافظت می‌شوند. دیتابیس کاربری در کلاود Turso و داده‌های ساعات کاری به صورت ایزوله برای این حساب نگهداری می‌شوند.
+              امنیت کامل اطلاعات: کلمات عبور با الگوریتم‌های استاندارد چندمرحله‌ای رمزنگاری شده و نشست‌های کاربری به صورت امن محافظت می‌شوند. در این سامانه می‌توانید اطلاعات تردد خود را به صورت محرمانه روی مرورگر ذخیره کنید یا همگام‌سازی ابری رمزنگاری‌شده (AES-256) را فعال نمایید.
             </span>
           </div>
         </div>

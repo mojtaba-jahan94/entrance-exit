@@ -41,7 +41,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
     setIsSubmitting(true);
     try {
       await changePassword({ currentPassword, newPassword });
-      setSuccessMsg('رمز عبور شما با موفقیت در دیتابیس Turso به‌روزرسانی شد.');
+      setSuccessMsg('رمز عبور شما با موفقیت به‌روزرسانی شد.');
       setTimeout(() => {
         onClose();
         setCurrentPassword('');
@@ -66,7 +66,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
             </div>
             <div>
               <h3 className="font-bold text-sm sm:text-base text-white">تغییر کلمه عبور امن</h3>
-              <p className="text-xs text-slate-400">به‌روزرسانی رمز در پایگاه داده Turso</p>
+              <p className="text-xs text-slate-400">به‌روزرسانی امن کلمه عبور در سرور مرکزی</p>
             </div>
           </div>
           <button

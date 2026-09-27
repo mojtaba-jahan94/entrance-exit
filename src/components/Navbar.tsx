@@ -15,6 +15,9 @@ import {
   KeyRound,
   ShieldCheck,
   ChevronDown,
+  HardDrive,
+  Cloud,
+  Lock,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -37,6 +40,7 @@ interface NavbarProps {
   onOpenSettings: () => void;
   onOpenBackup: () => void;
   onOpenChangePassword?: () => void;
+  onOpenStorageMode?: () => void;
   isWorkingNow?: boolean;
 }
 
@@ -49,9 +53,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSettings,
   onOpenBackup,
   onOpenChangePassword,
+  onOpenStorageMode,
   isWorkingNow,
 }) => {
-  const { user, logout, dbStatus } = useAuth();
+  const { user, logout, dbStatus, storageMode } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -153,6 +158,31 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls, Theme Selector & User Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Storage Mode Badge Button */}
+          {onOpenStorageMode && (
+            <button
+              onClick={onOpenStorageMode}
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all border ${
+                storageMode === 'cloud_encrypted'
+                  ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/20'
+                  : 'bg-slate-900/80 text-slate-400 border-slate-700/70 hover:text-slate-200'
+              }`}
+              title="تغییر نحوه ذخیره‌سازی و امنیت داده‌ها"
+            >
+              {storageMode === 'cloud_encrypted' ? (
+                <>
+                  <Lock className="h-3.5 w-3.5 text-cyan-400" />
+                  <span className="hidden lg:inline">ابری رمزنگاری‌شده</span>
+                </>
+              ) : (
+                <>
+                  <HardDrive className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="hidden lg:inline">ذخیره در مرورگر</span>
+                </>
+              )}
+            </button>
+          )}
+
           {/* Theme Selector Palette */}
           <ThemeSelector
             currentTheme={currentTheme}
@@ -216,11 +246,24 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <p className="text-slate-400 font-mono text-[11px] truncate dir-ltr text-right">@{user.username}</p>
                     <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-400">
                       <ShieldCheck className="h-3 w-3 text-emerald-400" />
-                      <span>متصل به دیتابیس Turso</span>
+                      <span>سرور مرکزی آنلاین و فعال</span>
                     </div>
                   </div>
 
                   <div className="py-1">
+                    {onOpenStorageMode && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          onOpenStorageMode();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors text-right"
+                      >
+                        <ShieldCheck className="h-4 w-4 text-cyan-400" />
+                        <span>فضای ذخیره‌سازی و امنیت</span>
+                      </button>
+                    )}
+
                     {onOpenChangePassword && (
                       <button
                         onClick={() => {
