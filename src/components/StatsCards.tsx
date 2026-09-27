@@ -35,32 +35,32 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
   const isNetPositive = stats.netBalanceMinutes >= 0;
 
   return (
-    <div className="space-y-4">
-      {/* 4 Bento Grid Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Bento Grid: 2 columns on mobile, 4 columns on large screens */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* 1. کارکرد مفید ماه */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">کارکرد مفید ماه {monthName}</span>
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-400 border border-indigo-500/20">
-              <Clock className="h-5 w-5" />
+            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">کارکرد ماه {monthName}</span>
+            <div className="rounded-lg sm:rounded-xl bg-indigo-500/10 p-1.5 sm:p-2 text-indigo-400 border border-indigo-500/20 shrink-0">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-white font-mono">
+          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
+            <span className="text-xl sm:text-3xl font-black text-white font-mono">
               {toPersianDigits(workedHours)}
             </span>
-            <span className="text-xs text-slate-400">ساعت از {toPersianDigits(requiredHours)} موظفی</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 truncate">ساعت از {toPersianDigits(requiredHours)}</span>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-              <span>درصد تحقق موظفی</span>
-              <span className="font-bold text-indigo-400">{toPersianDigits(stats.completionRate)}٪</span>
+          <div className="mt-2 sm:mt-3">
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mb-1">
+              <span>تحقق موظفی</span>
+              <span className="font-bold text-indigo-400 font-mono">{toPersianDigits(stats.completionRate)}٪</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+            <div className="h-1.5 sm:h-2 w-full rounded-full bg-slate-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-500"
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
@@ -70,91 +70,91 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
         </div>
 
         {/* 2. تراز اضافه کاری و کارکرد خالص */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">تراز اضافه کار ماه</span>
-            <div className={`rounded-xl p-2 border ${
+            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تراز اضافه کار</span>
+            <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
               isNetPositive
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
             }`}>
-              <Scale className="h-5 w-5" />
+              <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className={`text-2xl sm:text-3xl font-black font-mono ${
+          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
+            <span className={`text-xl sm:text-3xl font-black font-mono ${
               isNetPositive ? 'text-emerald-400' : 'text-rose-400'
             }`}>
               {isNetPositive ? '+' : '-'}{toPersianDigits(netBalanceHours)}
             </span>
-            <span className="text-xs text-slate-400">
-              ساعت {isNetPositive ? 'تراز مازاد (بستانکار)' : 'کسری کلی'}
+            <span className="text-[10px] sm:text-xs text-slate-400 truncate">
+              ساعت {isNetPositive ? 'مازاد' : 'کسری'}
             </span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              عادی: {toPersianDigits(overtimeHours)} س
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+            <span className="flex items-center gap-1 truncate">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+              عادی: {toPersianDigits(overtimeHours)}س
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-              تعطیلات: {toPersianDigits(holidayOvertimeHours)} س
+            <span className="flex items-center gap-1 truncate">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0" />
+              تعطیل: {toPersianDigits(holidayOvertimeHours)}س
             </span>
           </div>
         </div>
 
         {/* 3. تاخیر و کسر کار */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">تاخیر بعد از ۰۹:۳۰ و تعجیل</span>
-            <div className={`rounded-xl p-2 border ${
+            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تاخیر و کسر کار</span>
+            <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
               stats.totalDelayMinutes > 0
                 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                 : 'bg-slate-800 text-slate-400 border-slate-700'
             }`}>
-              <AlertCircle className="h-5 w-5" />
+              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className={`text-2xl sm:text-3xl font-black font-mono ${
+          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
+            <span className={`text-xl sm:text-3xl font-black font-mono ${
               stats.totalDelayMinutes > 0 ? 'text-rose-400' : 'text-slate-200'
             }`}>
               {toPersianDigits(stats.totalDelayMinutes)}
             </span>
-            <span className="text-xs text-slate-400">دقیقه تاخیر ورود</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 truncate">دقیقه تاخیر</span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-            <span>تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)} د</span>
-            <span>کل کسر کار: {toPersianDigits(Math.round(stats.totalDeficitMinutes / 60))} س</span>
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+            <span className="truncate">تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د</span>
+            <span className="truncate">کسری: {toPersianDigits(Math.round(stats.totalDeficitMinutes / 60))}س</span>
           </div>
         </div>
 
-        {/* 4. کاردکس مرخصی (روز و ساعت) */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700">
+        {/* 4. کاردکس مرخصی */}
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">مانده مرخصی (سهمیه ۲.۵ روز)</span>
-            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400 border border-amber-500/20">
-              <Coffee className="h-5 w-5" />
+            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">مانده مرخصی</span>
+            <div className="rounded-lg sm:rounded-xl bg-amber-500/10 p-1.5 sm:p-2 text-amber-400 border border-amber-500/20 shrink-0">
+              <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
+          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-1.5">
+            <span className="text-xl sm:text-3xl font-black text-amber-400 font-mono">
               {toPersianDigits(stats.remainingLeaveDays)}
             </span>
-            <span className="text-xs text-slate-300 font-semibold">روز</span>
-            <span className="text-xs text-slate-400 font-mono">
-              ({toPersianDigits(stats.remainingLeaveHours.toFixed(1))} س باقیمانده)
+            <span className="text-[10px] sm:text-xs text-slate-300 font-semibold">روز</span>
+            <span className="text-[9px] sm:text-xs text-slate-400 font-mono truncate">
+              ({toPersianDigits(stats.remainingLeaveHours.toFixed(1))} س)
             </span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-            <span>مصرف: {toPersianDigits(stats.totalLeaveDays)} روز ({toPersianDigits(stats.totalLeaveHours.toFixed(1))} س)</span>
-            <span className="text-emerald-400 font-medium">
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+            <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays)} روز</span>
+            <span className="text-emerald-400 font-medium truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز
             </span>
           </div>

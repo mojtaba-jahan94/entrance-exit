@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Clock, PlusCircle, Coffee, Calendar, Settings } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
   getCurrentJalaliDate,
@@ -219,7 +220,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans pb-16">
+    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-sans pb-24 md:pb-16">
       {/* Top Navigation Bar */}
       <Navbar
         onOpenManualEntry={() => {
@@ -233,19 +234,21 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 space-y-6 flex-1">
+      <main className="mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 pt-3 sm:pt-6 space-y-4 sm:space-y-6 flex-1">
         {/* Hero Section: Today's Clock In / Clock Out & Live Stopwatch */}
-        <ClockCard
-          todayRecord={todayRecord}
-          config={config}
-          onCheckIn={handleCheckIn}
-          onCheckOut={handleCheckOut}
-          onResetToday={handleResetToday}
-          onOpenEdit={() => {
-            setEditingRecord(todayRecord);
-            setIsManualModalOpen(true);
-          }}
-        />
+        <section id="today-section">
+          <ClockCard
+            todayRecord={todayRecord}
+            config={config}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onResetToday={handleResetToday}
+            onOpenEdit={() => {
+              setEditingRecord(todayRecord);
+              setIsManualModalOpen(true);
+            }}
+          />
+        </section>
 
         {/* Bento Grid: Monthly Statistics Cards */}
         <section aria-label="آمار و شاخص‌های ماهانه">
@@ -257,7 +260,7 @@ export function App() {
         </section>
 
         {/* Monthly Attendance Table & Filters */}
-        <section aria-label="جدول تردد و فیلترها">
+        <section id="attendance-section" aria-label="جدول تردد و فیلترها">
           <AttendanceTable
             records={records}
             selectedYear={selectedYear}
@@ -280,9 +283,64 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-12 text-center text-xs text-slate-600 border-t border-slate-900 pt-6">
+      <footer className="mt-8 sm:mt-12 text-center text-[11px] sm:text-xs text-slate-600 border-t border-slate-900 pt-5 pb-2">
         <p>سامانه مدیریت تردد و کارکرد | طراحی شده با تقویم شمسی و استانداردهای قانون کار</p>
       </footer>
+
+      {/* Mobile Bottom Navigation Bar (Thumb friendly for phones) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around text-[10px] text-slate-400 shadow-2xl">
+        <button
+          onClick={() => {
+            const el = document.getElementById('today-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+            else window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-indigo-400 active:scale-95 transition-all"
+        >
+          <Clock className="h-4 w-4" />
+          <span>میز کار</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setEditingRecord(null);
+            setIsManualModalOpen(true);
+          }}
+          className="flex flex-col items-center gap-1 py-1 px-2.5 text-indigo-400 font-bold active:scale-95 transition-all"
+        >
+          <div className="h-7 w-7 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <PlusCircle className="h-4 w-4" />
+          </div>
+          <span>ثبت دستی</span>
+        </button>
+
+        <button
+          onClick={() => setIsLeaveModalOpen(true)}
+          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-amber-400 active:scale-95 transition-all"
+        >
+          <Coffee className="h-4 w-4 text-amber-400" />
+          <span>مرخصی</span>
+        </button>
+
+        <button
+          onClick={() => {
+            const el = document.getElementById('attendance-section');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-cyan-400 active:scale-95 transition-all"
+        >
+          <Calendar className="h-4 w-4" />
+          <span>کارکرد</span>
+        </button>
+
+        <button
+          onClick={() => setIsSettingsModalOpen(true)}
+          className="flex flex-col items-center gap-1 py-1 px-2 hover:text-white active:scale-95 transition-all"
+        >
+          <Settings className="h-4 w-4" />
+          <span>تنظیمات</span>
+        </button>
+      </div>
 
       {/* Modals */}
       <ManualEntryModal

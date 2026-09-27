@@ -74,17 +74,17 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400 border border-amber-500/20">
               <Coffee className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">مدیریت و کاردکس مرخصی‌ها</h3>
-              <p className="text-xs text-slate-400">سهمیه قانونی شما: ۲.۵ روز معادل ۲۰ ساعت در هر ماه</p>
+              <h3 className="text-sm sm:text-base font-bold text-white">مدیریت و کاردکس مرخصی‌ها</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">سهمیه قانونی: ۲.۵ روز (۲۰ ساعت) در ماه</p>
             </div>
           </div>
           <button
@@ -96,34 +96,34 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
         </div>
 
         {/* Quota Summary Cards (Days & Hours) */}
-        <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-            <span className="text-[11px] text-slate-400 block mb-1">سهمیه ماهانه</span>
-            <div className="font-mono text-base font-bold text-white">
+        <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-3 text-center shrink-0">
+          <div className="rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-950/70 p-2 sm:p-3">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 block mb-0.5 sm:mb-1">سهمیه ماهانه</span>
+            <div className="font-mono text-sm sm:text-base font-bold text-white">
               {toPersianDigits(monthlyQuotaDays)} روز
             </div>
-            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-              ({toPersianDigits(monthlyQuotaHours)} ساعت)
+            <div className="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-0.5">
+              ({toPersianDigits(monthlyQuotaHours)} س)
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-            <span className="text-[11px] text-slate-400 block mb-1">استفاده شده</span>
-            <div className="font-mono text-base font-bold text-amber-400">
+          <div className="rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-950/70 p-2 sm:p-3">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 block mb-0.5 sm:mb-1">استفاده شده</span>
+            <div className="font-mono text-sm sm:text-base font-bold text-amber-400">
               {toPersianDigits(usedDays)} روز
             </div>
-            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-              ({toPersianDigits(totalUsedHours.toFixed(1))} ساعت)
+            <div className="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-0.5">
+              ({toPersianDigits(totalUsedHours.toFixed(1))} س)
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-3">
-            <span className="text-[11px] text-slate-400 block mb-1">مانده باقیمانده</span>
-            <div className="font-mono text-base font-bold text-emerald-400">
+          <div className="rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-950/70 p-2 sm:p-3">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 block mb-0.5 sm:mb-1">مانده باقیمانده</span>
+            <div className="font-mono text-sm sm:text-base font-bold text-emerald-400">
               {toPersianDigits(remainingDays)} روز
             </div>
-            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-              ({toPersianDigits(remainingHours.toFixed(1))} ساعت)
+            <div className="text-[10px] sm:text-[11px] text-slate-400 font-mono mt-0.5">
+              ({toPersianDigits(remainingHours.toFixed(1))} س)
             </div>
           </div>
         </div>

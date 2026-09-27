@@ -60,17 +60,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-400 border border-indigo-500/20">
               <Settings className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">تنظیمات و شخصی‌سازی قوانین کارکرد</h3>
-              <p className="text-xs text-slate-400">سفارشی‌سازی شیفت شناور، ناهار، پنج‌شنبه و سهمیه مرخصی</p>
+              <h3 className="text-sm sm:text-base font-bold text-white">تنظیمات و شخصی‌سازی قوانین کار</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">سفارشی‌سازی شیفت شناور، ناهار، پنج‌شنبه و مرخصی</p>
             </div>
           </div>
           <button
@@ -81,34 +81,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 border-b border-slate-800 pt-3 pb-2 text-xs">
+        {/* Tab Buttons (Smooth Horizontal Scroll on mobile) */}
+        <div className="flex items-center gap-1.5 border-b border-slate-800 pt-2.5 pb-2 text-xs overflow-x-auto whitespace-nowrap shrink-0 no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('shift')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl font-medium shrink-0 transition-all ${
               activeTab === 'shift'
                 ? 'bg-indigo-600 text-white font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            شیفت شناور روزهای عادی
+            شیفت روزهای عادی
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('thursday')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl font-medium shrink-0 transition-all ${
               activeTab === 'thursday'
                 ? 'bg-indigo-600 text-white font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            پنج‌شنبه‌ها (۴.۵ ساعت)
+            پنج‌شنبه‌ها (۴.۵س)
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('leave')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl font-medium shrink-0 transition-all ${
               activeTab === 'leave'
                 ? 'bg-indigo-600 text-white font-bold'
                 : 'text-slate-400 hover:text-white'
@@ -119,7 +119,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('finance')}
-            className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-xl font-medium shrink-0 transition-all ${
               activeTab === 'finance'
                 ? 'bg-indigo-600 text-white font-bold'
                 : 'text-slate-400 hover:text-white'

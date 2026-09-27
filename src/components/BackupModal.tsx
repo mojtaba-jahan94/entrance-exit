@@ -71,17 +71,17 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
           <div className="flex items-center gap-2.5">
             <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
               <Database className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">پشتیبان‌گیری و مدیریت داده‌ها</h3>
-              <p className="text-xs text-slate-400">انتقال، دانلود و بازیابی اطلاعات تردد</p>
+              <h3 className="text-sm sm:text-base font-bold text-white">پشتیبان‌گیری و مدیریت داده‌ها</h3>
+              <p className="text-[11px] sm:text-xs text-slate-400">انتقال، دانلود و بازیابی اطلاعات تردد</p>
             </div>
           </div>
           <button
