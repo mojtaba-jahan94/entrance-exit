@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Settings,
@@ -29,7 +29,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveConfig,
 }) => {
   const [formData, setFormData] = useState<ShiftConfig>(config);
+  const [overtimeMultiplierStr, setOvertimeMultiplierStr] = useState<string>(
+    config.overtimeMultiplier !== undefined ? String(config.overtimeMultiplier) : '1.4'
+  );
+  const [holidayMultiplierStr, setHolidayMultiplierStr] = useState<string>(
+    config.holidayMultiplier !== undefined ? String(config.holidayMultiplier) : '1.8'
+  );
   const [activeTab, setActiveTab] = useState<'shift' | 'thursday' | 'leave' | 'finance'>('shift');
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData(config);
+      setOvertimeMultiplierStr(
+        config.overtimeMultiplier !== undefined ? String(config.overtimeMultiplier) : '1.4'
+      );
+      setHolidayMultiplierStr(
+        config.holidayMultiplier !== undefined ? String(config.holidayMultiplier) : '1.8'
+      );
+    }
+  }, [isOpen, config]);
 
   if (!isOpen) return null;
 
@@ -43,8 +61,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     );
     const quotaHours = Math.round(leaveDays * (standardDailyNet / 60));
 
+    const parsedOt = parseFloat(toEnglishDigits(overtimeMultiplierStr));
+    const otMultiplier = !isNaN(parsedOt) && parsedOt > 0 ? parsedOt : 1.4;
+
+    const parsedHol = parseFloat(toEnglishDigits(holidayMultiplierStr));
+    const holMultiplier = !isNaN(parsedHol) && parsedHol > 0 ? parsedHol : 1.8;
+
     const updated: ShiftConfig = {
       ...formData,
+      overtimeMultiplier: otMultiplier,
+      holidayMultiplier: holMultiplier,
       monthlyLeaveDays: leaveDays,
       monthlyLeaveQuotaHours: quotaHours,
     };
@@ -56,6 +82,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleResetDefaults = () => {
     if (window.confirm('آیا مایل به بازنشانی تنظیمات به مقادیر پیش‌فرض محل کار (شناور ۸:۳۰ تا ۱۸:۰۰، ناهار ۳۰ دقیقه، پنج‌شنبه ۴.۵ ساعت و ۲.۵ روز مرخصی) هستید؟')) {
       setFormData(DEFAULT_SHIFT_CONFIG);
+      setOvertimeMultiplierStr(String(DEFAULT_SHIFT_CONFIG.overtimeMultiplier));
+      setHolidayMultiplierStr(String(DEFAULT_SHIFT_CONFIG.holidayMultiplier));
     }
   };
 
@@ -360,9 +388,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     step="0.5"
                     min="0"
                     max="10"
-                    value={formData.monthlyLeaveDays || 2.5}
+                    value={formData.monthlyLeaveDays ?? 2.5}
                     onChange={(e) => {
-                      const val = parseFloat(e.target.value) || 0;
+                      const val = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
                       setFormData({
                         ...formData,
                         monthlyLeaveDays: val,
@@ -401,21 +429,47 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     ضریب اضافه کاری عادی
                   </label>
                   <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    max="3"
-                    value={formData.overtimeMultiplier || 1.4}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        overtimeMultiplier: parseFloat(e.target.value) || 1.4,
-                      })
-                    }
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="1.4"
+                    value={overtimeMultiplierStr}
+                    onChange={(e) => {
+                      const cleanStr = toEnglishDigits(e.target.value)
+                        .replace(/[/٫,]/g, '.')
+                        .replace(/[^0-9.]/g, '');
+                      const parts = cleanStr.split('.');
+                      const formatted = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : cleanStr;
+                      setOvertimeMultiplierStr(formatted);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const cur = parseFloat(toEnglishDigits(overtimeMultiplierStr)) || 1.4;
+                        setOvertimeMultiplierStr((Math.round((cur + 0.1) * 10) / 10).toString());
+                      } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const cur = parseFloat(toEnglishDigits(overtimeMultiplierStr)) || 1.4;
+                        const next = Math.max(0.1, Math.round((cur - 0.1) * 10) / 10);
+                        setOvertimeMultiplierStr(next.toString());
+                      }
+                    }}
+                    onBlur={() => {
+                      const trimmed = toEnglishDigits(overtimeMultiplierStr.trim());
+                      if (!trimmed || isNaN(parseFloat(trimmed))) {
+                        setOvertimeMultiplierStr('1.4');
+                      } else {
+                        const parsed = parseFloat(trimmed);
+                        if (parsed > 0) {
+                          setOvertimeMultiplierStr(String(parsed));
+                        } else {
+                          setOvertimeMultiplierStr('1.4');
+                        }
+                      }
+                    }}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-mono text-white text-center focus:border-indigo-500 focus:outline-none"
                   />
                   <span className="text-[10px] text-slate-500 mt-0.5 block">
-                    قانون کار: ۱.۴ برابر
+                    قانون کار: ۱.۴ برابر (بدون محدودیت سقف)
                   </span>
                 </div>
 
@@ -424,21 +478,47 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     ضریب اضافه کار تعطیلات
                   </label>
                   <input
-                    type="number"
-                    step="0.1"
-                    min="1"
-                    max="3"
-                    value={formData.holidayMultiplier || 1.8}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        holidayMultiplier: parseFloat(e.target.value) || 1.8,
-                      })
-                    }
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="1.8"
+                    value={holidayMultiplierStr}
+                    onChange={(e) => {
+                      const cleanStr = toEnglishDigits(e.target.value)
+                        .replace(/[/٫,]/g, '.')
+                        .replace(/[^0-9.]/g, '');
+                      const parts = cleanStr.split('.');
+                      const formatted = parts.length > 2 ? `${parts[0]}.${parts.slice(1).join('')}` : cleanStr;
+                      setHolidayMultiplierStr(formatted);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const cur = parseFloat(toEnglishDigits(holidayMultiplierStr)) || 1.8;
+                        setHolidayMultiplierStr((Math.round((cur + 0.1) * 10) / 10).toString());
+                      } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const cur = parseFloat(toEnglishDigits(holidayMultiplierStr)) || 1.8;
+                        const next = Math.max(0.1, Math.round((cur - 0.1) * 10) / 10);
+                        setHolidayMultiplierStr(next.toString());
+                      }
+                    }}
+                    onBlur={() => {
+                      const trimmed = toEnglishDigits(holidayMultiplierStr.trim());
+                      if (!trimmed || isNaN(parseFloat(trimmed))) {
+                        setHolidayMultiplierStr('1.8');
+                      } else {
+                        const parsed = parseFloat(trimmed);
+                        if (parsed > 0) {
+                          setHolidayMultiplierStr(String(parsed));
+                        } else {
+                          setHolidayMultiplierStr('1.8');
+                        }
+                      }
+                    }}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-mono text-white text-center focus:border-indigo-500 focus:outline-none"
                   />
                   <span className="text-[10px] text-slate-500 mt-0.5 block">
-                    قانون کار: ۱.۸ تا ۲ برابر
+                    قانون کار: ۱.۸ تا ۲ برابر (بدون محدودیت سقف)
                   </span>
                 </div>
               </div>
