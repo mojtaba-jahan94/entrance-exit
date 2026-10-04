@@ -27,15 +27,22 @@ interface StatsCardsProps {
 export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }) => {
   const workedHours = (stats.totalWorkedMinutes / 60).toFixed(1);
   const requiredHours = (stats.totalRequiredMinutes / 60).toFixed(1);
-  const overtimeHours = (stats.totalOvertimeMinutes / 60).toFixed(1);
-  const holidayOvertimeHours = (stats.totalHolidayOvertimeMinutes / 60).toFixed(1);
-  const totalOvertimeTotal = stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes;
+  const totalMonthHours = stats.totalMonthRequiredMinutes
+    ? (stats.totalMonthRequiredMinutes / 60).toFixed(1)
+    : requiredHours;
+
+  const totalOvertimeMins = stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes;
+  const totalOvertimeHours = (totalOvertimeMins / 60).toFixed(1);
 
   const netBalanceHours = (Math.abs(stats.netBalanceMinutes) / 60).toFixed(1);
-  const isNetPositive = stats.netBalanceMinutes >= 0;
+  const isNetPositive = stats.netBalanceMinutes > 0;
+  const isNetZero = stats.netBalanceMinutes === 0;
+
   const deficitHours = (stats.totalDeficitMinutes / 60).toFixed(1);
-  const totalOvertimeHours = ((stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes) / 60).toFixed(1);
   const hasDeficit = stats.totalDeficitMinutes > 0;
+
+  const totalDelayAndEarlyMins = stats.totalDelayMinutes + stats.totalEarlyLeaveMinutes;
+  const hasDelayOrEarly = totalDelayAndEarlyMins > 0;
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -54,10 +61,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             <span className="text-xl sm:text-3xl font-black text-white font-mono">
               {toPersianDigits(workedHours)}
             </span>
-            <span className="text-[10px] sm:text-xs text-slate-400 truncate">ساعت از {toPersianDigits(requiredHours)}</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 truncate">
+              ساعت از {toPersianDigits(requiredHours)}
+            </span>
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress Bar & Sub-row */}
           <div className="mt-2 sm:mt-3">
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mb-1">
               <span>تحقق موظفی</span>
@@ -69,6 +78,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
               />
             </div>
+            {stats.totalMonthRequiredMinutes && (
+              <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
+                <span>کل موظفی تقویمی:</span>
+                <span className="font-mono text-slate-400 font-medium">{toPersianDigits(totalMonthHours)} ساعت</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -79,6 +94,8 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
               isNetPositive
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : isNetZero
+                ? 'bg-slate-800 text-slate-400 border-slate-700'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
             }`}>
               <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -87,12 +104,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
 
           <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
             <span className={`text-xl sm:text-3xl font-black font-mono ${
-              isNetPositive ? 'text-emerald-400' : 'text-rose-400'
+              isNetPositive ? 'text-emerald-400' : isNetZero ? 'text-slate-200' : 'text-rose-400'
             }`}>
-              {isNetPositive ? '+' : '-'}{toPersianDigits(netBalanceHours)}
+              {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}{toPersianDigits(netBalanceHours)}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-400 truncate">
-              ساعت {isNetPositive ? 'مازاد' : 'کسری'}
+              {isNetPositive ? 'ساعت مازاد' : isNetZero ? 'ساعت (سر‌به‌سر)' : 'ساعت کسری'}
             </span>
           </div>
 
@@ -113,7 +130,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تاخیر و تعجیل</span>
             <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
-              stats.totalDelayMinutes > 0 || stats.totalEarlyLeaveMinutes > 0
+              hasDelayOrEarly
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
             }`}>
@@ -123,26 +140,26 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
 
           <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
             <span className={`text-xl sm:text-3xl font-black font-mono ${
-              stats.totalDelayMinutes > 0 ? 'text-amber-400' : 'text-slate-200'
+              hasDelayOrEarly ? 'text-amber-400' : 'text-emerald-400'
             }`}>
-              {toPersianDigits(stats.totalDelayMinutes)}
+              {toPersianDigits(totalDelayAndEarlyMins)}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-400 truncate">
-              دقیقه تاخیر ورود
+              {hasDelayOrEarly ? 'دقیقه مجموع' : 'دقیقه (بدون تاخیر)'}
             </span>
-            {stats.totalDelayMinutes >= 60 && (
-              <span className="text-[10px] sm:text-xs text-slate-500 font-mono truncate" title={formatMinutesToPersianReadable(stats.totalDelayMinutes)}>
-                ({toPersianDigits(formatMinutesToTimeString(stats.totalDelayMinutes))})
+            {totalDelayAndEarlyMins >= 60 && (
+              <span className="text-[10px] sm:text-xs text-slate-500 font-mono truncate" title={formatMinutesToPersianReadable(totalDelayAndEarlyMins)}>
+                ({toPersianDigits(formatMinutesToTimeString(totalDelayAndEarlyMins))})
               </span>
             )}
           </div>
 
           <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+            <span className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
+              تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د
+            </span>
             <span className={`truncate ${stats.totalEarlyLeaveMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
               تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
-            </span>
-            <span className={`truncate font-semibold ${hasDeficit ? 'text-rose-400' : 'text-slate-400'}`}>
-              کسر کار: {hasDeficit ? `${toPersianDigits(deficitHours)}س` : '۰'}
             </span>
           </div>
         </div>
@@ -158,7 +175,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
 
           <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-1.5">
             <span className="text-xl sm:text-3xl font-black text-amber-400 font-mono">
-              {toPersianDigits(stats.remainingLeaveDays)}
+              {toPersianDigits(stats.remainingLeaveDays.toFixed(1))}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-300 font-semibold">روز</span>
             <span
@@ -178,7 +195,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           </div>
 
           <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
-            <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays)} روز</span>
+            <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز</span>
             <span className="text-emerald-400 font-medium truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز
             </span>

@@ -68,7 +68,8 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   if (!isOpen) return null;
 
   // Exact clock calculation of total used and remaining minutes
-  const totalUsedMinutes = leaves.reduce(
+  const approvedLeaves = leaves.filter((l) => l.approved !== false);
+  const totalUsedMinutes = approvedLeaves.reduce(
     (sum, l) => sum + getLeaveDurationMinutes(l, 480),
     0
   );

@@ -74,6 +74,7 @@ export interface OfficialHoliday {
 
 export interface MonthlyStats {
   totalRequiredMinutes: number;
+  totalMonthRequiredMinutes?: number; // کل موظفی تقویمی ماه (ساعت استاندارد کل ماه)
   totalWorkedMinutes: number;
   totalOvertimeMinutes: number;
   totalHolidayOvertimeMinutes: number;

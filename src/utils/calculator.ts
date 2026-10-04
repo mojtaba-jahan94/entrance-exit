@@ -5,6 +5,9 @@ import {
   parseJalaliDate,
   checkOfficialHoliday,
   formatMinutesToTimeString,
+  getDaysInJalaliMonth,
+  formatJalaliDate,
+  getCurrentJalaliDate,
 } from './jalali';
 
 export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
@@ -41,16 +44,19 @@ export function getLeaveDurationMinutes(
   leave: Partial<LeaveRecord>,
   standardDailyNetMinutes: number = 480
 ): number {
-  if (leave.type === 'daily' || leave.type === 'sick' || leave.type === 'unpaid') {
-    if (typeof leave.minutes === 'number' && leave.minutes > 0) {
-      return leave.minutes;
+  if (typeof leave.minutes === 'number' && leave.minutes > 0) {
+    return leave.minutes;
+  }
+  if (leave.date) {
+    const wd = getJalaliWeekdayIndex(leave.date);
+    if (wd === 5 && (leave.type === 'daily' || leave.type === 'half_day')) {
+      return Math.min(standardDailyNetMinutes, 240);
     }
+  }
+  if (leave.type === 'daily' || leave.type === 'sick' || leave.type === 'unpaid') {
     return standardDailyNetMinutes;
   }
   if (leave.type === 'half_day') {
-    if (typeof leave.minutes === 'number' && leave.minutes > 0) {
-      return leave.minutes;
-    }
     return Math.round(standardDailyNetMinutes / 2);
   }
   // Hourly leave:
@@ -124,18 +130,20 @@ export function calculateAttendanceMetrics(
     (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
     0
   );
-  const hourlyLeaves = relevantLeaves.filter((l) => l.type === 'hourly');
-  const totalHourlyLeaveMinutes = hourlyLeaves.reduce(
-    (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
-    0
-  );
 
-  // Handle Full-Day Leave (including full Thursday leave)
-  if (fullDayLeave) {
-    const leaveNote = fullDayLeave.reason
+  const checkIn = record.checkIn || null;
+  const checkOut = record.checkOut || null;
+
+  // Handle Full-Day Leave (including full Thursday leave, or hourly leaves that cover the full shift)
+  const isCoveredByLeaves =
+    Boolean(fullDayLeave) ||
+    (!checkIn && !checkOut && totalLeaveCreditMinutes >= netRequiredMinutes && netRequiredMinutes > 0);
+
+  if (isCoveredByLeaves) {
+    const leaveNote = fullDayLeave?.reason
       ? `مرخصی: ${fullDayLeave.reason}`
-      : fullDayLeave.type === 'half_day'
-      ? 'مرخصی نیم‌روز پنج‌شنبه'
+      : fullDayLeave?.type === 'half_day' || isThursdayHalfDay
+      ? 'مرخصی پنج‌شنبه'
       : 'مرخصی روزانه';
     return {
       id: record.id || `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -161,8 +169,6 @@ export function calculateAttendanceMetrics(
     };
   }
 
-  const checkIn = record.checkIn || null;
-  const checkOut = record.checkOut || null;
   // Default break is 30 mins on full days, 0 on Thursdays/holidays unless specified
   const breakMinutes =
     record.breakMinutes !== undefined
@@ -189,7 +195,7 @@ export function calculateAttendanceMetrics(
       status = 'holiday';
     } else if (isThursday && config.thursdayStatus === 'off') {
       status = 'weekend';
-    } else if (totalHourlyLeaveMinutes >= netRequiredMinutes) {
+    } else if (totalLeaveCreditMinutes >= netRequiredMinutes) {
       status = 'leave';
       workedMinutes = netRequiredMinutes;
       deficitMinutes = 0;
@@ -226,8 +232,8 @@ export function calculateAttendanceMetrics(
         }
       }
 
-      // Deduct hourly leave from delay
-      delayMinutes = Math.max(0, rawDelay - totalHourlyLeaveMinutes);
+      // Deduct partial leave credit from delay
+      delayMinutes = Math.max(0, rawDelay - totalLeaveCreditMinutes);
 
       // Target checkout adjusted for leave (e.g. taking 2h leave allows leaving 2h earlier)
       const targetMins = Math.max(
@@ -267,27 +273,27 @@ export function calculateAttendanceMetrics(
         }
       }
 
-      // 2. Target Check Out Time
+      // 2. Target Check Out Time & Early Exit (تعجیل خروج)
       const standardTargetMins = checkInMins + requiredPresenceMinutes;
-      const rawEarlyLeave = Math.max(0, standardTargetMins - checkOutMins);
+      // Departure shortfall: how many minutes before target departure did they leave?
+      const departureShortfall = Math.max(0, standardTargetMins - checkOutMins);
+      // Raw early leave is the exit shortfall, subtracting arrival delay so late arrival isn't counted twice
+      const rawEarlyLeave = Math.max(0, departureShortfall - rawDelay);
 
-      // 3. Offset Delay & Early Exit from Hourly Leave Time
-      let remainingLeaveForOffsets = totalHourlyLeaveMinutes;
-
-      // First offset delay
-      if (rawDelay > 0 && remainingLeaveForOffsets > 0) {
-        const delayOffset = Math.min(rawDelay, remainingLeaveForOffsets);
+      // 3. Offset Delay & Early Exit from approved partial leave credits
+      let remainingLeave = totalLeaveCreditMinutes;
+      if (rawDelay > 0 && remainingLeave > 0) {
+        const delayOffset = Math.min(rawDelay, remainingLeave);
         delayMinutes = rawDelay - delayOffset;
-        remainingLeaveForOffsets -= delayOffset;
+        remainingLeave -= delayOffset;
       } else {
         delayMinutes = rawDelay;
       }
 
-      // Then offset early exit
-      if (rawEarlyLeave > 0 && remainingLeaveForOffsets > 0) {
-        const earlyOffset = Math.min(rawEarlyLeave, remainingLeaveForOffsets);
+      if (rawEarlyLeave > 0 && remainingLeave > 0) {
+        const earlyOffset = Math.min(rawEarlyLeave, remainingLeave);
         earlyLeaveMinutes = rawEarlyLeave - earlyOffset;
-        remainingLeaveForOffsets -= earlyOffset;
+        remainingLeave -= earlyOffset;
       } else {
         earlyLeaveMinutes = rawEarlyLeave;
       }
@@ -301,8 +307,8 @@ export function calculateAttendanceMetrics(
       // Effective worked time = physical worked + approved leave credit
       const effectiveWorked = workedMinutes + totalLeaveCreditMinutes;
 
-      if (workedMinutes > netRequiredMinutes) {
-        overtimeMinutes = workedMinutes - netRequiredMinutes;
+      if (effectiveWorked > netRequiredMinutes) {
+        overtimeMinutes = effectiveWorked - netRequiredMinutes;
       }
 
       if (effectiveWorked < netRequiredMinutes) {
@@ -351,9 +357,8 @@ export function calculateMonthlyStats(
 ): MonthlyStats {
   const monthPrefix = `${jy}/${jm < 10 ? '0' + jm : jm}/`;
   const monthRecords = records.filter((r) => r.date.startsWith(monthPrefix));
-  const monthLeaves = leaves.filter((l) => l.date.startsWith(monthPrefix) && l.approved);
+  const monthLeaves = leaves.filter((l) => l.date.startsWith(monthPrefix) && l.approved !== false);
 
-  let totalRequiredMinutes = 0;
   let totalWorkedMinutes = 0;
   let totalOvertimeMinutes = 0;
   let totalHolidayOvertimeMinutes = 0;
@@ -384,24 +389,47 @@ export function calculateMonthlyStats(
     } else if (r.status === 'leave') {
       leaveDaysCount++;
     }
+  });
 
-    // Accumulate required minutes for non-holidays
-    const weekday = r.dayOfWeek;
+  // Calculate full month standard obligation (ساعت موظفی کل روزهای کاری ماه)
+  const daysInMonth = getDaysInJalaliMonth(jy, jm);
+  let totalMonthRequiredMinutes = 0;
+  let passedRequiredMinutes = 0;
+  const today = getCurrentJalaliDate();
+  const isCurrentMonth = today.jy === jy && today.jm === jm;
+  const maxDayToCheck = isCurrentMonth ? today.jd : daysInMonth;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = formatJalaliDate(jy, jm, d);
+    const weekday = getJalaliWeekdayIndex(dateStr);
+    const holidayInfo = checkOfficialHoliday(jy, jm, d);
     const isFriday = weekday === 6;
     const isThursday = weekday === 5;
 
-    if (!r.isHoliday && !isFriday) {
+    let dayRequired = 0;
+    if (!isFriday && !holidayInfo.isHoliday) {
       if (isThursday) {
         if (config.thursdayStatus === 'half_day') {
-          totalRequiredMinutes += config.thursdayMinutes || 240;
+          dayRequired = config.thursdayMinutes || 240;
         } else if (config.thursdayStatus === 'full_day') {
-          totalRequiredMinutes += standardDailyNetMinutes;
+          dayRequired = standardDailyNetMinutes;
         }
       } else {
-        totalRequiredMinutes += standardDailyNetMinutes;
+        dayRequired = standardDailyNetMinutes;
       }
     }
-  });
+
+    totalMonthRequiredMinutes += dayRequired;
+    if (d <= maxDayToCheck) {
+      passedRequiredMinutes += dayRequired;
+    }
+  }
+
+  // totalRequiredMinutes represents the required working minutes for the period evaluated
+  // For the current month, it represents required working minutes up to today; for past months, the whole month
+  const totalRequiredMinutes = isCurrentMonth
+    ? Math.max(passedRequiredMinutes, 1)
+    : totalMonthRequiredMinutes;
 
   // Calculate leaves in exact minutes and days based on clock logic
   const totalLeaveMinutes = monthLeaves.reduce(
@@ -424,7 +452,7 @@ export function calculateMonthlyStats(
   // Net balance (اضافه کاری منهای کسر کار)
   const netBalanceMinutes = totalOvertimeMinutes + totalHolidayOvertimeMinutes - totalDeficitMinutes;
 
-  // Completion rate
+  // Completion rate against required hours so far
   const completionRate =
     totalRequiredMinutes > 0
       ? Math.min(100, Math.round((totalWorkedMinutes / totalRequiredMinutes) * 100))
@@ -442,6 +470,7 @@ export function calculateMonthlyStats(
 
   return {
     totalRequiredMinutes,
+    totalMonthRequiredMinutes,
     totalWorkedMinutes,
     totalOvertimeMinutes,
     totalHolidayOvertimeMinutes,

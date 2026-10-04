@@ -41,7 +41,8 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
 
-  const totalUsedMinutes = leaves.reduce(
+  const approvedLeaves = leaves.filter((l) => l.approved !== false);
+  const totalUsedMinutes = approvedLeaves.reduce(
     (sum, l) => sum + getLeaveDurationMinutes(l, 480),
     0
   );
