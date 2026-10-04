@@ -13,7 +13,12 @@ import {
 } from 'lucide-react';
 import { ShiftConfig } from '../types';
 import { DEFAULT_SHIFT_CONFIG } from '../utils/calculator';
-import { toPersianDigits, toEnglishDigits, timeStringToMinutes } from '../utils/jalali';
+import {
+  toPersianDigits,
+  toEnglishDigits,
+  timeStringToMinutes,
+  formatMinutesToTimeString,
+} from '../utils/jalali';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -297,7 +302,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'thursday' && (
             <div className="space-y-4">
               <div className="rounded-2xl border border-cyan-500/20 bg-cyan-950/20 p-3 text-xs text-cyan-300">
-                <span className="font-bold">قانون پنج‌شنبه‌ها:</span> مدت حضور الزامی پنج‌شنبه‌ها برابر با <strong>۴ ساعت و ۳۰ دقیقه</strong> (۲۷۰ دقیقه) است و تایم ناهار کسر نمی‌گردد.
+                <span className="font-bold">قانون پنج‌شنبه‌ها:</span> مدت حضور الزامی پنج‌شنبه‌ها به صورت استاندارد برابر با <strong>۴ ساعت</strong> (۲۴۰ دقیقه) است و تایم ناهار کسر نمی‌گردد.
               </div>
 
               <div>
@@ -314,7 +319,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
                     }`}
                   >
-                    نیمه‌وقت (۴.۵ ساعت)
+                    نیمه‌وقت (۴ ساعت)
                   </button>
 
                   <button
@@ -353,17 +358,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="number"
                       min="60"
                       max="480"
-                      value={formData.thursdayMinutes || 270}
+                      value={formData.thursdayMinutes || 240}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          thursdayMinutes: Math.max(0, parseInt(e.target.value) || 270),
+                          thursdayMinutes: Math.max(0, parseInt(e.target.value) || 240),
                         })
                       }
                       className="w-32 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-mono text-white text-center focus:border-indigo-500 focus:outline-none"
                     />
                     <span className="text-xs text-slate-400">
-                      معادل {toPersianDigits('۴:۳۰')} ساعت حضور موظفی
+                      معادل {toPersianDigits(formatMinutesToTimeString(formData.thursdayMinutes || 240))} ساعت حضور موظفی
                     </span>
                   </div>
                 </div>

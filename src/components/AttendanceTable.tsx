@@ -681,8 +681,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       {/* Deficit */}
                       <td className="py-3 px-3 text-center font-mono">
                         {r.deficitMinutes > 0 ? (
-                          <span className="text-amber-400">
-                            {toPersianDigits(r.deficitMinutes)} د
+                          <span
+                            className="text-amber-400"
+                            title={formatMinutesToPersianReadable(r.deficitMinutes)}
+                          >
+                            {r.deficitMinutes >= 60
+                              ? `${toPersianDigits(formatMinutesToTimeString(r.deficitMinutes))} س`
+                              : `${toPersianDigits(r.deficitMinutes)} د`}
                           </span>
                         ) : (
                           <span className="text-slate-600">-</span>
@@ -750,7 +755,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                     {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono text-amber-300">
-                    {toPersianDigits(visibleTotals.deficit)} د
+                    {visibleTotals.deficit >= 60
+                      ? `${toPersianDigits((visibleTotals.deficit / 60).toFixed(1))} س`
+                      : `${toPersianDigits(visibleTotals.deficit)} د`}
                   </td>
                   <td className="py-3.5 px-3 text-center font-mono font-black">
                     <span

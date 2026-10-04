@@ -16,6 +16,7 @@ import {
   getTodayJalaliString,
   PERSIAN_MONTH_NAMES,
   toPersianDigits,
+  getJalaliWeekdayIndex,
 } from './utils/jalali';
 import {
   calculateAttendanceMetrics,
@@ -187,12 +188,24 @@ function DashboardApp() {
   ): AttendanceRecord[] => {
     const dayLeaves = currentLeaves.filter((l) => l.date === dateStr);
     const existing = currentRecords.find((r) => r.date === dateStr);
+    const weekday = getJalaliWeekdayIndex(dateStr);
+    const isThursday = weekday === 5;
+    const isThursdayHalfDay = isThursday && cfg.thursdayStatus === 'half_day';
     const hasFullDay = dayLeaves.some(
-      (l) => l.type === 'daily' || l.type === 'sick' || l.type === 'unpaid'
+      (l) =>
+        l.type === 'daily' ||
+        l.type === 'sick' ||
+        l.type === 'unpaid' ||
+        (isThursdayHalfDay && l.type === 'half_day')
     );
 
     const baseData: Partial<AttendanceRecord> & { date: string } = existing
-      ? { ...existing }
+      ? {
+          ...existing,
+          checkIn: hasFullDay ? null : existing.checkIn,
+          checkOut: hasFullDay ? null : existing.checkOut,
+          status: hasFullDay ? 'leave' : existing.status,
+        }
       : {
           date: dateStr,
           status: hasFullDay ? 'leave' : 'present',

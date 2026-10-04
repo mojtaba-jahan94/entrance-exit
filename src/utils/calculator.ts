@@ -19,7 +19,7 @@ export const DEFAULT_SHIFT_CONFIG: ShiftConfig = {
   defaultBreakMinutes: 30, // 30 minutes lunch/break excluded from work hours
   graceMinutes: 0,
   thursdayStatus: 'half_day',
-  thursdayMinutes: 270, // 4 hours and 30 mins
+  thursdayMinutes: 240, // 4 hours
   fridayStatus: 'off',
   monthlyLeaveDays: 2.5, // 2.5 days per month
   monthlyLeaveQuotaHours: 20, // 20 hours (2.5 days * 8h)
@@ -42,23 +42,29 @@ export function getLeaveDurationMinutes(
   standardDailyNetMinutes: number = 480
 ): number {
   if (leave.type === 'daily' || leave.type === 'sick' || leave.type === 'unpaid') {
+    if (typeof leave.minutes === 'number' && leave.minutes > 0) {
+      return leave.minutes;
+    }
     return standardDailyNetMinutes;
   }
   if (leave.type === 'half_day') {
+    if (typeof leave.minutes === 'number' && leave.minutes > 0) {
+      return leave.minutes;
+    }
     return Math.round(standardDailyNetMinutes / 2);
   }
   // Hourly leave:
-  // 1. Clock times (از ساعت ... تا ساعت ...)
+  // 1. Exact stored minutes
+  if (typeof leave.minutes === 'number' && leave.minutes > 0) {
+    return leave.minutes;
+  }
+  // 2. Clock times (از ساعت ... تا ساعت ...)
   if (leave.startTime && leave.endTime) {
     const s = timeStringToMinutes(leave.startTime);
     const e = timeStringToMinutes(leave.endTime);
     if (e > s) {
       return e - s;
     }
-  }
-  // 2. Exact stored minutes
-  if (typeof leave.minutes === 'number' && leave.minutes > 0) {
-    return leave.minutes;
   }
   // 3. Fractional hours
   if (typeof leave.hours === 'number' && leave.hours > 0) {
@@ -91,8 +97,8 @@ export function calculateAttendanceMetrics(
       requiredPresenceMinutes = 0;
       netRequiredMinutes = 0;
     } else if (config.thursdayStatus === 'half_day') {
-      requiredPresenceMinutes = config.thursdayMinutes || 270;
-      netRequiredMinutes = config.thursdayMinutes || 270; // 4.5 hours net
+      requiredPresenceMinutes = config.thursdayMinutes || 240;
+      netRequiredMinutes = config.thursdayMinutes || 240; // 4 hours net
     } else {
       requiredPresenceMinutes = config.requiredDailyMinutes || 510;
       netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30));
@@ -103,36 +109,29 @@ export function calculateAttendanceMetrics(
   const relevantLeaves = (dayLeaves || []).filter(
     (l) => l.date === record.date && l.approved !== false
   );
+  const isThursdayHalfDay = isThursday && config.thursdayStatus === 'half_day';
   const fullDayLeave = relevantLeaves.find(
-    (l) => l.type === 'daily' || l.type === 'sick' || l.type === 'unpaid'
+    (l) =>
+      l.type === 'daily' ||
+      l.type === 'sick' ||
+      l.type === 'unpaid' ||
+      (isThursdayHalfDay && l.type === 'half_day')
   );
   const hourlyLeaves = relevantLeaves.filter(
-    (l) => l.type === 'hourly' || l.type === 'half_day'
+    (l) => l.type === 'hourly' || (!isThursdayHalfDay && l.type === 'half_day')
   );
   const totalHourlyLeaveMinutes = hourlyLeaves.reduce(
-    (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
+    (sum, l) => sum + getLeaveDurationMinutes(l, 480),
     0
   );
 
-  if (isFriday || holidayInfo.isHoliday) {
-    requiredPresenceMinutes = 0;
-    netRequiredMinutes = 0;
-  } else if (isThursday) {
-    if (config.thursdayStatus === 'off') {
-      requiredPresenceMinutes = 0;
-      netRequiredMinutes = 0;
-    } else if (config.thursdayStatus === 'half_day') {
-      requiredPresenceMinutes = config.thursdayMinutes || 270;
-      netRequiredMinutes = config.thursdayMinutes || 270; // 4.5 hours net
-    } else {
-      requiredPresenceMinutes = config.requiredDailyMinutes || 510;
-      netRequiredMinutes = Math.max(0, requiredPresenceMinutes - (config.defaultBreakMinutes || 30));
-    }
-  }
-
-  // Handle Full-Day Leave
+  // Handle Full-Day Leave (including full Thursday leave)
   if (fullDayLeave) {
-    const leaveNote = fullDayLeave.reason ? `مرخصی: ${fullDayLeave.reason}` : 'مرخصی روزانه';
+    const leaveNote = fullDayLeave.reason
+      ? `مرخصی: ${fullDayLeave.reason}`
+      : fullDayLeave.type === 'half_day'
+      ? 'مرخصی نیم‌روز پنج‌شنبه'
+      : 'مرخصی روزانه';
     return {
       id: record.id || `att_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       date: record.date,
@@ -188,9 +187,15 @@ export function calculateAttendanceMetrics(
     } else if (totalHourlyLeaveMinutes >= netRequiredMinutes) {
       status = 'leave';
       workedMinutes = netRequiredMinutes;
+      deficitMinutes = 0;
+      netBalanceMinutes = 0;
     } else {
       status = record.status === 'leave' ? 'leave' : 'absent';
-      if (status === 'absent') {
+      if (status === 'leave') {
+        workedMinutes = netRequiredMinutes;
+        deficitMinutes = 0;
+        netBalanceMinutes = 0;
+      } else if (status === 'absent') {
         deficitMinutes = Math.max(0, netRequiredMinutes - totalHourlyLeaveMinutes);
         netBalanceMinutes = -deficitMinutes;
       }
@@ -381,7 +386,7 @@ export function calculateMonthlyStats(
     if (!r.isHoliday && !isFriday) {
       if (isThursday) {
         if (config.thursdayStatus === 'half_day') {
-          totalRequiredMinutes += config.thursdayMinutes || 270;
+          totalRequiredMinutes += config.thursdayMinutes || 240;
         } else if (config.thursdayStatus === 'full_day') {
           totalRequiredMinutes += standardDailyNetMinutes;
         }

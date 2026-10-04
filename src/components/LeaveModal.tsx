@@ -19,6 +19,7 @@ import {
   timeStringToMinutes,
   formatMinutesToTimeString,
   formatMinutesToPersianReadable,
+  getJalaliWeekdayIndex,
 } from '../utils/jalali';
 import { getLeaveDurationMinutes } from '../utils/calculator';
 
@@ -220,6 +221,13 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     setReason('');
   };
 
+  const selectedDateStr = formatJalaliDate(year, month, day);
+  const selectedWeekdayIdx = getJalaliWeekdayIndex(selectedDateStr);
+  const isSelectedThursday = selectedWeekdayIdx === 5;
+  const isThursdayHalfDay =
+    isSelectedThursday &&
+    (shiftConfig?.thursdayStatus === 'half_day' || !shiftConfig?.thursdayStatus);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const dateStr = formatJalaliDate(year, month, day);
@@ -228,8 +236,13 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     let leaveHours = 0;
 
     if (type === 'daily' || type === 'sick' || type === 'unpaid') {
-      totalLeaveMinutes = 8 * 60;
-      leaveHours = 8;
+      if (isThursdayHalfDay) {
+        totalLeaveMinutes = shiftConfig?.thursdayMinutes || 240;
+        leaveHours = Number((totalLeaveMinutes / 60).toFixed(2));
+      } else {
+        totalLeaveMinutes = 8 * 60;
+        leaveHours = 8;
+      }
     } else if (type === 'half_day') {
       totalLeaveMinutes = 4 * 60;
       leaveHours = 4;
@@ -396,6 +409,14 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
               </div>
             </div>
 
+            {/* Thursday Helper Alert */}
+            {isThursdayHalfDay && (
+              <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/40 px-3 py-2 text-xs text-cyan-300 flex items-center justify-between">
+                <span>روز انتخابی: <strong>پنج‌شنبه (شیفت موظفی نیمه‌وقت - ۴ ساعت)</strong></span>
+                <span className="text-[11px] text-cyan-400 font-mono">پوشش کامل بدون کسری کار</span>
+              </div>
+            )}
+
             {/* Type & Live Duration Preview */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -407,7 +428,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                 >
                   <option value="hourly">مرخصی ساعتی (پاس ساعتی)</option>
                   <option value="half_day">نیم‌روز (۴ ساعت)</option>
-                  <option value="daily">روزانه کامل (۱ روز = ۸ ساعت)</option>
+                  <option value="daily">{isThursdayHalfDay ? 'روزانه پنج‌شنبه (۴ ساعت)' : 'روزانه کامل (۱ روز = ۸ ساعت)'}</option>
                   <option value="sick">استعلاجی</option>
                   <option value="unpaid">بدون حقوق</option>
                 </select>
@@ -427,7 +448,14 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                 <div>
                   <label className="block text-[11px] text-slate-400 mb-1">معادل کسر از سهمیه</label>
                   <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-2 py-1.5 text-xs text-amber-300 text-center font-bold">
-                    ۰.۵ روز (۴ ساعت)
+                    ۰.۵ روز (۴ ساعت{isThursdayHalfDay ? ' - کل پنج‌شنبه' : ''})
+                  </div>
+                </div>
+              ) : isThursdayHalfDay ? (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">معادل کسر از سهمیه</label>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-2 py-1.5 text-xs text-amber-300 text-center font-bold">
+                    ۰.۵ روز (۴ ساعت - کل پنج‌شنبه)
                   </div>
                 </div>
               ) : (

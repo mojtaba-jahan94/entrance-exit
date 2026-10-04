@@ -37,6 +37,10 @@ export function getStoredShiftConfig(userId?: string): ShiftConfig {
 
     if (raw) {
       const parsed = JSON.parse(raw);
+      if (parsed.thursdayMinutes === 270) {
+        parsed.thursdayMinutes = 240;
+        saveShiftConfig(parsed, userId);
+      }
       // If legacy config without flexible shift settings, automatically upgrade to new workplace defaults
       if (!parsed.isFlexibleShift || parsed.startTime === '08:00') {
         const upgraded: ShiftConfig = {
@@ -51,14 +55,14 @@ export function getStoredShiftConfig(userId?: string): ShiftConfig {
           flexDepartureMax: '18:00',
           requiredDailyMinutes: 510,
           defaultBreakMinutes: 30,
-          thursdayMinutes: 270,
+          thursdayMinutes: 240,
           monthlyLeaveDays: 2.5,
           monthlyLeaveQuotaHours: 20,
         };
         saveShiftConfig(upgraded, userId);
         return upgraded;
       }
-      return { ...DEFAULT_SHIFT_CONFIG, ...parsed };
+      return { ...DEFAULT_SHIFT_CONFIG, ...parsed, thursdayMinutes: parsed.thursdayMinutes || 240 };
     }
   } catch (e) {
     console.error('Error reading shift config from storage', e);
@@ -151,7 +155,15 @@ export function initializeSampleDataIfEmpty(userId?: string): {
   const existingLeaves = getStoredLeaveRecords(userId);
 
   if (existingRecords.length > 0) {
-    return { records: existingRecords, leaves: existingLeaves, config };
+    const refreshed = existingRecords.map((r) =>
+      calculateAttendanceMetrics(
+        r,
+        config,
+        existingLeaves.filter((l) => l.date === r.date)
+      )
+    );
+    saveAttendanceRecords(refreshed, userId);
+    return { records: refreshed, leaves: existingLeaves, config };
   }
 
   // Generate realistic sample records for current month up to today
@@ -191,16 +203,16 @@ export function initializeSampleDataIfEmpty(userId?: string): {
         )
       );
     } else if (isThursday && config.thursdayStatus === 'half_day') {
-      // Thursday 4.5 hours presence: e.g. 08:35 to 13:05
+      // Thursday 4 hours presence: e.g. 08:30 to 12:30
       sampleRecords.push(
         calculateAttendanceMetrics(
           {
             id: `seed_${day}`,
             date: dateStr,
-            checkIn: '08:35',
-            checkOut: '13:05',
+            checkIn: '08:30',
+            checkOut: '12:30',
             breakMinutes: 0,
-            note: 'شیفت نیمه‌وقت پنج‌شنبه (۴.۵ ساعت)',
+            note: 'شیفت نیمه‌وقت پنج‌شنبه (۴ ساعت)',
           },
           config
         )

@@ -16,7 +16,7 @@ export interface ShiftConfig {
 
   // Thursday policy
   thursdayStatus: 'half_day' | 'off' | 'full_day';
-  thursdayMinutes: number; // 270 (4.5 hours)
+  thursdayMinutes: number; // 240 (4 hours)
   fridayStatus: 'off';
 
   // Leave & Multipliers

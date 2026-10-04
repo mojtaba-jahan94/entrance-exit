@@ -95,7 +95,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
 
   // Target checkout calculation
   const requiredPresenceMins = isThursday
-    ? (config.thursdayMinutes || 270)
+    ? (config.thursdayMinutes || 240)
     : (config.requiredDailyMinutes || 510);
 
   const targetDepartureTime = React.useMemo(() => {
@@ -208,7 +208,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                       {toPersianDigits(targetDepartureTime)}
                     </strong>
                     <span className="text-slate-400">
-                      ({isThursday ? '۴.۵ ساعت حضور' : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
+                      ({isThursday ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور` : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
                     </span>
                   </p>
                 )}
