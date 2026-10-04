@@ -108,13 +108,13 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           </div>
         </div>
 
-        {/* 3. کسر کار و تاخیر */}
+        {/* 3. تاخیر و تعجیل */}
         <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">کسر کار و تاخیر</span>
+            <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تاخیر و تعجیل</span>
             <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
-              hasDeficit || stats.totalDelayMinutes > 0
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+              stats.totalDelayMinutes > 0 || stats.totalEarlyLeaveMinutes > 0
+                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
             }`}>
               <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -123,27 +123,26 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
 
           <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
             <span className={`text-xl sm:text-3xl font-black font-mono ${
-              hasDeficit ? 'text-rose-400' : stats.totalDelayMinutes > 0 ? 'text-amber-400' : 'text-slate-200'
+              stats.totalDelayMinutes > 0 ? 'text-amber-400' : 'text-slate-200'
             }`}>
-              {hasDeficit
-                ? toPersianDigits(deficitHours)
-                : toPersianDigits(stats.totalDelayMinutes)}
+              {toPersianDigits(stats.totalDelayMinutes)}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-400 truncate">
-              {hasDeficit ? 'ساعت کسر کار' : 'دقیقه تاخیر'}
+              دقیقه تاخیر ورود
             </span>
-            {hasDeficit && (
-              <span className="text-[10px] sm:text-xs text-slate-500 font-mono truncate" title={formatMinutesToPersianReadable(stats.totalDeficitMinutes)}>
-                ({toPersianDigits(formatMinutesToTimeString(stats.totalDeficitMinutes))})
+            {stats.totalDelayMinutes >= 60 && (
+              <span className="text-[10px] sm:text-xs text-slate-500 font-mono truncate" title={formatMinutesToPersianReadable(stats.totalDelayMinutes)}>
+                ({toPersianDigits(formatMinutesToTimeString(stats.totalDelayMinutes))})
               </span>
             )}
           </div>
 
           <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
-            <span className="truncate">تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د</span>
-            <span className="truncate">تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د</span>
-            <span className={`truncate font-semibold ${hasDeficit ? 'text-rose-300' : 'text-slate-400'}`}>
-              کسری: {hasDeficit ? `${toPersianDigits(deficitHours)}س` : '۰'}
+            <span className={`truncate ${stats.totalEarlyLeaveMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
+              تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
+            </span>
+            <span className={`truncate font-semibold ${hasDeficit ? 'text-rose-400' : 'text-slate-400'}`}>
+              کسر کار: {hasDeficit ? `${toPersianDigits(deficitHours)}س` : '۰'}
             </span>
           </div>
         </div>

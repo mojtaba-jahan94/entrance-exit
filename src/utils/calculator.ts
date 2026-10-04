@@ -117,11 +117,16 @@ export function calculateAttendanceMetrics(
       l.type === 'unpaid' ||
       (isThursdayHalfDay && l.type === 'half_day')
   );
-  const hourlyLeaves = relevantLeaves.filter(
+  const partialLeaves = relevantLeaves.filter(
     (l) => l.type === 'hourly' || (!isThursdayHalfDay && l.type === 'half_day')
   );
+  const totalLeaveCreditMinutes = partialLeaves.reduce(
+    (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
+    0
+  );
+  const hourlyLeaves = relevantLeaves.filter((l) => l.type === 'hourly');
   const totalHourlyLeaveMinutes = hourlyLeaves.reduce(
-    (sum, l) => sum + getLeaveDurationMinutes(l, 480),
+    (sum, l) => sum + getLeaveDurationMinutes(l, netRequiredMinutes),
     0
   );
 
@@ -196,7 +201,7 @@ export function calculateAttendanceMetrics(
         deficitMinutes = 0;
         netBalanceMinutes = 0;
       } else if (status === 'absent') {
-        deficitMinutes = Math.max(0, netRequiredMinutes - totalHourlyLeaveMinutes);
+        deficitMinutes = Math.max(0, netRequiredMinutes - totalLeaveCreditMinutes);
         netBalanceMinutes = -deficitMinutes;
       }
     }
@@ -208,14 +213,15 @@ export function calculateAttendanceMetrics(
     if (!isHoliday) {
       // Calculate raw delay based on flexible arrival (08:30 - 09:30)
       let rawDelay = 0;
+      const grace = config.graceMinutes || 0;
       if (config.isFlexibleShift) {
         const maxFlexInMins = timeStringToMinutes(config.flexStartTimeMax || '09:30');
-        if (checkInMins > maxFlexInMins) {
+        if (checkInMins > maxFlexInMins + grace) {
           rawDelay = checkInMins - maxFlexInMins;
         }
       } else {
         const startMins = timeStringToMinutes(config.startTime);
-        if (checkInMins > startMins + (config.graceMinutes || 0)) {
+        if (checkInMins > startMins + grace) {
           rawDelay = checkInMins - startMins;
         }
       }
@@ -226,7 +232,7 @@ export function calculateAttendanceMetrics(
       // Target checkout adjusted for leave (e.g. taking 2h leave allows leaving 2h earlier)
       const targetMins = Math.max(
         checkInMins,
-        checkInMins + requiredPresenceMinutes - totalHourlyLeaveMinutes
+        checkInMins + requiredPresenceMinutes - totalLeaveCreditMinutes
       );
       targetCheckOut = formatMinutesToTimeString(targetMins);
     }
@@ -248,14 +254,15 @@ export function calculateAttendanceMetrics(
     } else {
       // 1. Calculate Raw Delay (تاخیر ورود)
       let rawDelay = 0;
+      const grace = config.graceMinutes || 0;
       if (config.isFlexibleShift) {
         const maxFlexInMins = timeStringToMinutes(config.flexStartTimeMax || '09:30');
-        if (checkInMins > maxFlexInMins) {
+        if (checkInMins > maxFlexInMins + grace) {
           rawDelay = checkInMins - maxFlexInMins;
         }
       } else {
         const startMins = timeStringToMinutes(config.startTime);
-        if (checkInMins > startMins + (config.graceMinutes || 0)) {
+        if (checkInMins > startMins + grace) {
           rawDelay = checkInMins - startMins;
         }
       }
@@ -285,14 +292,14 @@ export function calculateAttendanceMetrics(
         earlyLeaveMinutes = rawEarlyLeave;
       }
 
-      // Adjusted target checkout accounting for hourly leave
+      // Adjusted target checkout accounting for approved leave credit
       targetCheckOut = formatMinutesToTimeString(
-        Math.max(checkInMins, standardTargetMins - totalHourlyLeaveMinutes)
+        Math.max(checkInMins, standardTargetMins - totalLeaveCreditMinutes)
       );
 
       // 4. Overtime & Deficit:
-      // Effective worked time = physical worked + approved hourly leave
-      const effectiveWorked = workedMinutes + totalHourlyLeaveMinutes;
+      // Effective worked time = physical worked + approved leave credit
+      const effectiveWorked = workedMinutes + totalLeaveCreditMinutes;
 
       if (workedMinutes > netRequiredMinutes) {
         overtimeMinutes = workedMinutes - netRequiredMinutes;
@@ -325,7 +332,7 @@ export function calculateAttendanceMetrics(
     deficitMinutes,
     targetCheckOut,
     netBalanceMinutes,
-    leaveMinutes: totalHourlyLeaveMinutes > 0 ? totalHourlyLeaveMinutes : undefined,
+    leaveMinutes: totalLeaveCreditMinutes > 0 ? totalLeaveCreditMinutes : undefined,
     note: record.note || '',
     isHoliday: holidayInfo.isHoliday || isFriday,
     holidayTitle: holidayInfo.title || (isFriday ? 'جمعه (تعطیل هفتگی)' : undefined),

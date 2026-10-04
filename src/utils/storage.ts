@@ -42,7 +42,7 @@ export function getStoredShiftConfig(userId?: string): ShiftConfig {
         saveShiftConfig(parsed, userId);
       }
       // If legacy config without flexible shift settings, automatically upgrade to new workplace defaults
-      if (!parsed.isFlexibleShift || parsed.startTime === '08:00') {
+      if (parsed.isFlexibleShift === undefined && (parsed.startTime === '08:00' || !parsed.startTime)) {
         const upgraded: ShiftConfig = {
           ...DEFAULT_SHIFT_CONFIG,
           ...parsed,

@@ -151,7 +151,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               <Clock className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
               {isThursday ? (
                 <span>
-                  شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۳۰')} ساعت حضور</strong> (بدون کسر ناهار)
+                  شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۰۰')} ساعت حضور</strong> (بدون کسر ناهار)
                 </span>
               ) : (
                 <span>
@@ -164,7 +164,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               <Coffee className="h-3 w-3 text-amber-400 shrink-0" />
               <span>
                 {isThursday
-                  ? 'موظفی ۴.۵ ساعت'
+                  ? 'موظفی ۴ ساعت'
                   : `حضور موظفی ۸.۵ ساعت (با کسر ${toPersianDigits(config.defaultBreakMinutes || 30)} د ناهار)`}
               </span>
             </div>
