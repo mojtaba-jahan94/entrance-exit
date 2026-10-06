@@ -87,7 +87,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
       {/* 2. Quota Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Monthly Quota */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <span className="text-xs text-slate-400 block mb-1">سهمیه قانونی ماه جاری</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl sm:text-3xl font-black text-white font-mono">
@@ -101,7 +101,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
         </div>
 
         {/* Used Leaves */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <span className="text-xs text-slate-400 block mb-1">استفاده شده تا کنون</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
@@ -115,7 +115,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
         </div>
 
         {/* Remaining Leaves */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <span className="text-xs text-slate-400 block mb-1">مانده باقیمانده سهمیه</span>
           <div className="flex items-baseline gap-1.5">
             <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
@@ -130,12 +130,12 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
       </div>
 
       {/* 3. Progress Bar */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+      <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4 shadow-lg backdrop-blur-xl">
         <div className="flex items-center justify-between text-xs mb-2">
           <span className="text-slate-300 font-medium">میزان مصرف سهمیه مرخصی این دوره</span>
           <span className="font-mono font-bold text-amber-400">{toPersianDigits(usedPercent)}%</span>
         </div>
-        <div className="h-2.5 w-full rounded-full bg-slate-800 overflow-hidden">
+        <div className="h-2.5 w-full rounded-full bg-[#111520] overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               usedPercent > 80 ? 'bg-rose-500' : usedPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500'
@@ -146,7 +146,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
       </div>
 
       {/* 4. Filter Chips & Leaves List */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md shadow-xl space-y-4">
+      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-4 sm:p-5 backdrop-blur-xl shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
             <Calendar className="h-4 w-4 text-amber-400" />

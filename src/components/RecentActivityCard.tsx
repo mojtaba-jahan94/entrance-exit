@@ -33,10 +33,10 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
     .slice(0, 5);
 
   return (
-    <div className="rounded-2xl sm:rounded-3xl border border-slate-800/80 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-3">
+    <div className="rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-5 backdrop-blur-2xl shadow-xl">
+      <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-3">
         <div className="flex items-center gap-2">
-          <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
+          <div className="rounded-xl bg-blue-500/10 p-2 text-blue-400 border border-blue-500/20">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>
@@ -47,7 +47,7 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
 
         <button
           onClick={onNavigateToTimesheet}
-          className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 font-semibold group transition-all"
+          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold group transition-all"
         >
           <span>مشاهده کل ترددها</span>
           <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />

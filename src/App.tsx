@@ -49,6 +49,7 @@ import { Navbar, ActiveTab } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
 import { AttendanceTable } from './components/AttendanceTable';
+import { PersianCalendar } from './components/PersianCalendar';
 import { DashboardCharts } from './components/DashboardCharts';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
@@ -77,6 +78,10 @@ function DashboardApp() {
 
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
+
+  // Search & Dashboard View Mode
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dashboardView, setDashboardView] = useState<'calendar' | 'charts'>('calendar');
 
   // Modals state
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
@@ -411,10 +416,12 @@ function DashboardApp() {
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenStorageMode={() => setIsStorageModalOpen(true)}
         isWorkingNow={isWorkingNow}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6">
+      {/* Main Content Area: md:mr-20 accounts for the fixed vertical dock on desktop */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pr-20">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
@@ -442,15 +449,72 @@ function DashboardApp() {
               />
             </section>
 
-            {/* Interactive Charts: Work Hours Trends & Donut Distribution */}
-            <section aria-label="نمودارهای تحلیلی روند کارکرد">
-              <DashboardCharts
-                records={records}
-                stats={monthlyStats}
-                config={config}
-                selectedYear={selectedYear}
-                selectedMonth={selectedMonth}
-              />
+            {/* Smart Solar Hijri Calendar (Prominent Centerpiece replacing charts) */}
+            <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
+              <div className="flex items-center justify-between mb-2 px-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-xs sm:text-sm font-bold text-white">
+                    {dashboardView === 'calendar' ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی' : 'نمودارهای آماری کارکرد'}
+                  </span>
+                </div>
+
+                {/* View switcher between Calendar and Charts */}
+                <div className="flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-[#171b28] p-1 shadow-inner text-xs">
+                  <button
+                    onClick={() => setDashboardView('calendar')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                      dashboardView === 'calendar'
+                        ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>تقویم شمسی</span>
+                  </button>
+                  <button
+                    onClick={() => setDashboardView('charts')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                      dashboardView === 'charts'
+                        ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span>نمودارها</span>
+                  </button>
+                </div>
+              </div>
+
+              {dashboardView === 'calendar' ? (
+                <PersianCalendar
+                  records={records}
+                  leaves={leaves}
+                  config={config}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                  onYearChange={setSelectedYear}
+                  onMonthChange={setSelectedMonth}
+                  onOpenManualEntryForDate={(dateStr) => {
+                    const existing = records.find((r) => r.date === dateStr);
+                    setEditingRecord(existing || ({ date: dateStr } as any));
+                    setIsManualModalOpen(true);
+                  }}
+                  onOpenLeaveForDate={(dateStr) => {
+                    setEditingLeave({ date: dateStr } as any);
+                    setIsLeaveModalOpen(true);
+                  }}
+                  onDeleteRecord={handleDeleteRecord}
+                />
+              ) : (
+                <DashboardCharts
+                  records={records}
+                  stats={monthlyStats}
+                  config={config}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                />
+              )}
             </section>
 
             {/* Recent Activity Mini-Table */}

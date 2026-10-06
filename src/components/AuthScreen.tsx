@@ -129,7 +129,7 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/60 relative overflow-hidden">
+        <div className="bg-[#161a28]/95 backdrop-blur-2xl border border-white/[0.1] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           {/* Tabs */}
           <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-950/80 border border-slate-800/80 mb-6">
             <button

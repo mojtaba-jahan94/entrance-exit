@@ -48,11 +48,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
     <div className="space-y-3 sm:space-y-4">
       {/* Bento Grid: 2 columns on mobile, 4 columns on large screens */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        {/* 1. کارکرد مفید ماه */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
+        {/* 1. کارکرد مفید ماه (Blue Top Accent) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-3.5 sm:p-5 shadow-xl backdrop-blur-xl transition-all hover:border-blue-500/40 flex flex-col justify-between">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-cyan-400" />
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">کارکرد ماه {monthName}</span>
-            <div className="rounded-lg sm:rounded-xl bg-indigo-500/10 p-1.5 sm:p-2 text-indigo-400 border border-indigo-500/20 shrink-0">
+            <div className="rounded-xl bg-blue-500/10 p-1.5 sm:p-2 text-blue-400 border border-blue-500/20 shrink-0">
               <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
@@ -70,16 +71,16 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           <div className="mt-2 sm:mt-3">
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 mb-1">
               <span>تحقق موظفی</span>
-              <span className="font-bold text-indigo-400 font-mono">{toPersianDigits(stats.completionRate)}٪</span>
+              <span className="font-bold text-blue-400 font-mono">{toPersianDigits(stats.completionRate)}٪</span>
             </div>
-            <div className="h-1.5 sm:h-2 w-full rounded-full bg-slate-800 overflow-hidden">
+            <div className="h-1.5 sm:h-2 w-full rounded-full bg-[#111520] overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500"
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
               />
             </div>
             {stats.totalMonthRequiredMinutes && (
-              <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
+              <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 border-t border-white/[0.06] pt-1.5">
                 <span>کل موظفی تقویمی:</span>
                 <span className="font-mono text-slate-400 font-medium">{toPersianDigits(totalMonthHours)} ساعت</span>
               </div>
@@ -87,15 +88,16 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           </div>
         </div>
 
-        {/* 2. تراز اضافه کاری و کارکرد خالص */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
+        {/* 2. تراز اضافه کاری و کارکرد خالص (Lime/Emerald Top Accent) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-3.5 sm:p-5 shadow-xl backdrop-blur-xl transition-all hover:border-lime-500/40 flex flex-col justify-between">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-lime-500 to-emerald-400" />
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تراز اضافه کار</span>
-            <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
+            <div className={`rounded-xl p-1.5 sm:p-2 border shrink-0 ${
               isNetPositive
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 : isNetZero
-                ? 'bg-slate-800 text-slate-400 border-slate-700'
+                ? 'bg-white/[0.05] text-slate-400 border-white/[0.08]'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
             }`}>
               <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -113,7 +115,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             </span>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-white/[0.06] pt-2">
             <span className="flex items-center gap-1 truncate text-emerald-400 font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
               اضافه: {toPersianDigits(totalOvertimeHours)}س
@@ -125,11 +127,12 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           </div>
         </div>
 
-        {/* 3. تاخیر و تعجیل */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
+        {/* 3. تاخیر و تعجیل (Orange/Amber Top Accent) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-3.5 sm:p-5 shadow-xl backdrop-blur-xl transition-all hover:border-orange-500/40 flex flex-col justify-between">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-400" />
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">تاخیر و تعجیل</span>
-            <div className={`rounded-lg sm:rounded-xl p-1.5 sm:p-2 border shrink-0 ${
+            <div className={`rounded-xl p-1.5 sm:p-2 border shrink-0 ${
               hasDelayOrEarly
                 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                 : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
@@ -154,7 +157,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             )}
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-white/[0.06] pt-2">
             <span className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
               تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د
             </span>
@@ -164,17 +167,18 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
           </div>
         </div>
 
-        {/* 4. کاردکس مرخصی */}
-        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-5 shadow-lg backdrop-blur-md transition-all hover:border-slate-700 flex flex-col justify-between">
+        {/* 4. کاردکس مرخصی (Purple/Pink Top Accent) */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-3.5 sm:p-5 shadow-xl backdrop-blur-xl transition-all hover:border-purple-500/40 flex flex-col justify-between">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-medium text-slate-400 truncate">مانده مرخصی</span>
-            <div className="rounded-lg sm:rounded-xl bg-amber-500/10 p-1.5 sm:p-2 text-amber-400 border border-amber-500/20 shrink-0">
+            <div className="rounded-xl bg-purple-500/10 p-1.5 sm:p-2 text-purple-400 border border-purple-500/20 shrink-0">
               <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
           <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-1.5">
-            <span className="text-xl sm:text-3xl font-black text-amber-400 font-mono">
+            <span className="text-xl sm:text-3xl font-black text-purple-300 font-mono">
               {toPersianDigits(stats.remainingLeaveDays.toFixed(1))}
             </span>
             <span className="text-[10px] sm:text-xs text-slate-300 font-semibold">روز</span>
@@ -194,7 +198,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             </span>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-slate-800/80 pt-2">
+          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 border-t border-white/[0.06] pt-2">
             <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز</span>
             <span className="text-emerald-400 font-medium truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز

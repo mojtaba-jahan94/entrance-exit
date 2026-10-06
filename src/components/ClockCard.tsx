@@ -137,9 +137,9 @@ export const ClockCard: React.FC<ClockCardProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-950/90 p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
+    <div className="relative overflow-hidden rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
       {/* Background soft ambient glows */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-blue-600/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
 
       <div className="relative flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
@@ -147,8 +147,8 @@ export const ClockCard: React.FC<ClockCardProps> = ({
         <div className="w-full md:w-auto flex-1 space-y-2.5 sm:space-y-3 text-center md:text-right">
           {/* Shift Policy Badge */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-800/80 px-2.5 sm:px-3.5 py-1 text-[11px] sm:text-xs font-medium text-slate-300 border border-slate-700/60">
-              <Clock className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.05] px-2.5 sm:px-3.5 py-1 text-[11px] sm:text-xs font-medium text-slate-300 border border-white/[0.08]">
+              <Clock className="h-3.5 w-3.5 text-blue-400 shrink-0" />
               {isThursday ? (
                 <span>
                   شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۰۰')} ساعت حضور</strong> (بدون کسر ناهار)
@@ -160,7 +160,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               )}
             </div>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-indigo-300 border border-indigo-500/20">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-blue-300 border border-blue-500/20">
               <Coffee className="h-3 w-3 text-amber-400 shrink-0" />
               <span>
                 {isThursday

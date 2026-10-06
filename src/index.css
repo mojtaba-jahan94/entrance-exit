@@ -19,26 +19,26 @@
 }
 
 /* ======================================================== */
-/* 1. OBSIDIAN AURORA (شفق نوکتورن - تیره لوکس پیش‌فرض) */
+/* 1. OBSIDIAN AURORA (تیره مات لوکس - الگوبرداری از عکس) */
 /* ======================================================== */
 :root,
 [data-theme="obsidian"],
 body[data-theme="obsidian"] {
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #171d38 0%, #090b14 65%);
-  --theme-card-bg: rgba(18, 22, 42, 0.75);
-  --theme-surface-bg: rgba(12, 15, 28, 0.9);
-  --theme-border: rgba(99, 102, 241, 0.2);
-  --theme-border-highlight: rgba(99, 102, 241, 0.4);
-  --theme-accent: #6366f1;
-  --theme-accent-hover: #4f46e5;
-  --theme-text: #f8fafc;
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #161b2c 0%, #0c0f18 75%);
+  --theme-card-bg: rgba(23, 28, 42, 0.85);
+  --theme-surface-bg: rgba(17, 21, 32, 0.95);
+  --theme-border: rgba(255, 255, 255, 0.08);
+  --theme-border-highlight: rgba(47, 104, 253, 0.45);
+  --theme-accent: #2f68fd;
+  --theme-accent-hover: #2554d4;
+  --theme-text: #ffffff;
   --theme-text-muted: #94a3b8;
 }
 
 [data-theme="obsidian"] body,
 body[data-theme="obsidian"],
 [data-theme="obsidian"] #root > div {
-  background: radial-gradient(circle at 50% 0%, #171d38 0%, #090b14 65%) !important;
+  background: radial-gradient(circle at 50% 0%, #161b2c 0%, #0c0f18 75%) !important;
   color: #f8fafc !important;
 }
 

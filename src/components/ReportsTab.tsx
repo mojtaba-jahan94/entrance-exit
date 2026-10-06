@@ -88,7 +88,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       {/* 2. Key Metrics Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Worked */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
             <span>مجموع کارکرد موثر</span>
             <Clock className="h-4 w-4 text-emerald-400" />
@@ -102,7 +102,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         {/* Net Balance */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
             <span>تراز کارکرد (خالص)</span>
             <Scale className={`h-4 w-4 ${isNetPositive ? 'text-emerald-400' : 'text-rose-400'}`} />
@@ -121,12 +121,12 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         {/* Overtime (Regular + Holiday) */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
             <span>مجموع اضافه کاری</span>
-            <Zap className="h-4 w-4 text-indigo-400" />
+            <Zap className="h-4 w-4 text-blue-400" />
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-indigo-300">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-blue-300">
             {formatMinutesToPersianReadable(stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes)}
           </div>
           <span className="text-[11px] text-slate-400 block mt-1 font-mono">
@@ -136,7 +136,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         {/* Total Delays & Early Leaves */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
             <span>تاخیر و تعجیل</span>
             <AlertTriangle className="h-4 w-4 text-amber-400" />

@@ -89,17 +89,17 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/[0.1] bg-[#161a28] p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-400 border border-indigo-500/20">
+            <div className="rounded-2xl bg-blue-500/10 p-2 text-blue-400 border border-blue-500/20">
               <Calendar className="h-5 w-5" />
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-white">
-                {initialRecord ? 'ویرایش تردد' : 'ثبت تردد دستی جدید'}
+                {initialRecord ? 'ویرایش تردد' : 'ثبت تردد جدید'}
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-400">
                 تاریخ انتخاب‌شده: {weekdayName}، {toPersianDigits(dateStr)}
@@ -108,7 +108,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded-xl p-1.5 text-slate-400 hover:bg-white/[0.08] hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -244,7 +244,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
           {/* Live Calculation Preview Banner */}
           {checkIn && checkOut && (
-            <div className="flex items-center justify-between rounded-xl bg-slate-950 p-2.5 border border-slate-800 text-[11px] text-slate-300">
+            <div className="flex items-center justify-between rounded-2xl bg-[#121622] p-3 border border-white/[0.06] text-[11px] text-slate-300">
               <span>
                 کل حضور: <strong className="font-mono text-white">{toPersianDigits(Math.floor(rawPresence / 60))}س و {toPersianDigits(rawPresence % 60)}د</strong>
               </span>
@@ -258,20 +258,20 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-800 px-4 py-2 text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              className="rounded-2xl border border-white/[0.08] px-4 py-2.5 text-xs font-semibold text-slate-400 hover:bg-white/[0.06] hover:text-white transition-colors"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 transition-all"
+              className="flex items-center gap-1.5 rounded-2xl bg-[#2f68fd] hover:bg-[#2554d4] px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98]"
             >
               <Check className="h-4 w-4" />
-              <span>ذخیره و محاسبه</span>
+              <span>ذخیره تردد</span>
             </button>
           </div>
         </form>
