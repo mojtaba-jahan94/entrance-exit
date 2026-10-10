@@ -225,6 +225,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <div className="py-1 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenSettings();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors text-right"
+                    >
+                      <Settings className="h-4 w-4 text-indigo-400" />
+                      <span>تنظیمات قوانین و ظاهر (UI)</span>
+                    </button>
+
                     {onOpenStorageMode && (
                       <button
                         onClick={() => {
@@ -404,6 +415,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </button>
             )}
+
+            {/* Mobile-only Settings & Theme Buttons */}
+            <div className="flex md:hidden items-center gap-1.5">
+              <button
+                onClick={onOpenSettings}
+                title="تنظیمات شیفت و ظاهر"
+                className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/[0.08] bg-[#171b28] text-slate-300 hover:text-white transition-all shadow-sm"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+              <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
+            </div>
 
             {/* Mobile User Profile Button */}
             {user && (

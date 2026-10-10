@@ -656,6 +656,14 @@ function DashboardApp() {
           <TrendingUp className="h-4 w-4" />
           <span>گزارشات</span>
         </button>
+
+        <button
+          onClick={() => setIsSettingsModalOpen(true)}
+          className="flex flex-col items-center gap-1 py-1 px-2.5 transition-all text-slate-400 hover:text-white"
+        >
+          <Settings className="h-4 w-4" />
+          <span>تنظیمات</span>
+        </button>
       </div>
 
       {/* Modals */}
@@ -692,6 +700,10 @@ function DashboardApp() {
         onClose={() => setIsSettingsModalOpen(false)}
         config={config}
         onSaveConfig={handleSaveConfig}
+        currentTheme={currentTheme}
+        onSelectTheme={handleSelectTheme}
+        dashboardView={dashboardView}
+        onSelectDashboardView={setDashboardView}
       />
 
       <BackupModal

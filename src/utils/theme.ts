@@ -82,6 +82,7 @@ export function saveStoredTheme(theme: AppTheme): void {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     applyThemeToDOM(theme);
+    window.dispatchEvent(new CustomEvent('app-theme-changed', { detail: theme }));
   } catch {
     // Ignore storage errors
   }

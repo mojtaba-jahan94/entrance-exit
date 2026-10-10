@@ -10,6 +10,9 @@ import {
   Calendar,
   Banknote,
   Sparkles,
+  Palette,
+  LayoutDashboard,
+  TrendingUp,
 } from 'lucide-react';
 import { ShiftConfig } from '../types';
 import { DEFAULT_SHIFT_CONFIG } from '../utils/calculator';
@@ -19,12 +22,17 @@ import {
   timeStringToMinutes,
   formatMinutesToTimeString,
 } from '../utils/jalali';
+import { APP_THEMES, AppTheme, ThemeConfig } from '../utils/theme';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: ShiftConfig;
   onSaveConfig: (newConfig: ShiftConfig) => void;
+  currentTheme?: AppTheme;
+  onSelectTheme?: (theme: AppTheme) => void;
+  dashboardView?: 'calendar' | 'charts';
+  onSelectDashboardView?: (view: 'calendar' | 'charts') => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -32,6 +40,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   config,
   onSaveConfig,
+  currentTheme = 'obsidian',
+  onSelectTheme,
+  dashboardView = 'calendar',
+  onSelectDashboardView,
 }) => {
   const [formData, setFormData] = useState<ShiftConfig>(config);
   const [overtimeMultiplierStr, setOvertimeMultiplierStr] = useState<string>(
@@ -40,7 +52,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [holidayMultiplierStr, setHolidayMultiplierStr] = useState<string>(
     config.holidayMultiplier !== undefined ? String(config.holidayMultiplier) : '1.8'
   );
-  const [activeTab, setActiveTab] = useState<'shift' | 'thursday' | 'leave' | 'finance'>('shift');
+  const [activeTab, setActiveTab] = useState<'shift' | 'thursday' | 'leave' | 'finance' | 'ui'>('shift');
 
   useEffect(() => {
     if (isOpen) {
@@ -159,6 +171,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             ضرایب و مالی
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('ui')}
+            className={`px-3 py-1.5 rounded-xl font-medium shrink-0 transition-all flex items-center gap-1.5 ${
+              activeTab === 'ui'
+                ? 'bg-indigo-600 text-white font-bold'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Palette className="h-3.5 w-3.5" />
+            <span>قالب و ظاهر (UI)</span>
           </button>
         </div>
 
@@ -580,6 +604,119 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   ) : null}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 5: UI & THEMES */}
+          {activeTab === 'ui' && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-950/20 p-3 text-xs text-indigo-300">
+                <span className="font-bold flex items-center gap-1.5 mb-1">
+                  <Palette className="h-4 w-4 text-indigo-400" />
+                  شخصی‌سازی ظاهر و قالب برنامه (UI)
+                </span>
+                پالت رنگی مورد نظر خود را انتخاب کنید. تغییرات بلافاصله ذخیره و بر تمام بخش‌های برنامه اعمال می‌شوند.
+              </div>
+
+              {/* Theme Picker Grid */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-300">
+                  انتخاب تم و پالت رنگی
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {APP_THEMES.map((theme: ThemeConfig) => {
+                    const isActive = theme.id === currentTheme;
+                    return (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        onClick={() => onSelectTheme?.(theme.id)}
+                        className={`flex items-center justify-between p-3 rounded-2xl text-right transition-all border ${
+                          isActive
+                            ? 'border-indigo-500 bg-indigo-500/15 ring-2 ring-indigo-500/30 shadow-lg'
+                            : 'border-slate-800 bg-slate-950/80 hover:bg-slate-900 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Color Swatch Bubble */}
+                          <div
+                            className="h-9 w-9 rounded-xl border border-white/20 shadow-inner shrink-0 flex items-center justify-center"
+                            style={{
+                              background: `linear-gradient(135deg, ${theme.previewBg} 0%, ${theme.previewCard} 50%, ${theme.previewAccent} 100%)`,
+                            }}
+                          >
+                            <div
+                              className="h-3 w-3 rounded-full border border-white/40 shadow-sm"
+                              style={{ backgroundColor: theme.previewAccent }}
+                            />
+                          </div>
+
+                          <div className="min-w-0 text-right">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-white truncate">
+                                {theme.persianName}
+                              </span>
+                              {!theme.isDark && (
+                                <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-semibold text-amber-300">
+                                  روشن
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                              {theme.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        {isActive && (
+                          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm mr-2">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Default Dashboard View */}
+              {onSelectDashboardView && (
+                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    نمای پیش‌فرض پیشخوان
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onSelectDashboardView('calendar')}
+                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                        dashboardView === 'calendar'
+                          ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Calendar className="h-4 w-4 text-blue-400" />
+                      <span>تقویم هوشمند شمسی</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onSelectDashboardView('charts')}
+                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                        dashboardView === 'charts'
+                          ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <TrendingUp className="h-4 w-4 text-cyan-400" />
+                      <span>نمودار مینیمال کارکرد</span>
+                    </button>
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">
+                    تعیین کنید که در صفحه اول، تقویم باز شود یا نمودار مینیمال آمار کارکرد.
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
