@@ -185,10 +185,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
   return (
     <div className="w-full space-y-4">
       {/* Outer Card: Translucent Frosted Glass Container */}
-      <div className="relative overflow-hidden rounded-[26px] sm:rounded-[32px] glass-panel p-3.5 sm:p-6 transition-all">
+      <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#1a0f2b]/75 border border-white/10 backdrop-blur-2xl p-3.5 sm:p-6 shadow-2xl transition-all">
         {/* Glow ambient background accents */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[var(--accent-color)]/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
 
         {/* Top Header Bar: Month/Year Selector, Chevrons, Today Button & Month Badges */}
         <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.08] pb-4 mb-4">

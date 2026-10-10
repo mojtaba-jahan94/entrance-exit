@@ -440,8 +440,8 @@ function DashboardApp() {
         onSearchChange={setSearchQuery}
       />
 
-      {/* Main Content Area: md:mr-20 accounts for the fixed vertical dock on desktop */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pr-20">
+      {/* Main Content Area: md:pl-24 accounts for the floating vertical pill dock on the left */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pl-24">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
@@ -514,13 +514,16 @@ function DashboardApp() {
                   />
                 </section>
 
-                {/* Monthly KPI Stats Cards */}
-                {uiSettings.showStatsWidget && (
-                  <section aria-label="خلاصه آماری ماه جاری">
-                    <StatsCards
+                {/* Centerpiece: Dark Glassmorphic Analytics & Charts (Matching Reference Design) */}
+                {uiSettings.showChartsWidget && (
+                  <section aria-label="نمودارهای آماری و تحلیل کارکرد">
+                    <DashboardCharts
+                      records={records}
                       stats={monthlyStats}
-                      monthName={selectedMonthName}
-                      year={selectedYear}
+                      config={config}
+                      selectedYear={selectedYear}
+                      selectedMonth={selectedMonth}
+                      onFilterClick={() => setIsSettingsModalOpen(true)}
                     />
                   </section>
                 )}
@@ -548,15 +551,13 @@ function DashboardApp() {
                   />
                 </section>
 
-                {/* Minimalist Attendance Bar Charts */}
-                {uiSettings.showChartsWidget && (
-                  <section aria-label="نمودارهای آماری کارکرد">
-                    <DashboardCharts
-                      records={records}
+                {/* Monthly KPI Stats Cards */}
+                {uiSettings.showStatsWidget && (
+                  <section aria-label="خلاصه آماری ماه جاری">
+                    <StatsCards
                       stats={monthlyStats}
-                      config={config}
-                      selectedYear={selectedYear}
-                      selectedMonth={selectedMonth}
+                      monthName={selectedMonthName}
+                      year={selectedYear}
                     />
                   </section>
                 )}

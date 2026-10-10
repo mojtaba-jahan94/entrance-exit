@@ -14,12 +14,12 @@ export interface ThemeConfig {
 export const APP_THEMES: ThemeConfig[] = [
   {
     id: 'obsidian',
-    name: 'Obsidian Aurora',
-    persianName: 'شفق نوکتورن (پیش‌فرض)',
-    description: 'تم لوکس تیره با هاله‌های سرمه‌ای و اکسنت‌های فیروزه‌ای و نیلی',
-    previewBg: '#090b14',
-    previewCard: '#121526',
-    previewAccent: '#6366f1',
+    name: 'Plum Violet Glass',
+    persianName: 'یاقوت بنفش شیشه‌ای (پیش‌فرض)',
+    description: 'تم فوق‌العاده مدرن شیشه‌ای تیره با هاله‌های بادمجانی، بنفش و نئون ارغوانی',
+    previewBg: '#110b1a',
+    previewCard: '#1f132f',
+    previewAccent: '#8b5cf6',
     isDark: true,
   },
   {

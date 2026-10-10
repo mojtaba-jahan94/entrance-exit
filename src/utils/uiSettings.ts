@@ -16,7 +16,7 @@ export interface UISettings {
 
 export const DEFAULT_UI_SETTINGS: UISettings = {
   glassBlur: 'balanced',
-  accentColor: 'indigo',
+  accentColor: 'purple',
   isLightMode: false,
   layoutDensity: 'comfortable',
   defaultDashboardView: 'full',
