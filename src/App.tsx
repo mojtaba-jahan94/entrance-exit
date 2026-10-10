@@ -9,6 +9,7 @@ import {
   Table as TableIcon,
   TrendingUp,
   CalendarClock,
+  Sparkles,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
@@ -51,6 +52,7 @@ import { StatsCards } from './components/StatsCards';
 import { AttendanceTable } from './components/AttendanceTable';
 import { PersianCalendar } from './components/PersianCalendar';
 import { DashboardCharts } from './components/DashboardCharts';
+import { SmartHubDashboard } from './components/SmartHubDashboard';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
@@ -79,9 +81,9 @@ function DashboardApp() {
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
 
-  // Search & Dashboard View Mode
+  // Search & Dashboard View Mode ('hub' matches reference image, 'calendar', 'charts')
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [dashboardView, setDashboardView] = useState<'calendar' | 'charts'>('calendar');
+  const [dashboardView, setDashboardView] = useState<'hub' | 'calendar' | 'charts'>('hub');
 
   // Modals state
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
@@ -425,97 +427,158 @@ function DashboardApp() {
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-            {/* Live Clock Card */}
-            <section aria-label="ثبت زنده تردد">
-              <ClockCard
-                todayRecord={todayRecord}
-                config={config}
-                onCheckIn={handleCheckIn}
-                onCheckOut={handleCheckOut}
-                onResetToday={handleResetToday}
-                onOpenEdit={() => {
-                  setEditingRecord(todayRecord || ({ date: todayStr } as any));
-                  setIsManualModalOpen(true);
-                }}
-              />
-            </section>
-
-            {/* Quick KPI Stats Summary */}
-            <section aria-label="خلاصه آماری ماه جاری">
-              <StatsCards
-                stats={monthlyStats}
-                monthName={selectedMonthName}
-                year={selectedYear}
-              />
-            </section>
-
-            {/* Smart Solar Hijri Calendar (Prominent Centerpiece replacing charts) */}
-            <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-xs sm:text-sm font-bold text-white">
-                    {dashboardView === 'calendar' ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی' : 'نمودارهای آماری کارکرد'}
-                  </span>
-                </div>
-
-                {/* View switcher between Calendar and Charts */}
-                <div className="flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-[#171b28] p-1 shadow-inner text-xs">
-                  <button
-                    onClick={() => setDashboardView('calendar')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                      dashboardView === 'calendar'
-                        ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>تقویم شمسی</span>
-                  </button>
-                  <button
-                    onClick={() => setDashboardView('charts')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                      dashboardView === 'charts'
-                        ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <TrendingUp className="h-3.5 w-3.5" />
-                    <span>نمودارها</span>
-                  </button>
-                </div>
+            {/* View Switcher Bar */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs sm:text-sm font-bold text-white">
+                  {dashboardView === 'hub'
+                    ? 'پیشخوان هاب هوشمند (طرح مدرن)'
+                    : dashboardView === 'calendar'
+                    ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی'
+                    : 'نمودارهای آماری کارکرد'}
+                </span>
               </div>
 
-              {dashboardView === 'calendar' ? (
-                <PersianCalendar
-                  records={records}
-                  leaves={leaves}
-                  config={config}
-                  selectedYear={selectedYear}
-                  selectedMonth={selectedMonth}
-                  onYearChange={setSelectedYear}
-                  onMonthChange={setSelectedMonth}
-                  onOpenManualEntryForDate={(dateStr) => {
-                    const existing = records.find((r) => r.date === dateStr);
-                    setEditingRecord(existing || ({ date: dateStr } as any));
-                    setIsManualModalOpen(true);
-                  }}
-                  onOpenLeaveForDate={(dateStr) => {
-                    setEditingLeave({ date: dateStr } as any);
-                    setIsLeaveModalOpen(true);
-                  }}
-                  onDeleteRecord={handleDeleteRecord}
-                />
-              ) : (
-                <DashboardCharts
+              {/* View switcher between Hub, Calendar, and Charts */}
+              <div className="flex items-center gap-1 rounded-2xl border border-white/[0.1] bg-white/[0.04] p-1 shadow-inner text-xs backdrop-blur-xl">
+                <button
+                  onClick={() => setDashboardView('hub')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    dashboardView === 'hub'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/30'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>طرح هاب مدرن</span>
+                </button>
+                <button
+                  onClick={() => setDashboardView('calendar')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    dashboardView === 'calendar'
+                      ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>تقویم شمسی</span>
+                </button>
+                <button
+                  onClick={() => setDashboardView('charts')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    dashboardView === 'charts'
+                      ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  <span>نمودارها</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 1. SMART HUB VIEW (Exact Match to User Reference Screenshot) */}
+            {dashboardView === 'hub' && (
+              <section aria-label="پیشخوان هاب هوشمند">
+                <SmartHubDashboard
+                  todayRecord={todayRecord}
                   records={records}
                   stats={monthlyStats}
                   config={config}
+                  leaves={leaves}
                   selectedYear={selectedYear}
                   selectedMonth={selectedMonth}
+                  selectedMonthName={selectedMonthName}
+                  userName={user?.displayName || user?.username || 'همکار گرامی'}
+                  onCheckIn={handleCheckIn}
+                  onCheckOut={handleCheckOut}
+                  onResetToday={handleResetToday}
+                  onOpenManualEntry={() => {
+                    setEditingRecord(null);
+                    setIsManualModalOpen(true);
+                  }}
+                  onOpenLeaveModal={() => {
+                    setEditingLeave(null);
+                    setIsLeaveModalOpen(true);
+                  }}
+                  onOpenSettings={() => setIsSettingsModalOpen(true)}
+                  onSwitchToCalendar={() => setDashboardView('calendar')}
                 />
-              )}
-            </section>
+              </section>
+            )}
+
+            {/* 2. CALENDAR VIEW (Traditional Solar Hijri Calendar + Clock Card) */}
+            {dashboardView === 'calendar' && (
+              <div className="space-y-4 sm:space-y-6">
+                <section aria-label="ثبت زنده تردد">
+                  <ClockCard
+                    todayRecord={todayRecord}
+                    config={config}
+                    onCheckIn={handleCheckIn}
+                    onCheckOut={handleCheckOut}
+                    onResetToday={handleResetToday}
+                    onOpenEdit={() => {
+                      setEditingRecord(todayRecord || ({ date: todayStr } as any));
+                      setIsManualModalOpen(true);
+                    }}
+                  />
+                </section>
+
+                <section aria-label="خلاصه آماری ماه جاری">
+                  <StatsCards
+                    stats={monthlyStats}
+                    monthName={selectedMonthName}
+                    year={selectedYear}
+                  />
+                </section>
+
+                <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
+                  <PersianCalendar
+                    records={records}
+                    leaves={leaves}
+                    config={config}
+                    selectedYear={selectedYear}
+                    selectedMonth={selectedMonth}
+                    onYearChange={setSelectedYear}
+                    onMonthChange={setSelectedMonth}
+                    onOpenManualEntryForDate={(dateStr) => {
+                      const existing = records.find((r) => r.date === dateStr);
+                      setEditingRecord(existing || ({ date: dateStr } as any));
+                      setIsManualModalOpen(true);
+                    }}
+                    onOpenLeaveForDate={(dateStr) => {
+                      setEditingLeave({ date: dateStr } as any);
+                      setIsLeaveModalOpen(true);
+                    }}
+                    onDeleteRecord={handleDeleteRecord}
+                  />
+                </section>
+              </div>
+            )}
+
+            {/* 3. MINIMAL CHARTS VIEW */}
+            {dashboardView === 'charts' && (
+              <div className="space-y-4 sm:space-y-6">
+                <section aria-label="خلاصه آماری ماه جاری">
+                  <StatsCards
+                    stats={monthlyStats}
+                    monthName={selectedMonthName}
+                    year={selectedYear}
+                  />
+                </section>
+
+                <section aria-label="نمودارهای آماری کارکرد">
+                  <DashboardCharts
+                    records={records}
+                    stats={monthlyStats}
+                    config={config}
+                    selectedYear={selectedYear}
+                    selectedMonth={selectedMonth}
+                  />
+                </section>
+              </div>
+            )}
 
             {/* Recent Activity Mini-Table */}
             <section aria-label="آخرین ترددهای ثبت‌شده">

@@ -123,22 +123,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* 1. DESKTOP FLOATING LEFT SIDEBAR DOCK (Matches the vertical pill dock in the reference image!) */}
-      <aside className="hidden md:flex fixed top-0 bottom-0 right-0 z-50 w-20 flex-col items-center justify-between py-6 px-3 bg-[#0f121b]/95 border-l border-white/[0.06] backdrop-blur-2xl">
-        {/* Top Logo Brand Glyph */}
+      {/* 1. DESKTOP FLOATING SIDEBAR DOCK (Matches the vertical pill dock in the reference image!) */}
+      <aside className="hidden md:flex fixed top-0 bottom-0 right-0 z-50 w-20 flex-col items-center justify-between py-6 px-3 bg-[#0c0f18]/70 border-l border-white/[0.1] backdrop-blur-3xl shadow-2xl">
+        {/* Top Logo Brand Glyph (Monogram emblem from screenshot) */}
         <div className="flex flex-col items-center gap-2">
           <div
             onClick={() => onTabChange('dashboard')}
-            className="group cursor-pointer flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2f68fd] to-[#00d2ff] shadow-lg shadow-blue-600/30 ring-1 ring-white/20 transition-all hover:scale-105 active:scale-95"
+            className="group cursor-pointer flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-300 text-slate-950 shadow-lg shadow-amber-500/30 ring-1 ring-white/30 transition-all hover:scale-105 active:scale-95"
             title="سامانه مدیریت و تقویم تردد"
           >
-            {/* Sleek V / Glyph logo */}
-            <CalendarClock className="h-6 w-6 text-white transition-transform group-hover:rotate-12" />
+            <CalendarClock className="h-6 w-6 transition-transform group-hover:rotate-12" />
           </div>
         </div>
 
         {/* Middle Navigation Capsule (Rounded pill vertical container from screenshot) */}
-        <nav className="flex flex-col items-center gap-2 rounded-[28px] border border-white/[0.08] bg-[#171b28]/90 p-2 shadow-2xl backdrop-blur-xl">
+        <nav className="flex flex-col items-center gap-2 rounded-[28px] border border-white/[0.1] bg-white/[0.04] p-2 shadow-2xl backdrop-blur-2xl">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
@@ -148,14 +147,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title={item.label}
                 className={`relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200 group ${
                   isActive
-                    ? 'bg-[#2f68fd] text-white shadow-lg shadow-blue-600/40 ring-2 ring-blue-400/50 scale-105'
+                    ? 'bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-bold shadow-lg shadow-amber-500/40 ring-2 ring-amber-400/50 scale-105'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
                 {item.icon}
 
                 {/* Tooltip on hover */}
-                <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#1e2336] px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/[0.08] transition-opacity group-hover:opacity-100 z-50">
+                <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#161a28]/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/[0.1] transition-opacity group-hover:opacity-100 z-50 backdrop-blur-xl">
                   {item.label}
                 </span>
               </button>
@@ -163,14 +162,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           })}
 
           {/* Center Quick Add Entry (+) */}
-          <div className="my-1 h-px w-6 bg-white/[0.08]" />
+          <div className="my-1 h-px w-6 bg-white/[0.1]" />
           <button
             onClick={onOpenManualEntry}
             title="ثبت سریع تردد"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 transition-all hover:scale-105 active:scale-95 group relative"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/[0.15] bg-white/[0.08] hover:bg-white/[0.16] text-white shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 group relative backdrop-blur-xl"
           >
-            <PlusCircle className="h-5 w-5" />
-            <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#1e2336] px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/[0.08] transition-opacity group-hover:opacity-100 z-50">
+            <PlusCircle className="h-5 w-5 text-amber-300" />
+            <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#161a28]/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/[0.1] transition-opacity group-hover:opacity-100 z-50 backdrop-blur-xl">
               ثبت تردد جدید
             </span>
           </button>

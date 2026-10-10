@@ -31,8 +31,8 @@ interface SettingsModalProps {
   onSaveConfig: (newConfig: ShiftConfig) => void;
   currentTheme?: AppTheme;
   onSelectTheme?: (theme: AppTheme) => void;
-  dashboardView?: 'calendar' | 'charts';
-  onSelectDashboardView?: (view: 'calendar' | 'charts') => void;
+  dashboardView?: 'hub' | 'calendar' | 'charts';
+  onSelectDashboardView?: (view: 'hub' | 'calendar' | 'charts') => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -42,7 +42,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveConfig,
   currentTheme = 'obsidian',
   onSelectTheme,
-  dashboardView = 'calendar',
+  dashboardView = 'hub',
   onSelectDashboardView,
 }) => {
   const [formData, setFormData] = useState<ShiftConfig>(config);
@@ -683,37 +683,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {onSelectDashboardView && (
                 <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
                   <label className="block text-xs font-semibold text-slate-300">
-                    نمای پیش‌فرض پیشخوان
+                    نمای پیش‌فرض صفحه اول (پیشخوان)
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onSelectDashboardView('hub')}
+                      className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
+                        dashboardView === 'hub'
+                          ? 'border-amber-500 bg-amber-500/20 text-amber-300 font-bold'
+                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                      <span>طرح هاب مدرن</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => onSelectDashboardView('calendar')}
-                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                      className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
                         dashboardView === 'calendar'
                           ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
                           : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
                       }`}
                     >
-                      <Calendar className="h-4 w-4 text-blue-400" />
-                      <span>تقویم هوشمند شمسی</span>
+                      <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                      <span>تقویم شمسی</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => onSelectDashboardView('charts')}
-                      className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${
+                      className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
                         dashboardView === 'charts'
                           ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
                           : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
                       }`}
                     >
-                      <TrendingUp className="h-4 w-4 text-cyan-400" />
-                      <span>نمودار مینیمال کارکرد</span>
+                      <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>نمودارها</span>
                     </button>
                   </div>
                   <span className="text-[10px] text-slate-500 block">
-                    تعیین کنید که در صفحه اول، تقویم باز شود یا نمودار مینیمال آمار کارکرد.
+                    تعیین کنید که در صفحه اول، طرح هاب هوشمند گلس باز شود یا تقویم شمسی یا نمودارها.
                   </span>
                 </div>
               )}
