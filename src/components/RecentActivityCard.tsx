@@ -33,10 +33,10 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
     .slice(0, 5);
 
   return (
-    <div className="rounded-[26px] sm:rounded-[32px] glass-panel p-4 sm:p-5 shadow-xl transition-all">
+    <div className="rounded-[28px] sm:rounded-[32px] bg-[#1a0f2b]/75 border border-white/10 backdrop-blur-2xl p-4 sm:p-5 shadow-2xl transition-all">
       <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-3">
         <div className="flex items-center gap-2">
-          <div className="rounded-xl bg-blue-500/15 p-2 text-[var(--accent-color)] border border-blue-500/25">
+          <div className="rounded-xl bg-violet-600/20 p-2 text-violet-300 border border-violet-400/30">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>

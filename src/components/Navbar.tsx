@@ -93,28 +93,28 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const displayName = user?.displayName || user?.username || 'سارا علوی';
-  const displayEmail = user?.username ? `${user.username}@tubistudio.com` : 'sarah@tubistudio.com';
+  const displayName = user?.displayName || user?.username || 'کاربر سیستم';
+  const displayEmail = user?.username ? `@${user.username}` : 'حضور و غیاب داخلی';
 
   const navItems = [
     {
       id: 'dashboard' as ActiveTab,
-      label: 'پیشخوان و تحلیل (Analytics)',
+      label: 'پیشخوان جامع و تحلیل',
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
       id: 'timesheet' as ActiveTab,
-      label: 'کارنامه تردد (Timesheet)',
+      label: 'کارنامه و جدول تردد',
       icon: <TableIcon className="h-5 w-5" />,
     },
     {
       id: 'leaves' as ActiveTab,
-      label: 'مرخصی و استراحت (Leaves)',
+      label: 'مرخصی و استراحت',
       icon: <Coffee className="h-5 w-5" />,
     },
     {
       id: 'reports' as ActiveTab,
-      label: 'گزارشات آماری (Reports)',
+      label: 'گزارشات آماری و خروجی',
       icon: <TrendingUp className="h-5 w-5" />,
     },
   ];

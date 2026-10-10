@@ -129,7 +129,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const monthName = PERSIAN_MONTH_NAMES[selectedMonth - 1] || '';
 
   return (
-    <div className="rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
+    <div className="rounded-[28px] sm:rounded-[32px] border border-white/10 bg-[#1a0f2b]/75 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
       {/* Table Header Controls */}
       <div className="flex flex-col gap-3.5 border-b border-slate-800/80 pb-4">
         {/* Row 1: Month/Year Nav + View Switcher + Record Count */}
