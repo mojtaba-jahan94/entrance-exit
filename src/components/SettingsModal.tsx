@@ -13,6 +13,11 @@ import {
   Palette,
   LayoutDashboard,
   TrendingUp,
+  Sun,
+  Moon,
+  Layers,
+  Sliders,
+  Eye,
 } from 'lucide-react';
 import { ShiftConfig } from '../types';
 import { DEFAULT_SHIFT_CONFIG } from '../utils/calculator';
@@ -23,6 +28,15 @@ import {
   formatMinutesToTimeString,
 } from '../utils/jalali';
 import { APP_THEMES, AppTheme, ThemeConfig } from '../utils/theme';
+import {
+  UISettings,
+  getStoredUISettings,
+  saveStoredUISettings,
+  GlassBlurLevel,
+  AccentColor,
+  LayoutDensity,
+  DashboardViewMode,
+} from '../utils/uiSettings';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -31,8 +45,10 @@ interface SettingsModalProps {
   onSaveConfig: (newConfig: ShiftConfig) => void;
   currentTheme?: AppTheme;
   onSelectTheme?: (theme: AppTheme) => void;
-  dashboardView?: 'hub' | 'calendar' | 'charts';
-  onSelectDashboardView?: (view: 'hub' | 'calendar' | 'charts') => void;
+  uiSettings?: UISettings;
+  onUpdateUISettings?: (settings: UISettings) => void;
+  dashboardView?: DashboardViewMode;
+  onSelectDashboardView?: (view: DashboardViewMode) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -42,10 +58,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveConfig,
   currentTheme = 'obsidian',
   onSelectTheme,
-  dashboardView = 'hub',
+  uiSettings,
+  onUpdateUISettings,
+  dashboardView = 'full',
   onSelectDashboardView,
 }) => {
   const [formData, setFormData] = useState<ShiftConfig>(config);
+  const [localUiSettings, setLocalUiSettings] = useState<UISettings>(uiSettings || getStoredUISettings());
   const [overtimeMultiplierStr, setOvertimeMultiplierStr] = useState<string>(
     config.overtimeMultiplier !== undefined ? String(config.overtimeMultiplier) : '1.4'
   );
@@ -57,6 +76,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setFormData(config);
+      setLocalUiSettings(uiSettings || getStoredUISettings());
       setOvertimeMultiplierStr(
         config.overtimeMultiplier !== undefined ? String(config.overtimeMultiplier) : '1.4'
       );
@@ -105,8 +125,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-[28px] sm:rounded-[32px] border border-white/[0.1] bg-[#161a28] p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-xl rounded-[28px] sm:rounded-[32px] glass-panel p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col border border-white/[0.15]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -610,102 +630,219 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 5: UI & THEMES */}
           {activeTab === 'ui' && (
             <div className="space-y-4">
-              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-950/20 p-3 text-xs text-indigo-300">
-                <span className="font-bold flex items-center gap-1.5 mb-1">
-                  <Palette className="h-4 w-4 text-indigo-400" />
-                  شخصی‌سازی ظاهر و قالب برنامه (UI)
+              <div className="rounded-2xl border border-white/[0.08] glass-subcard p-3 text-xs text-slate-200">
+                <span className="font-bold flex items-center gap-1.5 mb-1 text-[var(--accent-color)]">
+                  <Palette className="h-4 w-4" />
+                  تنظیمات پیشرفته تم شیشه‌ای و ظاهر برنامه (UI)
                 </span>
-                پالت رنگی مورد نظر خود را انتخاب کنید. تغییرات بلافاصله ذخیره و بر تمام بخش‌های برنامه اعمال می‌شوند.
+                این بخش به شما امکان کنترل کامل روی میزان شفافیت شیشه، پالت رنگی، چیدمان و ویجت‌های داشبورد را می‌دهد.
               </div>
 
-              {/* Theme Picker Grid */}
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-300">
-                  انتخاب تم و پالت رنگی
+              {/* 1. Theme Mode: Dark Glass vs Light Glass */}
+              <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2">
+                <label className="block text-xs font-semibold text-slate-200">
+                  قالب ظاهری پایه (روشن / تیره)
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {APP_THEMES.map((theme: ThemeConfig) => {
-                    const isActive = theme.id === currentTheme;
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...localUiSettings, isLightMode: false };
+                      setLocalUiSettings(updated);
+                      saveStoredUISettings(updated);
+                      onUpdateUISettings?.(updated);
+                    }}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                      !localUiSettings.isLightMode
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white shadow-md'
+                        : 'glass-pill text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Moon className="h-4 w-4 text-[var(--accent-color)]" />
+                    <span>تم شیشه‌ای شب (تیره)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...localUiSettings, isLightMode: true };
+                      setLocalUiSettings(updated);
+                      saveStoredUISettings(updated);
+                      onUpdateUISettings?.(updated);
+                    }}
+                    className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-semibold transition-all ${
+                      localUiSettings.isLightMode
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white shadow-md'
+                        : 'glass-pill text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Sun className="h-4 w-4 text-amber-400" />
+                    <span>تم کریستالی عاجی (روشن)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Accent Color Palette */}
+              <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2">
+                <label className="block text-xs font-semibold text-slate-200">
+                  پالت رنگی تاکیدی (Accent Color)
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {[
+                    { id: 'indigo', name: 'نیلی مدرن', color: '#3b82f6' },
+                    { id: 'emerald', name: 'زمردی', color: '#10b981' },
+                    { id: 'cyan', name: 'فیروزه‌ای', color: '#06b6d4' },
+                    { id: 'amber', name: 'کهربایی', color: '#f59e0b' },
+                    { id: 'rose', name: 'رز متالیک', color: '#f43f5e' },
+                    { id: 'purple', name: 'بنفش سایبر', color: '#8b5cf6' },
+                  ].map((acc) => {
+                    const isSelected = localUiSettings.accentColor === acc.id;
                     return (
                       <button
-                        key={theme.id}
+                        key={acc.id}
                         type="button"
-                        onClick={() => onSelectTheme?.(theme.id)}
-                        className={`flex items-center justify-between p-3 rounded-2xl text-right transition-all border ${
-                          isActive
-                            ? 'border-indigo-500 bg-indigo-500/15 ring-2 ring-indigo-500/30 shadow-lg'
-                            : 'border-slate-800 bg-slate-950/80 hover:bg-slate-900 hover:border-slate-700'
+                        onClick={() => {
+                          const updated: UISettings = { ...localUiSettings, accentColor: acc.id as AccentColor };
+                          setLocalUiSettings(updated);
+                          saveStoredUISettings(updated);
+                          onUpdateUISettings?.(updated);
+                        }}
+                        className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border text-center transition-all ${
+                          isSelected
+                            ? 'border-white/40 bg-white/[0.12] ring-2 ring-white/30 shadow-lg'
+                            : 'glass-pill text-slate-300 hover:bg-white/[0.08]'
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Color Swatch Bubble */}
-                          <div
-                            className="h-9 w-9 rounded-xl border border-white/20 shadow-inner shrink-0 flex items-center justify-center"
-                            style={{
-                              background: `linear-gradient(135deg, ${theme.previewBg} 0%, ${theme.previewCard} 50%, ${theme.previewAccent} 100%)`,
-                            }}
-                          >
-                            <div
-                              className="h-3 w-3 rounded-full border border-white/40 shadow-sm"
-                              style={{ backgroundColor: theme.previewAccent }}
-                            />
-                          </div>
-
-                          <div className="min-w-0 text-right">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-white truncate">
-                                {theme.persianName}
-                              </span>
-                              {!theme.isDark && (
-                                <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-semibold text-amber-300">
-                                  روشن
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                              {theme.description}
-                            </p>
-                          </div>
-                        </div>
-
-                        {isActive && (
-                          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white shadow-sm mr-2">
-                            <Check className="h-3 w-3" />
-                          </div>
-                        )}
+                        <div
+                          className="h-5 w-5 rounded-full shadow-inner border border-white/30"
+                          style={{ backgroundColor: acc.color }}
+                        />
+                        <span className="text-[10px] font-medium">{acc.name}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Default Dashboard View */}
+              {/* 3. Glass Blur & Density Level */}
+              <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2">
+                <label className="block text-xs font-semibold text-slate-200">
+                  میزان بلور و جلوه مات شیشه (Glass Blur Intensity)
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'heavy', title: 'بلور عمیق (۳۲px)', desc: 'مات، نرم و فوق‌العاده لوکس' },
+                    { id: 'balanced', title: 'متعادل (۲۰px)', desc: 'استاندارد شیشه‌ای مدرن' },
+                    { id: 'subtle', title: 'سبک شفاف (۱۰px)', desc: 'کریستالی با شفافیت بالا' },
+                  ].map((level) => {
+                    const isSelected = localUiSettings.glassBlur === level.id;
+                    return (
+                      <button
+                        key={level.id}
+                        type="button"
+                        onClick={() => {
+                          const updated: UISettings = { ...localUiSettings, glassBlur: level.id as GlassBlurLevel };
+                          setLocalUiSettings(updated);
+                          saveStoredUISettings(updated);
+                          onUpdateUISettings?.(updated);
+                        }}
+                        className={`flex flex-col items-start p-2.5 rounded-xl border text-right transition-all ${
+                          isSelected
+                            ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white shadow-md'
+                            : 'glass-pill text-slate-300 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-xs font-bold text-white mb-0.5">{level.title}</span>
+                        <span className="text-[10px] text-slate-400 leading-tight">{level.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4. Layout Density (Comfortable vs Compact) */}
+              <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2">
+                <label className="block text-xs font-semibold text-slate-200">
+                  تراکم چیدمان و فاصله‌ها (Layout Density)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated: UISettings = { ...localUiSettings, layoutDensity: 'comfortable' };
+                      setLocalUiSettings(updated);
+                      saveStoredUISettings(updated);
+                      onUpdateUISettings?.(updated);
+                    }}
+                    className={`flex items-center justify-center gap-2 p-2 rounded-xl border text-xs font-medium transition-all ${
+                      localUiSettings.layoutDensity === 'comfortable'
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white font-bold shadow-md'
+                        : 'glass-pill text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Layers className="h-3.5 w-3.5" />
+                    <span>استاندارد و جادار (پیش‌فرض)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated: UISettings = { ...localUiSettings, layoutDensity: 'compact' };
+                      setLocalUiSettings(updated);
+                      saveStoredUISettings(updated);
+                      onUpdateUISettings?.(updated);
+                    }}
+                    className={`flex items-center justify-center gap-2 p-2 rounded-xl border text-xs font-medium transition-all ${
+                      localUiSettings.layoutDensity === 'compact'
+                        ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white font-bold shadow-md'
+                        : 'glass-pill text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Sliders className="h-3.5 w-3.5" />
+                    <span>فشرده و متمرکز (Compact)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 5. Default Dashboard View */}
               {onSelectDashboardView && (
-                <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2">
-                  <label className="block text-xs font-semibold text-slate-300">
-                    نمای پیش‌فرض صفحه اول (پیشخوان)
+                <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2">
+                  <label className="block text-xs font-semibold text-slate-200">
+                    نمای پیش‌فرض صفحه پیشخوان
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
-                      onClick={() => onSelectDashboardView('hub')}
+                      onClick={() => {
+                        const updated: UISettings = { ...localUiSettings, defaultDashboardView: 'full' };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                        onSelectDashboardView('full');
+                      }}
                       className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
-                        dashboardView === 'hub'
-                          ? 'border-amber-500 bg-amber-500/20 text-amber-300 font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        dashboardView === 'full'
+                          ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white font-bold'
+                          : 'glass-pill text-slate-400 hover:text-white'
                       }`}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                      <span>طرح هاب مدرن</span>
+                      <LayoutDashboard className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>پیشخوان جامع</span>
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => onSelectDashboardView('calendar')}
+                      onClick={() => {
+                        const updated: UISettings = { ...localUiSettings, defaultDashboardView: 'calendar' };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                        onSelectDashboardView('calendar');
+                      }}
                       className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
                         dashboardView === 'calendar'
-                          ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                          ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white font-bold'
+                          : 'glass-pill text-slate-400 hover:text-white'
                       }`}
                     >
                       <Calendar className="h-3.5 w-3.5 text-blue-400" />
@@ -714,22 +851,78 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => onSelectDashboardView('charts')}
+                      onClick={() => {
+                        const updated: UISettings = { ...localUiSettings, defaultDashboardView: 'charts' };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                        onSelectDashboardView('charts');
+                      }}
                       className={`flex items-center justify-center gap-1.5 p-2 rounded-xl border text-xs font-medium transition-all ${
                         dashboardView === 'charts'
-                          ? 'border-indigo-500 bg-indigo-500/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                          ? 'border-[var(--accent-color)] bg-[var(--accent-color)]/20 text-white font-bold'
+                          : 'glass-pill text-slate-400 hover:text-white'
                       }`}
                     >
-                      <TrendingUp className="h-3.5 w-3.5 text-cyan-400" />
-                      <span>نمودارها</span>
+                      <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>نمودارهای آماری</span>
                     </button>
                   </div>
-                  <span className="text-[10px] text-slate-500 block">
-                    تعیین کنید که در صفحه اول، طرح هاب هوشمند گلس باز شود یا تقویم شمسی یا نمودارها.
-                  </span>
                 </div>
               )}
+
+              {/* 6. Dashboard Widget Visibility Controls */}
+              <div className="glass-subcard p-3 rounded-2xl border border-white/[0.08] space-y-2.5">
+                <label className="block text-xs font-semibold text-slate-200">
+                  کنترل نمایش ویجت‌های پیشخوان (Dashboard Widgets)
+                </label>
+                <div className="space-y-2 text-xs">
+                  <label className="flex items-center justify-between p-2 rounded-xl glass-pill cursor-pointer">
+                    <span className="text-slate-200">نمایش کارت‌های خلاصه آماری ماه جاری (KPI)</span>
+                    <input
+                      type="checkbox"
+                      checked={localUiSettings.showStatsWidget}
+                      onChange={(e) => {
+                        const updated = { ...localUiSettings, showStatsWidget: e.target.checked };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                      }}
+                      className="h-4 w-4 accent-[var(--accent-color)] cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2 rounded-xl glass-pill cursor-pointer">
+                    <span className="text-slate-200">نمایش نمودار تحلیلی روند کارکرد روزانه</span>
+                    <input
+                      type="checkbox"
+                      checked={localUiSettings.showChartsWidget}
+                      onChange={(e) => {
+                        const updated = { ...localUiSettings, showChartsWidget: e.target.checked };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                      }}
+                      className="h-4 w-4 accent-[var(--accent-color)] cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-2 rounded-xl glass-pill cursor-pointer">
+                    <span className="text-slate-200">نمایش جدول آخرین ترددهای ثبت‌شده</span>
+                    <input
+                      type="checkbox"
+                      checked={localUiSettings.showRecentActivityWidget}
+                      onChange={(e) => {
+                        const updated = { ...localUiSettings, showRecentActivityWidget: e.target.checked };
+                        setLocalUiSettings(updated);
+                        saveStoredUISettings(updated);
+                        onUpdateUISettings?.(updated);
+                      }}
+                      className="h-4 w-4 accent-[var(--accent-color)] cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           )}
 

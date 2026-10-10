@@ -52,7 +52,6 @@ import { StatsCards } from './components/StatsCards';
 import { AttendanceTable } from './components/AttendanceTable';
 import { PersianCalendar } from './components/PersianCalendar';
 import { DashboardCharts } from './components/DashboardCharts';
-import { SmartHubDashboard } from './components/SmartHubDashboard';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
@@ -60,6 +59,13 @@ import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
 import { SettingsModal } from './components/SettingsModal';
 import { BackupModal } from './components/BackupModal';
+import {
+  UISettings,
+  getStoredUISettings,
+  saveStoredUISettings,
+  applyUISettingsToDOM,
+  DashboardViewMode,
+} from './utils/uiSettings';
 
 function DashboardApp() {
   const { user, storageMode, syncDataToCloud, loadDataFromCloud } = useAuth();
@@ -68,7 +74,8 @@ function DashboardApp() {
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
 
-  // Theme State
+  // UI & Theme State
+  const [uiSettings, setUiSettings] = useState<UISettings>(getStoredUISettings);
   const [currentTheme, setCurrentTheme] = useState<AppTheme>(getStoredTheme);
 
   // Active Tab State (dashboard, timesheet, leaves, reports)
@@ -81,9 +88,11 @@ function DashboardApp() {
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
 
-  // Search & Dashboard View Mode ('hub' matches reference image, 'calendar', 'charts')
+  // Search & Dashboard View Mode ('full', 'calendar', 'charts')
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [dashboardView, setDashboardView] = useState<'hub' | 'calendar' | 'charts'>('hub');
+  const [dashboardView, setDashboardView] = useState<DashboardViewMode>(
+    uiSettings.defaultDashboardView || 'full'
+  );
 
   // Modals state
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
@@ -99,6 +108,15 @@ function DashboardApp() {
   useEffect(() => {
     applyThemeToDOM(currentTheme);
   }, [currentTheme]);
+
+  useEffect(() => {
+    applyUISettingsToDOM(uiSettings);
+  }, [uiSettings]);
+
+  const handleUpdateUISettings = (newSettings: UISettings) => {
+    setUiSettings(newSettings);
+    saveStoredUISettings(newSettings);
+  };
 
   const handleSelectTheme = (theme: AppTheme) => {
     setCurrentTheme(theme);
@@ -430,34 +448,34 @@ function DashboardApp() {
             {/* View Switcher Bar */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-[var(--accent-color)] animate-pulse" />
                 <span className="text-xs sm:text-sm font-bold text-white">
-                  {dashboardView === 'hub'
-                    ? 'پیشخوان هاب هوشمند (طرح مدرن)'
+                  {dashboardView === 'full'
+                    ? 'پیشخوان جامع کارکرد، تردد و تقویم'
                     : dashboardView === 'calendar'
                     ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی'
-                    : 'نمودارهای آماری کارکرد'}
+                    : 'نمودارهای آماری کارکرد و انضباط'}
                 </span>
               </div>
 
-              {/* View switcher between Hub, Calendar, and Charts */}
-              <div className="flex items-center gap-1 rounded-2xl border border-white/[0.1] bg-white/[0.04] p-1 shadow-inner text-xs backdrop-blur-xl">
+              {/* View switcher between Full, Calendar, and Charts */}
+              <div className="flex items-center gap-1 rounded-2xl glass-pill p-1 text-xs">
                 <button
-                  onClick={() => setDashboardView('hub')}
+                  onClick={() => setDashboardView('full')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                    dashboardView === 'hub'
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/30'
+                    dashboardView === 'full'
+                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>طرح هاب مدرن</span>
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  <span>پیشخوان جامع</span>
                 </button>
                 <button
                   onClick={() => setDashboardView('calendar')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
                     dashboardView === 'calendar'
-                      ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
@@ -468,7 +486,7 @@ function DashboardApp() {
                   onClick={() => setDashboardView('charts')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
                     dashboardView === 'charts'
-                      ? 'bg-[#2f68fd] text-white shadow-md shadow-blue-600/30'
+                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
                       : 'text-slate-300 hover:text-white'
                   }`}
                 >
@@ -478,37 +496,88 @@ function DashboardApp() {
               </div>
             </div>
 
-            {/* 1. SMART HUB VIEW (Exact Match to User Reference Screenshot) */}
-            {dashboardView === 'hub' && (
-              <section aria-label="پیشخوان هاب هوشمند">
-                <SmartHubDashboard
-                  todayRecord={todayRecord}
-                  records={records}
-                  stats={monthlyStats}
-                  config={config}
-                  leaves={leaves}
-                  selectedYear={selectedYear}
-                  selectedMonth={selectedMonth}
-                  selectedMonthName={selectedMonthName}
-                  userName={user?.displayName || user?.username || 'همکار گرامی'}
-                  onCheckIn={handleCheckIn}
-                  onCheckOut={handleCheckOut}
-                  onResetToday={handleResetToday}
-                  onOpenManualEntry={() => {
-                    setEditingRecord(null);
-                    setIsManualModalOpen(true);
-                  }}
-                  onOpenLeaveModal={() => {
-                    setEditingLeave(null);
-                    setIsLeaveModalOpen(true);
-                  }}
-                  onOpenSettings={() => setIsSettingsModalOpen(true)}
-                  onSwitchToCalendar={() => setDashboardView('calendar')}
-                />
-              </section>
+            {/* 1. FULL DASHBOARD VIEW (Clean Minimal Glass Attendance Command Center) */}
+            {dashboardView === 'full' && (
+              <div className="space-y-4 sm:space-y-6">
+                {/* Live Attendance Punch Card */}
+                <section aria-label="ثبت زنده تردد">
+                  <ClockCard
+                    todayRecord={todayRecord}
+                    config={config}
+                    onCheckIn={handleCheckIn}
+                    onCheckOut={handleCheckOut}
+                    onResetToday={handleResetToday}
+                    onOpenEdit={() => {
+                      setEditingRecord(todayRecord || ({ date: todayStr } as any));
+                      setIsManualModalOpen(true);
+                    }}
+                  />
+                </section>
+
+                {/* Monthly KPI Stats Cards */}
+                {uiSettings.showStatsWidget && (
+                  <section aria-label="خلاصه آماری ماه جاری">
+                    <StatsCards
+                      stats={monthlyStats}
+                      monthName={selectedMonthName}
+                      year={selectedYear}
+                    />
+                  </section>
+                )}
+
+                {/* Centerpiece: Redesigned Minimal Glass Persian Calendar */}
+                <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
+                  <PersianCalendar
+                    records={records}
+                    leaves={leaves}
+                    config={config}
+                    selectedYear={selectedYear}
+                    selectedMonth={selectedMonth}
+                    onYearChange={setSelectedYear}
+                    onMonthChange={setSelectedMonth}
+                    onOpenManualEntryForDate={(dateStr) => {
+                      const existing = records.find((r) => r.date === dateStr);
+                      setEditingRecord(existing || ({ date: dateStr } as any));
+                      setIsManualModalOpen(true);
+                    }}
+                    onOpenLeaveForDate={(dateStr) => {
+                      setEditingLeave({ date: dateStr } as any);
+                      setIsLeaveModalOpen(true);
+                    }}
+                    onDeleteRecord={handleDeleteRecord}
+                  />
+                </section>
+
+                {/* Minimalist Attendance Bar Charts */}
+                {uiSettings.showChartsWidget && (
+                  <section aria-label="نمودارهای آماری کارکرد">
+                    <DashboardCharts
+                      records={records}
+                      stats={monthlyStats}
+                      config={config}
+                      selectedYear={selectedYear}
+                      selectedMonth={selectedMonth}
+                    />
+                  </section>
+                )}
+
+                {/* Recent Activity Table */}
+                {uiSettings.showRecentActivityWidget && (
+                  <section aria-label="آخرین ترددهای ثبت‌شده">
+                    <RecentActivityCard
+                      records={records}
+                      onNavigateToTimesheet={() => setActiveTab('timesheet')}
+                      onEditRecord={(rec) => {
+                        setEditingRecord(rec);
+                        setIsManualModalOpen(true);
+                      }}
+                    />
+                  </section>
+                )}
+              </div>
             )}
 
-            {/* 2. CALENDAR VIEW (Traditional Solar Hijri Calendar + Clock Card) */}
+            {/* 2. CALENDAR-FOCUSED VIEW */}
             {dashboardView === 'calendar' && (
               <div className="space-y-4 sm:space-y-6">
                 <section aria-label="ثبت زنده تردد">
@@ -557,7 +626,7 @@ function DashboardApp() {
               </div>
             )}
 
-            {/* 3. MINIMAL CHARTS VIEW */}
+            {/* 3. CHARTS-FOCUSED VIEW */}
             {dashboardView === 'charts' && (
               <div className="space-y-4 sm:space-y-6">
                 <section aria-label="خلاصه آماری ماه جاری">
@@ -577,20 +646,19 @@ function DashboardApp() {
                     selectedMonth={selectedMonth}
                   />
                 </section>
+
+                <section aria-label="آخرین ترددهای ثبت‌شده">
+                  <RecentActivityCard
+                    records={records}
+                    onNavigateToTimesheet={() => setActiveTab('timesheet')}
+                    onEditRecord={(rec) => {
+                      setEditingRecord(rec);
+                      setIsManualModalOpen(true);
+                    }}
+                  />
+                </section>
               </div>
             )}
-
-            {/* Recent Activity Mini-Table */}
-            <section aria-label="آخرین ترددهای ثبت‌شده">
-              <RecentActivityCard
-                records={records}
-                onNavigateToTimesheet={() => setActiveTab('timesheet')}
-                onEditRecord={(rec) => {
-                  setEditingRecord(rec);
-                  setIsManualModalOpen(true);
-                }}
-              />
-            </section>
           </div>
         )}
 
@@ -765,6 +833,8 @@ function DashboardApp() {
         onSaveConfig={handleSaveConfig}
         currentTheme={currentTheme}
         onSelectTheme={handleSelectTheme}
+        uiSettings={uiSettings}
+        onUpdateUISettings={handleUpdateUISettings}
         dashboardView={dashboardView}
         onSelectDashboardView={setDashboardView}
       />

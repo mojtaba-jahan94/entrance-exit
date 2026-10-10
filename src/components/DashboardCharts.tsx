@@ -181,30 +181,30 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       {/* 2-Column Responsive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* 1. MINIMALIST BAR CHART (Spans 2 columns on lg) */}
-        <div className="lg:col-span-2 rounded-2xl border border-white/[0.08] bg-[#161a28] p-4 sm:p-5 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-2 rounded-2xl glass-panel p-4 sm:p-5 shadow-xl flex flex-col justify-between">
           {/* Header & Minimal Controls */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-3">
+          <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-3">
             <div className="flex items-center gap-2">
-              <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-400 border border-indigo-500/20">
+              <div className="rounded-xl bg-indigo-500/15 p-2 text-[var(--accent-color)] border border-indigo-500/25">
                 <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
                 <h3 className="text-xs sm:text-sm font-bold text-white">روند کارکرد روزانه</h3>
-                <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5">
                   ساعات کارکرد نسبت به موظفی ۸ ساعت
                 </p>
               </div>
             </div>
 
             {/* Mode Switcher (Recent Days vs Full Month) */}
-            <div className="flex items-center gap-1 rounded-xl bg-slate-900/80 p-1 border border-white/[0.06] text-[11px]">
+            <div className="flex items-center gap-1 rounded-xl glass-pill p-1 text-[11px]">
               <button
                 type="button"
                 onClick={() => setChartMode('recent')}
                 className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
                   chartMode === 'recent'
-                    ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[var(--accent-color)] text-white font-bold shadow-sm'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 روزهای اخیر
@@ -214,8 +214,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 onClick={() => setChartMode('month')}
                 className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
                   chartMode === 'month'
-                    ? 'bg-indigo-600 text-white font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[var(--accent-color)] text-white font-bold shadow-sm'
+                    : 'text-slate-300 hover:text-white'
                 }`}
               >
                 کل ماه
@@ -347,11 +347,11 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         </div>
 
         {/* 2. MINIMALIST MONTH SUMMARY CARD (1 column on lg) */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a28] p-4 sm:p-5 shadow-xl flex flex-col justify-between">
+        <div className="rounded-2xl glass-panel p-4 sm:p-5 shadow-xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-4">
+            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
               <div className="flex items-center gap-2">
-                <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
+                <div className="rounded-xl bg-cyan-500/15 p-2 text-cyan-300 border border-cyan-500/25">
                   <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <div>

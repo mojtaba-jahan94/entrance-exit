@@ -184,18 +184,18 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      {/* Outer Card: Matte Deep Charcoal/Navy Container matching screenshot */}
-      <div className="relative overflow-hidden rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-3 sm:p-6 backdrop-blur-2xl shadow-2xl transition-all">
+      {/* Outer Card: Translucent Frosted Glass Container */}
+      <div className="relative overflow-hidden rounded-[26px] sm:rounded-[32px] glass-panel p-3.5 sm:p-6 transition-all">
         {/* Glow ambient background accents */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-blue-600/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[var(--accent-color)]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
 
         {/* Top Header Bar: Month/Year Selector, Chevrons, Today Button & Month Badges */}
-        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.06] pb-4 mb-4">
+        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.08] pb-4 mb-4">
           {/* Left / Title & Selectors */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-md shadow-blue-500/25">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[var(--accent-color)] to-cyan-500 shadow-md shadow-[var(--accent-glow)]">
                 <CalendarIcon className="h-5 w-5 text-white" />
               </div>
 
@@ -204,10 +204,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 <select
                   value={selectedMonth}
                   onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
-                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.08] bg-[#1b2030] px-3.5 py-2 pl-8 text-sm sm:text-base font-bold text-white shadow-inner hover:border-blue-500/50 hover:bg-[#20273b] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.1] bg-white/[0.05] backdrop-blur-md px-3.5 py-2 pl-8 text-sm sm:text-base font-bold text-white shadow-inner hover:border-[var(--accent-color)]/60 hover:bg-white/[0.08] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
                 >
                   {PERSIAN_MONTH_NAMES.map((name, idx) => (
-                    <option key={name} value={idx + 1} className="bg-[#181d2a] text-white">
+                    <option key={name} value={idx + 1} className="bg-slate-900 text-white">
                       {name}
                     </option>
                   ))}
@@ -224,10 +224,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 <select
                   value={selectedYear}
                   onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
-                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.08] bg-[#1b2030] px-3 py-2 pl-7 text-sm sm:text-base font-bold font-mono text-white shadow-inner hover:border-blue-500/50 hover:bg-[#20273b] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.1] bg-white/[0.05] backdrop-blur-md px-3 py-2 pl-7 text-sm sm:text-base font-bold font-mono text-white shadow-inner hover:border-[var(--accent-color)]/60 hover:bg-white/[0.08] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
                 >
                   {availableYears.map((y) => (
-                    <option key={y} value={y} className="bg-[#181d2a] text-white">
+                    <option key={y} value={y} className="bg-slate-900 text-white">
                       {toPersianDigits(y)}
                     </option>
                   ))}
@@ -241,7 +241,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
             </div>
 
             {/* Prev / Next Chevrons Pill */}
-            <div className="flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-[#1b2030] p-1 shadow-inner">
+            <div className="flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-1 shadow-inner">
               <button
                 onClick={handlePrevMonth}
                 title="ماه قبل"
@@ -251,7 +251,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               </button>
               <button
                 onClick={handleGoToToday}
-                className="px-2.5 py-1 text-xs font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-xl transition-all"
+                className="px-2.5 py-1 text-xs font-semibold text-[var(--accent-color)] hover:bg-white/[0.08] rounded-xl transition-all"
               >
                 امروز
               </button>
@@ -265,17 +265,17 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
             </div>
           </div>
 
-          {/* Month Stats Summary Badges */}
+          {/* Month Stats Summary Glass Badges */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar text-[11px] sm:text-xs">
-            <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.06] bg-[#1a1f2e] px-2.5 py-1.5 text-slate-300 shrink-0">
-              <Briefcase className="h-3.5 w-3.5 text-blue-400" />
+            <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-2.5 py-1.5 text-slate-300 shrink-0 shadow-sm">
+              <Briefcase className="h-3.5 w-3.5 text-[var(--accent-color)]" />
               <span>کاری:</span>
               <span className="font-bold font-mono text-white">
                 {toPersianDigits(monthStatsSummary.workingDaysCount)} روز
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1.5 text-rose-300 shrink-0">
+            <div className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/15 backdrop-blur-md px-2.5 py-1.5 text-rose-300 shrink-0 shadow-sm">
               <Sun className="h-3.5 w-3.5 text-rose-400" />
               <span>تعطیلات رسمی:</span>
               <span className="font-bold font-mono text-rose-200">
@@ -283,7 +283,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1.5 text-emerald-300 shrink-0">
+            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 backdrop-blur-md px-2.5 py-1.5 text-emerald-300 shrink-0 shadow-sm">
               <Clock className="h-3.5 w-3.5 text-emerald-400" />
               <span>کارکرد:</span>
               <span className="font-bold font-mono text-emerald-200">
@@ -293,9 +293,9 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
           </div>
         </div>
 
-        {/* Main Grid + Side Panel Layout (Just like the user's reference image!) */}
+        {/* Main Grid + Side Panel Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-          {/* Calendar Grid Section: Left 8-9 cols */}
+          {/* Calendar Grid Section: Left 8 cols */}
           <div className="lg:col-span-8 xl:col-span-8 flex flex-col justify-between">
             {/* Weekday Names Header (7 Columns) */}
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-xs font-semibold">
@@ -307,10 +307,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                     key={name}
                     className={`py-2 px-1 rounded-xl transition-colors ${
                       isFri
-                        ? 'text-rose-400 bg-rose-500/10 font-bold border border-rose-500/20'
+                        ? 'text-rose-400 bg-rose-500/15 font-bold border border-rose-500/25 shadow-sm'
                         : isThu && config.thursdayStatus === 'half_day'
-                        ? 'text-amber-400 bg-amber-500/5'
-                        : 'text-slate-400 bg-white/[0.02]'
+                        ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
+                        : 'text-slate-300 bg-white/[0.03] border border-white/[0.04]'
                     }`}
                   >
                     <span>{name}</span>
@@ -337,12 +337,12 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       cell.isCurrentMonth ? '' : 'opacity-30 hover:opacity-70'
                     } ${
                       isSelected
-                        ? 'bg-gradient-to-b from-[#2f68fd] to-[#1e4cd6] text-white shadow-xl shadow-blue-600/35 ring-2 ring-blue-400 scale-[1.02] z-20'
+                        ? 'bg-gradient-to-b from-[var(--accent-color)] to-[var(--accent-hover)] text-white shadow-xl shadow-[var(--accent-glow)] ring-2 ring-white/40 scale-[1.02] z-20'
                         : cell.isToday
-                        ? 'bg-[#1e2538] border-2 border-cyan-400/80 hover:bg-[#232b40] shadow-md'
+                        ? 'glass-card border-2 border-[var(--accent-color)]/90 shadow-lg shadow-[var(--accent-glow)] hover:border-[var(--accent-color)]'
                         : cell.isHoliday
-                        ? 'bg-[#181d2c]/80 border border-rose-500/20 hover:bg-[#1e2336] hover:border-rose-400/40'
-                        : 'bg-[#171b28] border border-white/[0.05] hover:bg-[#1e2336] hover:border-white/[0.15]'
+                        ? 'bg-rose-500/10 border border-rose-500/25 hover:bg-rose-500/15 hover:border-rose-400/40 text-rose-200 backdrop-blur-md'
+                        : 'glass-card hover:bg-white/[0.08] hover:border-white/[0.18]'
                     }`}
                   >
                     {/* Top Row: Day Number + Status / Today Badge */}
@@ -362,7 +362,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       {/* Small Quick Status Indicator / Today Ring */}
                       <div className="flex items-center gap-1">
                         {cell.isToday && !isSelected && (
-                          <span className="h-2 w-2 rounded-full bg-cyan-400 ring-2 ring-cyan-400/40 animate-pulse" />
+                          <span className="h-2 w-2 rounded-full bg-[var(--accent-color)] ring-2 ring-[var(--accent-glow)] animate-pulse" />
                         )}
                         {isWorkingLive && (
                           <span
@@ -386,13 +386,13 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
 
                     {/* Middle Row: Holiday Pill or Status Pill */}
                     <div className="my-1 space-y-1">
-                      {/* Holiday Badge */}
+                      {/* Holiday Badge (Official Iran Holiday) */}
                       {cell.isHoliday && cell.holidayTitle && (
                         <div
                           className={`truncate text-[9px] sm:text-[10px] font-semibold px-1 py-0.5 rounded-lg ${
                             isSelected
                               ? 'bg-rose-500/30 text-rose-100 border border-rose-300/30'
-                              : 'bg-rose-500/15 text-rose-300 border border-rose-500/25'
+                              : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                           }`}
                           title={cell.holidayTitle}
                         >
@@ -406,11 +406,11 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                           className={`flex items-center justify-between text-[9px] sm:text-[10px] font-mono px-1 py-0.5 rounded-md ${
                             isSelected
                               ? 'bg-white/20 text-white font-bold'
-                              : 'bg-blue-500/15 text-blue-300 border border-blue-500/20'
+                              : 'bg-white/[0.08] text-slate-200 border border-white/[0.1]'
                           }`}
                         >
                           <span className="flex items-center gap-0.5">
-                            <Clock className="h-2.5 w-2.5" />
+                            <Clock className="h-2.5 w-2.5 text-[var(--accent-color)]" />
                             <span>{toPersianDigits(formatMinutesToTimeString(rec.workedMinutes))}</span>
                           </span>
                           {rec.overtimeMinutes > 0 && (
@@ -427,7 +427,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                           className={`truncate text-[9px] sm:text-[10px] font-semibold px-1 py-0.5 rounded-md ${
                             isSelected
                               ? 'bg-amber-400/30 text-amber-100'
-                              : 'bg-amber-500/15 text-amber-300 border border-amber-500/20'
+                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           }`}
                           title="مرخصی ثبت شده"
                         >
@@ -464,18 +464,18 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
             </div>
           </div>
 
-          {/* Right Panel: "Scheduled" / روز و رویدادهای انتخاب شده (Exactly matching the right card in screenshot!) */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-3xl border border-white/[0.08] bg-[#161a27] p-4 sm:p-5 shadow-xl">
+          {/* Right Panel: "برنامه و کارکرد" Frosted Glass Sidebar */}
+          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-3xl glass-card p-4 sm:p-5 shadow-xl">
             {/* Header: Scheduled + Date + Day Chevrons */}
             <div>
-              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs uppercase tracking-wider font-bold text-blue-400">
-                      برنامه و کارکرد
+                    <span className="text-xs uppercase tracking-wider font-bold text-[var(--accent-color)]">
+                      برنامه و کارکرد روز
                     </span>
                     {selectedDate === todayStr && (
-                      <span className="rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-bold px-2 py-0.2 border border-cyan-500/30">
+                      <span className="rounded-full bg-[var(--accent-light)] text-[var(--accent-color)] text-[10px] font-bold px-2 py-0.2 border border-[var(--accent-color)]/30">
                         امروز
                       </span>
                     )}
@@ -490,14 +490,14 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   <button
                     onClick={() => handleShiftSelectedDay(-1)}
                     title="روز قبل"
-                    className="p-1.5 rounded-xl border border-white/[0.06] bg-[#1d2233] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+                    className="p-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.1] transition-all"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleShiftSelectedDay(1)}
                     title="روز بعد"
-                    className="p-1.5 rounded-xl border border-white/[0.06] bg-[#1d2233] text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+                    className="p-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.1] transition-all"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -508,7 +508,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               {selectedDayHoliday.isHoliday && (
                 <div className="mb-4 rounded-2xl border border-rose-500/30 bg-gradient-to-r from-rose-500/20 via-rose-500/10 to-transparent p-3 text-rose-200">
                   <div className="flex items-center gap-2">
-                    <div className="p-1 rounded-lg bg-rose-500/30 text-rose-300">
+                    <div className="p-1.5 rounded-xl bg-rose-500/30 text-rose-300">
                       <Sun className="h-4 w-4" />
                     </div>
                     <div>
@@ -519,24 +519,22 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 </div>
               )}
 
-              {/* Cards matching the color top bars from the screenshot! */}
+              {/* Cards in Minimal Glass Design */}
               <div className="space-y-3">
-                {/* 1. Orange Bar: Check-In & Check-Out Times */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1a2030] p-3.5 transition-all hover:border-orange-500/30">
-                  {/* Top orange accent strip */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-400" />
+                {/* 1. Check-In & Check-Out Times */}
+                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-[var(--accent-color)]/40">
                   <div className="flex items-center justify-between text-xs mb-2">
                     <span className="font-bold text-white flex items-center gap-1.5">
-                      <Clock className="h-4 w-4 text-orange-400" />
+                      <Clock className="h-4 w-4 text-[var(--accent-color)]" />
                       تردد و ساعات حضور
                     </span>
-                    <span className="text-[10px] text-orange-300 font-mono">
+                    <span className="text-[10px] text-slate-300 font-mono">
                       {selectedDayRecord?.status === 'in_progress' ? 'حضور زنده' : 'ثبت ساعت'}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 font-mono text-center">
-                    <div className="rounded-xl bg-[#141824] border border-white/[0.06] p-2">
+                    <div className="rounded-xl glass-pill p-2">
                       <span className="text-[10px] text-slate-400 block mb-0.5">ساعت ورود</span>
                       <span className="text-sm sm:text-base font-bold text-emerald-400">
                         {selectedDayRecord?.checkIn
@@ -544,7 +542,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                           : 'ثبت‌نشده'}
                       </span>
                     </div>
-                    <div className="rounded-xl bg-[#141824] border border-white/[0.06] p-2">
+                    <div className="rounded-xl glass-pill p-2">
                       <span className="text-[10px] text-slate-400 block mb-0.5">ساعت خروج</span>
                       <span className="text-sm sm:text-base font-bold text-rose-400">
                         {selectedDayRecord?.checkOut
@@ -557,7 +555,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   </div>
 
                   {selectedDayRecord?.targetCheckOut && !selectedDayRecord?.checkOut && (
-                    <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between bg-white/[0.02] px-2 py-1 rounded-lg">
+                    <div className="mt-2 text-[11px] text-slate-300 flex items-center justify-between bg-white/[0.03] px-2 py-1 rounded-lg border border-white/[0.04]">
                       <span>خروج پیشنهادی استاندارد:</span>
                       <span className="font-mono text-cyan-300 font-bold">
                         {toPersianDigits(selectedDayRecord.targetCheckOut)}
@@ -566,10 +564,8 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   )}
                 </div>
 
-                {/* 2. Lime Green Bar: Effective Worked Hours & Daily Progress */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1a2030] p-3.5 transition-all hover:border-lime-500/30">
-                  {/* Top lime accent strip */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-lime-500 to-emerald-400" />
+                {/* 2. Effective Worked Hours & Daily Progress */}
+                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-lime-500/40">
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="font-bold text-white flex items-center gap-1.5">
                       <Flame className="h-4 w-4 text-lime-400" />
@@ -585,9 +581,9 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   {/* Progress Bar */}
                   {selectedDayRecord && (
                     <div className="space-y-1 mt-2">
-                      <div className="flex justify-between text-[10px] text-slate-400">
+                      <div className="flex justify-between text-[10px] text-slate-300">
                         <span>تحقق شیفت موظف:</span>
-                        <span className="font-mono text-lime-300">
+                        <span className="font-mono text-lime-300 font-bold">
                           {toPersianDigits(
                             Math.min(
                               100,
@@ -599,7 +595,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                           ٪
                         </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-[#121622] overflow-hidden">
+                      <div className="h-2 w-full rounded-full bg-black/40 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-lime-500 to-emerald-400 transition-all duration-500"
                           style={{
@@ -618,23 +614,21 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   {selectedDayRecord?.breakMinutes ? (
                     <div className="mt-2 text-[10px] text-slate-400 flex items-center justify-between">
                       <span>مدت کسر استراحت ناهار:</span>
-                      <span className="font-mono text-slate-300">
+                      <span className="font-mono text-slate-300 font-semibold">
                         {toPersianDigits(selectedDayRecord.breakMinutes)} دقیقه
                       </span>
                     </div>
                   ) : null}
                 </div>
 
-                {/* 3. Electric Blue Bar: Overtime, Deficit & Balance */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1a2030] p-3.5 transition-all hover:border-blue-500/30">
-                  {/* Top electric blue strip */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-400" />
+                {/* 3. Overtime, Deficit & Balance */}
+                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-[var(--accent-color)]/40">
                   <div className="flex items-center justify-between text-xs mb-2">
                     <span className="font-bold text-white flex items-center gap-1.5">
-                      <Zap className="h-4 w-4 text-blue-400" />
+                      <Zap className="h-4 w-4 text-cyan-400" />
                       اضافه‌کار و تراز
                     </span>
-                    <span className="text-[10px] font-mono text-blue-300">
+                    <span className="text-[10px] font-mono text-cyan-300">
                       تراز:{' '}
                       {selectedDayRecord
                         ? toPersianDigits(
@@ -645,9 +639,9 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                    <div className="rounded-xl bg-[#141824] p-2 border border-white/[0.04]">
+                    <div className="rounded-xl glass-pill p-2">
                       <span className="text-[10px] text-slate-400 block">اضافه کاری</span>
-                      <span className="font-bold text-cyan-400">
+                      <span className="font-bold text-cyan-300">
                         {selectedDayRecord?.overtimeMinutes
                           ? toPersianDigits(
                               formatMinutesToTimeString(selectedDayRecord.overtimeMinutes)
@@ -655,7 +649,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                           : '۰:۰۰'}
                       </span>
                     </div>
-                    <div className="rounded-xl bg-[#141824] p-2 border border-white/[0.04]">
+                    <div className="rounded-xl glass-pill p-2">
                       <span className="text-[10px] text-slate-400 block">کسر کار</span>
                       <span className="font-bold text-rose-400">
                         {selectedDayRecord?.deficitMinutes
@@ -670,7 +664,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
 
                 {/* 4. Leaves & Notes */}
                 {(selectedDayLeaves.length > 0 || selectedDayRecord?.note) && (
-                  <div className="rounded-2xl border border-white/[0.06] bg-[#1a2030] p-3.5 space-y-2">
+                  <div className="rounded-2xl border border-white/[0.08] glass-subcard p-3.5 space-y-2">
                     <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                       <Coffee className="h-3.5 w-3.5" />
                       مرخصی‌ها و یادداشت روز
@@ -678,7 +672,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                     {selectedDayLeaves.map((l) => (
                       <div
                         key={l.id}
-                        className="rounded-xl bg-[#141824] p-2 text-xs border border-amber-500/20 text-slate-200"
+                        className="rounded-xl glass-pill p-2 text-xs border border-amber-500/25 text-slate-200"
                       >
                         <div className="flex justify-between font-semibold">
                           <span>{l.type === 'hourly' ? 'مرخصی ساعتی' : 'مرخصی روزانه'}</span>
@@ -690,7 +684,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       </div>
                     ))}
                     {selectedDayRecord?.note && (
-                      <p className="text-[11px] text-slate-300 bg-[#141824] p-2 rounded-xl italic">
+                      <p className="text-[11px] text-slate-300 glass-pill p-2 rounded-xl italic">
                         {selectedDayRecord.note}
                       </p>
                     )}
@@ -700,10 +694,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
             </div>
 
             {/* Action Buttons at the bottom of the sidebar */}
-            <div className="mt-4 pt-3 border-t border-white/[0.06] space-y-2">
+            <div className="mt-4 pt-3 border-t border-white/[0.08] space-y-2">
               <button
                 onClick={() => onOpenManualEntryForDate(selectedDate)}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-4 text-xs shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98]"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl glass-button-primary hover:opacity-95 font-bold py-2.5 px-4 text-xs shadow-lg transition-all active:scale-[0.98]"
               >
                 <Edit3 className="h-4 w-4" />
                 <span>{selectedDayRecord ? 'ویرایش تردد این روز' : 'ثبت تردد برای این روز'}</span>
@@ -712,7 +706,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => onOpenLeaveForDate(selectedDate)}
-                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
+                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-amber-500/30 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
                 >
                   <Coffee className="h-3.5 w-3.5" />
                   <span>ثبت مرخصی</span>
@@ -721,7 +715,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 {selectedDayRecord && (
                   <button
                     onClick={() => onDeleteRecord(selectedDayRecord.id)}
-                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
+                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-rose-500/30 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span>حذف تردد</span>

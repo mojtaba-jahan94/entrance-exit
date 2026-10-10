@@ -33,30 +33,30 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
     .slice(0, 5);
 
   return (
-    <div className="rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-5 backdrop-blur-2xl shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-3">
+    <div className="rounded-[26px] sm:rounded-[32px] glass-panel p-4 sm:p-5 shadow-xl transition-all">
+      <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-3">
         <div className="flex items-center gap-2">
-          <div className="rounded-xl bg-blue-500/10 p-2 text-blue-400 border border-blue-500/20">
+          <div className="rounded-xl bg-blue-500/15 p-2 text-[var(--accent-color)] border border-blue-500/25">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-white">آخرین وضعیت ترددهای ثبت‌شده</h3>
-            <p className="text-[10px] sm:text-xs text-slate-400">مرور سریع روزهای کاری اخیر</p>
+            <p className="text-[10px] sm:text-xs text-slate-300">مرور سریع روزهای کاری اخیر</p>
           </div>
         </div>
 
         <button
           onClick={onNavigateToTimesheet}
-          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold group transition-all"
+          className="flex items-center gap-1 text-xs text-[var(--accent-color)] hover:underline font-semibold group transition-all"
         >
           <span>مشاهده کل ترددها</span>
           <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         </button>
       </div>
 
-      <div className="divide-y divide-slate-800/60">
+      <div className="divide-y divide-white/[0.05]">
         {recentRecords.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500">
+          <div className="py-8 text-center text-xs text-slate-400">
             هنوز رکوردی برای نمایش وجود ندارد.
           </div>
         ) : (
@@ -66,12 +66,12 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
               <div
                 key={r.id || r.date}
                 onClick={() => onEditRecord(r)}
-                className="py-2.5 sm:py-3 flex items-center justify-between gap-2 hover:bg-slate-800/30 px-2 rounded-xl transition-colors cursor-pointer group"
+                className="py-2.5 sm:py-3 flex items-center justify-between gap-2 hover:bg-white/[0.04] px-2 rounded-xl transition-colors cursor-pointer group"
               >
                 {/* Date & Weekday */}
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="flex flex-col">
-                    <span className="font-mono text-xs sm:text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+                    <span className="font-mono text-xs sm:text-sm font-bold text-white group-hover:text-[var(--accent-color)] transition-colors">
                       {toPersianDigits(r.date)}
                     </span>
                     <span className="text-[10px] text-slate-400">{weekday}</span>
@@ -80,13 +80,13 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
 
                 {/* Times (Check In / Check Out) */}
                 <div className="flex items-center gap-2 font-mono text-xs">
-                  <div className="bg-slate-950/70 border border-slate-800 px-2 py-1 rounded-lg text-emerald-400 text-center">
-                    <span className="text-[9px] text-slate-500 block">ورود</span>
+                  <div className="glass-pill px-2.5 py-1 text-emerald-400 text-center">
+                    <span className="text-[9px] text-slate-400 block">ورود</span>
                     <span>{r.checkIn ? toPersianDigits(r.checkIn) : '--:--'}</span>
                   </div>
-                  <span className="text-slate-600">-</span>
-                  <div className="bg-slate-950/70 border border-slate-800 px-2 py-1 rounded-lg text-rose-400 text-center">
-                    <span className="text-[9px] text-slate-500 block">خروج</span>
+                  <span className="text-slate-500">-</span>
+                  <div className="glass-pill px-2.5 py-1 text-rose-400 text-center">
+                    <span className="text-[9px] text-slate-400 block">خروج</span>
                     <span>{r.checkOut ? toPersianDigits(r.checkOut) : '--:--'}</span>
                   </div>
                 </div>
