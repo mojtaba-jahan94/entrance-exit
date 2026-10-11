@@ -1,4 +1,4 @@
-export type AppTheme = 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
+export type AppTheme = 'agentic' | 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -13,13 +13,23 @@ export interface ThemeConfig {
 
 export const APP_THEMES: ThemeConfig[] = [
   {
+    id: 'agentic',
+    name: 'Agentic Minimal',
+    persianName: 'ایجنتیک مونوکروم (الگوی اصلی)',
+    description: 'الهام‌گرفته از طراحی مدرن و مینیمال Agentic با زمینه کرم عاجی و تایپوگرافی سوئیسی',
+    previewBg: '#F5F4F0',
+    previewCard: '#ffffff',
+    previewAccent: '#111111',
+    isDark: false,
+  },
+  {
     id: 'obsidian',
-    name: 'Plum Violet Glass',
-    persianName: 'یاقوت بنفش شیشه‌ای (پیش‌فرض)',
-    description: 'تم فوق‌العاده مدرن شیشه‌ای تیره با هاله‌های بادمجانی، بنفش و نئون ارغوانی',
-    previewBg: '#110b1a',
-    previewCard: '#1f132f',
-    previewAccent: '#8b5cf6',
+    name: 'Obsidian Aurora',
+    persianName: 'شفق نوکتورن تیره',
+    description: 'تم لوکس تیره با هاله‌های سرمه‌ای و اکسنت‌های فیروزه‌ای و نیلی',
+    previewBg: '#090b14',
+    previewCard: '#121526',
+    previewAccent: '#6366f1',
     isDark: true,
   },
   {
@@ -75,14 +85,13 @@ export function getStoredTheme(): AppTheme {
   } catch {
     // Ignore storage errors
   }
-  return 'obsidian';
+  return 'agentic';
 }
 
 export function saveStoredTheme(theme: AppTheme): void {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     applyThemeToDOM(theme);
-    window.dispatchEvent(new CustomEvent('app-theme-changed', { detail: theme }));
   } catch {
     // Ignore storage errors
   }
@@ -98,7 +107,7 @@ export function applyThemeToDOM(theme: AppTheme): void {
   if (rootEl) {
     rootEl.setAttribute('data-theme', theme);
   }
-  if (theme === 'light') {
+  if (theme === 'agentic' || theme === 'light') {
     root.classList.remove('dark');
     root.classList.add('light');
     if (document.body) {

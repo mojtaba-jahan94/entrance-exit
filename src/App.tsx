@@ -9,13 +9,13 @@ import {
   Table as TableIcon,
   TrendingUp,
   CalendarClock,
-  Sparkles,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
   getCurrentJalaliDate,
   getTodayJalaliString,
   PERSIAN_MONTH_NAMES,
+  PERSIAN_WEEKDAY_NAMES,
   toPersianDigits,
   getJalaliWeekdayIndex,
 } from './utils/jalali';
@@ -59,13 +59,6 @@ import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
 import { SettingsModal } from './components/SettingsModal';
 import { BackupModal } from './components/BackupModal';
-import {
-  UISettings,
-  getStoredUISettings,
-  saveStoredUISettings,
-  applyUISettingsToDOM,
-  DashboardViewMode,
-} from './utils/uiSettings';
 
 function DashboardApp() {
   const { user, storageMode, syncDataToCloud, loadDataFromCloud } = useAuth();
@@ -73,9 +66,9 @@ function DashboardApp() {
 
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
+  const todayWeekdayName = useMemo(() => PERSIAN_WEEKDAY_NAMES[getJalaliWeekdayIndex(todayStr)] || '', [todayStr]);
 
-  // UI & Theme State
-  const [uiSettings, setUiSettings] = useState<UISettings>(getStoredUISettings);
+  // Theme State
   const [currentTheme, setCurrentTheme] = useState<AppTheme>(getStoredTheme);
 
   // Active Tab State (dashboard, timesheet, leaves, reports)
@@ -88,11 +81,9 @@ function DashboardApp() {
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
 
-  // Search & Dashboard View Mode ('full', 'calendar', 'charts')
+  // Search & Dashboard View Mode
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [dashboardView, setDashboardView] = useState<DashboardViewMode>(
-    uiSettings.defaultDashboardView || 'full'
-  );
+  const [dashboardView, setDashboardView] = useState<'calendar' | 'charts'>('calendar');
 
   // Modals state
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
@@ -108,15 +99,6 @@ function DashboardApp() {
   useEffect(() => {
     applyThemeToDOM(currentTheme);
   }, [currentTheme]);
-
-  useEffect(() => {
-    applyUISettingsToDOM(uiSettings);
-  }, [uiSettings]);
-
-  const handleUpdateUISettings = (newSettings: UISettings) => {
-    setUiSettings(newSettings);
-    saveStoredUISettings(newSettings);
-  };
 
   const handleSelectTheme = (theme: AppTheme) => {
     setCurrentTheme(theme);
@@ -440,226 +422,183 @@ function DashboardApp() {
         onSearchChange={setSearchQuery}
       />
 
-      {/* Main Content Area: md:pl-24 accounts for the floating vertical pill dock on the left */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pl-24">
+      {/* Main Content Area */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 pt-20 sm:pt-24 pb-20">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-            {/* View Switcher Bar */}
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-[var(--accent-color)] animate-pulse" />
-                <span className="text-xs sm:text-sm font-bold text-white">
-                  {dashboardView === 'full'
-                    ? 'پیشخوان جامع کارکرد، تردد و تقویم'
-                    : dashboardView === 'calendar'
-                    ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی'
-                    : 'نمودارهای آماری کارکرد و انضباط'}
-                </span>
+            {/* Agentic Hero Header */}
+            <header className="relative pt-2 pb-1 text-right">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                <div className="agentic-pill">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-status-pulse" />
+                  <span>AGENTIC SYSTEM // v2.6.4</span>
+                </div>
+                <div className="text-[11px] font-mono text-stone-500 bg-black/[0.03] border border-black/[0.06] px-2.5 py-1 rounded-full">
+                  <span>{todayWeekdayName}</span> • <span>{toPersianDigits(todayStr)}</span>
+                </div>
               </div>
 
-              {/* View switcher between Full, Calendar, and Charts */}
-              <div className="flex items-center gap-1 rounded-2xl glass-pill p-1 text-xs">
-                <button
-                  onClick={() => setDashboardView('full')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                    dashboardView === 'full'
-                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <LayoutDashboard className="h-3.5 w-3.5" />
-                  <span>پیشخوان جامع</span>
-                </button>
-                <button
-                  onClick={() => setDashboardView('calendar')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                    dashboardView === 'calendar'
-                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <Calendar className="h-3.5 w-3.5" />
-                  <span>تقویم شمسی</span>
-                </button>
-                <button
-                  onClick={() => setDashboardView('charts')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
-                    dashboardView === 'charts'
-                      ? 'bg-[var(--accent-color)] text-white shadow-md shadow-[var(--accent-glow)]'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  <span>نمودارها</span>
-                </button>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-[#111111] leading-tight">
+                سامانه هوشمند <span className="font-semibold">ثبت تردد و مدیریت شیفت</span>
+              </h1>
+              <p className="mt-1 text-xs sm:text-sm text-stone-600 max-w-2xl leading-relaxed">
+                محاسبه بلادرنگ ساعات کاری، اضافه‌کار، کسرکار و سقف مرخصی بر اساس تقویم رسمی و شناوری اداری
+              </p>
+            </header>
+
+            {/* Continuous Marquee Ticker Ribbon */}
+            <div className="relative overflow-hidden rounded-xl border border-black/[0.07] bg-white/60 backdrop-blur-md py-2 shadow-xs">
+              <div className="animate-marquee-left flex items-center gap-8 text-[11px] font-mono text-stone-600 select-none">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>شیفت استاندارد: {config.startTime} الی {config.endTime}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>ورود شناور: {config.flexStartTimeMin} تا {config.flexStartTimeMax}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴.۵ ساعت)' : 'روز کاری کامل'}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>فرجه ناهار و استراحت: {toPersianDigits(config.defaultBreakMinutes || 30)} دقیقه</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>سهمیه مرخصی ماهانه: {toPersianDigits(config.monthlyLeaveDays || 2.5)} روز</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span>وضعیت اتصال: ابری و همگام</span>
+                </div>
+                {/* Repeat for seamless loop */}
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span>شیفت استاندارد: {config.startTime} الی {config.endTime}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>ورود شناور: {config.flexStartTimeMin} تا {config.flexStartTimeMax}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴.۵ ساعت)' : 'روز کاری کامل'}</span>
+                </div>
+                <span className="text-stone-300">/</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span>فرجه ناهار و استراحت: {toPersianDigits(config.defaultBreakMinutes || 30)} دقیقه</span>
+                </div>
               </div>
             </div>
 
-            {/* 1. FULL DASHBOARD VIEW (Clean Minimal Glass Attendance Command Center) */}
-            {dashboardView === 'full' && (
-              <div className="space-y-4 sm:space-y-6">
-                {/* Live Attendance Punch Card */}
-                <section aria-label="ثبت زنده تردد">
-                  <ClockCard
-                    todayRecord={todayRecord}
-                    config={config}
-                    onCheckIn={handleCheckIn}
-                    onCheckOut={handleCheckOut}
-                    onResetToday={handleResetToday}
-                    onOpenEdit={() => {
-                      setEditingRecord(todayRecord || ({ date: todayStr } as any));
-                      setIsManualModalOpen(true);
-                    }}
-                  />
-                </section>
+            {/* Live Clock Card */}
+            <section aria-label="ثبت زنده تردد">
+              <ClockCard
+                todayRecord={todayRecord}
+                config={config}
+                onCheckIn={handleCheckIn}
+                onCheckOut={handleCheckOut}
+                onResetToday={handleResetToday}
+                onOpenEdit={() => {
+                  setEditingRecord(todayRecord || ({ date: todayStr } as any));
+                  setIsManualModalOpen(true);
+                }}
+              />
+            </section>
 
-                {/* Centerpiece: Dark Glassmorphic Analytics & Charts (Matching Reference Design) */}
-                {uiSettings.showChartsWidget && (
-                  <section aria-label="نمودارهای آماری و تحلیل کارکرد">
-                    <DashboardCharts
-                      records={records}
-                      stats={monthlyStats}
-                      config={config}
-                      selectedYear={selectedYear}
-                      selectedMonth={selectedMonth}
-                      onFilterClick={() => setIsSettingsModalOpen(true)}
-                    />
-                  </section>
-                )}
+            {/* Quick KPI Stats Summary */}
+            <section aria-label="خلاصه آماری ماه جاری">
+              <StatsCards
+                stats={monthlyStats}
+                monthName={selectedMonthName}
+                year={selectedYear}
+              />
+            </section>
 
-                {/* Centerpiece: Redesigned Minimal Glass Persian Calendar */}
-                <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
-                  <PersianCalendar
-                    records={records}
-                    leaves={leaves}
-                    config={config}
-                    selectedYear={selectedYear}
-                    selectedMonth={selectedMonth}
-                    onYearChange={setSelectedYear}
-                    onMonthChange={setSelectedMonth}
-                    onOpenManualEntryForDate={(dateStr) => {
-                      const existing = records.find((r) => r.date === dateStr);
-                      setEditingRecord(existing || ({ date: dateStr } as any));
-                      setIsManualModalOpen(true);
-                    }}
-                    onOpenLeaveForDate={(dateStr) => {
-                      setEditingLeave({ date: dateStr } as any);
-                      setIsLeaveModalOpen(true);
-                    }}
-                    onDeleteRecord={handleDeleteRecord}
-                  />
-                </section>
+            {/* Smart Solar Hijri Calendar (Prominent Centerpiece replacing charts) */}
+            <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-status-pulse" />
+                  <span className="text-xs sm:text-sm font-semibold tracking-wide text-[#111111]">
+                    {dashboardView === 'calendar' ? 'تقویم هوشمند شمسی با رویدادها و برنامه شیفت' : 'نمودارهای تحلیلی و مقایسه‌ای کارکرد'}
+                  </span>
+                </div>
 
-                {/* Monthly KPI Stats Cards */}
-                {uiSettings.showStatsWidget && (
-                  <section aria-label="خلاصه آماری ماه جاری">
-                    <StatsCards
-                      stats={monthlyStats}
-                      monthName={selectedMonthName}
-                      year={selectedYear}
-                    />
-                  </section>
-                )}
-
-                {/* Recent Activity Table */}
-                {uiSettings.showRecentActivityWidget && (
-                  <section aria-label="آخرین ترددهای ثبت‌شده">
-                    <RecentActivityCard
-                      records={records}
-                      onNavigateToTimesheet={() => setActiveTab('timesheet')}
-                      onEditRecord={(rec) => {
-                        setEditingRecord(rec);
-                        setIsManualModalOpen(true);
-                      }}
-                    />
-                  </section>
-                )}
+                {/* View switcher between Calendar and Charts */}
+                <div className="flex items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 backdrop-blur-md p-1 shadow-xs text-xs">
+                  <button
+                    onClick={() => setDashboardView('calendar')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-medium transition-all ${
+                      dashboardView === 'calendar'
+                        ? 'bg-[#111111] text-white shadow-xs'
+                        : 'text-stone-600 hover:text-[#111111]'
+                    }`}
+                  >
+                    <Calendar className="h-3.5 w-3.5" />
+                    <span>تقویم شمسی</span>
+                  </button>
+                  <button
+                    onClick={() => setDashboardView('charts')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-medium transition-all ${
+                      dashboardView === 'charts'
+                        ? 'bg-[#111111] text-white shadow-xs'
+                        : 'text-stone-600 hover:text-[#111111]'
+                    }`}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5" />
+                    <span>نمودارها</span>
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* 2. CALENDAR-FOCUSED VIEW */}
-            {dashboardView === 'calendar' && (
-              <div className="space-y-4 sm:space-y-6">
-                <section aria-label="ثبت زنده تردد">
-                  <ClockCard
-                    todayRecord={todayRecord}
-                    config={config}
-                    onCheckIn={handleCheckIn}
-                    onCheckOut={handleCheckOut}
-                    onResetToday={handleResetToday}
-                    onOpenEdit={() => {
-                      setEditingRecord(todayRecord || ({ date: todayStr } as any));
-                      setIsManualModalOpen(true);
-                    }}
-                  />
-                </section>
+              {dashboardView === 'calendar' ? (
+                <PersianCalendar
+                  records={records}
+                  leaves={leaves}
+                  config={config}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                  onYearChange={setSelectedYear}
+                  onMonthChange={setSelectedMonth}
+                  onOpenManualEntryForDate={(dateStr) => {
+                    const existing = records.find((r) => r.date === dateStr);
+                    setEditingRecord(existing || ({ date: dateStr } as any));
+                    setIsManualModalOpen(true);
+                  }}
+                  onOpenLeaveForDate={(dateStr) => {
+                    setEditingLeave({ date: dateStr } as any);
+                    setIsLeaveModalOpen(true);
+                  }}
+                  onDeleteRecord={handleDeleteRecord}
+                />
+              ) : (
+                <DashboardCharts
+                  records={records}
+                  stats={monthlyStats}
+                  config={config}
+                  selectedYear={selectedYear}
+                  selectedMonth={selectedMonth}
+                />
+              )}
+            </section>
 
-                <section aria-label="خلاصه آماری ماه جاری">
-                  <StatsCards
-                    stats={monthlyStats}
-                    monthName={selectedMonthName}
-                    year={selectedYear}
-                  />
-                </section>
-
-                <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
-                  <PersianCalendar
-                    records={records}
-                    leaves={leaves}
-                    config={config}
-                    selectedYear={selectedYear}
-                    selectedMonth={selectedMonth}
-                    onYearChange={setSelectedYear}
-                    onMonthChange={setSelectedMonth}
-                    onOpenManualEntryForDate={(dateStr) => {
-                      const existing = records.find((r) => r.date === dateStr);
-                      setEditingRecord(existing || ({ date: dateStr } as any));
-                      setIsManualModalOpen(true);
-                    }}
-                    onOpenLeaveForDate={(dateStr) => {
-                      setEditingLeave({ date: dateStr } as any);
-                      setIsLeaveModalOpen(true);
-                    }}
-                    onDeleteRecord={handleDeleteRecord}
-                  />
-                </section>
-              </div>
-            )}
-
-            {/* 3. CHARTS-FOCUSED VIEW */}
-            {dashboardView === 'charts' && (
-              <div className="space-y-4 sm:space-y-6">
-                <section aria-label="خلاصه آماری ماه جاری">
-                  <StatsCards
-                    stats={monthlyStats}
-                    monthName={selectedMonthName}
-                    year={selectedYear}
-                  />
-                </section>
-
-                <section aria-label="نمودارهای آماری کارکرد">
-                  <DashboardCharts
-                    records={records}
-                    stats={monthlyStats}
-                    config={config}
-                    selectedYear={selectedYear}
-                    selectedMonth={selectedMonth}
-                  />
-                </section>
-
-                <section aria-label="آخرین ترددهای ثبت‌شده">
-                  <RecentActivityCard
-                    records={records}
-                    onNavigateToTimesheet={() => setActiveTab('timesheet')}
-                    onEditRecord={(rec) => {
-                      setEditingRecord(rec);
-                      setIsManualModalOpen(true);
-                    }}
-                  />
-                </section>
-              </div>
-            )}
+            {/* Recent Activity Mini-Table */}
+            <section aria-label="آخرین ترددهای ثبت‌شده">
+              <RecentActivityCard
+                records={records}
+                onNavigateToTimesheet={() => setActiveTab('timesheet')}
+                onEditRecord={(rec) => {
+                  setEditingRecord(rec);
+                  setIsManualModalOpen(true);
+                }}
+              />
+            </section>
           </div>
         )}
 
@@ -725,6 +664,71 @@ function DashboardApp() {
         )}
       </main>
 
+      {/* Mobile Floating Bottom Bar */}
+      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-lg shadow-black/[0.06] rounded-2xl px-2 py-1.5 flex items-center justify-around text-[11px]">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+            activeTab === 'dashboard'
+              ? 'text-black font-bold'
+              : 'text-stone-500 hover:text-stone-900'
+          }`}
+        >
+          <LayoutDashboard className="h-4 w-4" />
+          <span>پیشخوان</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('timesheet')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+            activeTab === 'timesheet'
+              ? 'text-black font-bold'
+              : 'text-stone-500 hover:text-stone-900'
+          }`}
+        >
+          <TableIcon className="h-4 w-4" />
+          <span>کارنامه</span>
+        </button>
+
+        {/* Center Quick Add Punch */}
+        <button
+          onClick={() => {
+            setEditingRecord(null);
+            setIsManualModalOpen(true);
+          }}
+          className="flex flex-col items-center gap-1 py-0.5 px-2 active:scale-95 transition-all"
+        >
+          <div className="h-8 w-8 rounded-full bg-[#111111] shadow-md shadow-black/20 flex items-center justify-center text-white">
+            <PlusCircle className="h-4 w-4" />
+          </div>
+          <span className="text-[9px] font-bold text-stone-900">ثبت</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('leaves')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+            activeTab === 'leaves'
+              ? 'text-black font-bold'
+              : 'text-stone-500 hover:text-stone-900'
+          }`}
+        >
+          <Coffee className="h-4 w-4" />
+          <span>مرخصی</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('reports')}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+            activeTab === 'reports'
+              ? 'text-black font-bold'
+              : 'text-stone-500 hover:text-stone-900'
+          }`}
+        >
+          <TrendingUp className="h-4 w-4" />
+          <span>گزارشات</span>
+        </button>
+      </div>
+
       {/* Modals */}
       <ManualEntryModal
         isOpen={isManualModalOpen}
@@ -759,12 +763,6 @@ function DashboardApp() {
         onClose={() => setIsSettingsModalOpen(false)}
         config={config}
         onSaveConfig={handleSaveConfig}
-        currentTheme={currentTheme}
-        onSelectTheme={handleSelectTheme}
-        uiSettings={uiSettings}
-        onUpdateUISettings={handleUpdateUISettings}
-        dashboardView={dashboardView}
-        onSelectDashboardView={setDashboardView}
       />
 
       <BackupModal
@@ -794,15 +792,15 @@ function AppWithAuth() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-4">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#F5F4F0] text-[#111111] p-4">
         <div className="relative flex items-center justify-center mb-4">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-xl shadow-indigo-500/25">
-            <CalendarClock className="h-8 w-8 text-white animate-pulse" />
+          <div className="h-14 w-14 rounded-2xl bg-[#111111] flex items-center justify-center shadow-lg shadow-black/10">
+            <CalendarClock className="h-7 w-7 text-white animate-pulse" />
           </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-400 font-medium">
-          <span className="h-4 w-4 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-          <span>در حال بررسی امنیت و بارگذاری سامانه...</span>
+        <div className="flex items-center gap-2 text-xs font-mono text-stone-500 tracking-wider">
+          <span className="h-3.5 w-3.5 rounded-full border-2 border-stone-800 border-t-transparent animate-spin" />
+          <span>INITIALIZING AGENTIC ATTENDANCE...</span>
         </div>
       </div>
     );

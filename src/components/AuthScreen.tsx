@@ -76,62 +76,56 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-100 overflow-hidden font-sans">
-      {/* Background glowing ambiance */}
-      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -top-32 left-1/3 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="relative w-full max-w-md mx-auto z-10">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#F5F4F0] text-[#111] font-sans">
+      <div className="w-full max-w-md mx-auto z-10 py-8">
         {/* Brand / Logo Section */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 shadow-xl shadow-indigo-500/25 ring-2 ring-white/20 mb-4 animate-in zoom-in-95 duration-500">
-            <CalendarClock className="h-8 w-8 text-white" />
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-widest text-black/50 bg-black/[0.04] border border-black/[0.06] uppercase mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>AGENTIC SYSTEM // سامانه هوشمند تردد</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
-            سامانه یکپارچه مدیریت کارکرد و تردد
+
+          <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-[#111] mb-2">
+            ورود به سامانه کارکرد و تردد
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
-            احراز هویت امن با استانداردهای نوین حفاظت از اطلاعات
+          <p className="text-xs sm:text-sm text-black/45 leading-relaxed">
+            محاسبه دقیق شیفت‌های کاری، اضافه کار، تاخیر و مرخصی
           </p>
         </div>
 
         {/* Server Status Ribbon */}
         <div className="mb-4 flex items-center justify-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-[11px] font-medium shadow-sm">
-            <Server className="h-3.5 w-3.5 text-cyan-400" />
-            <span className="text-slate-400">وضعیت سامانه:</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/[0.03] border border-black/[0.06] text-[11px] font-mono text-black/60">
+            <Server className="h-3.5 w-3.5 text-black/40" />
+            <span>وضعیت سرور:</span>
             {dbStatus === 'connected' && (
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                سرور مرکزی فعال و متصل
+              <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                متصل و فعال
               </span>
             )}
             {dbStatus === 'not_configured' && (
-              <span className="flex items-center gap-1.5 text-amber-400 font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
-                در انتظار راه‌اندازی سرور مرکزی
+              <span className="flex items-center gap-1.5 text-amber-700 font-semibold">
+                پایگاه داده در انتظار راه‌اندازی
               </span>
             )}
             {dbStatus === 'error' && (
-              <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-rose-400" />
-                عدم اتصال به سرور مرکزی
+              <span className="flex items-center gap-1.5 text-rose-700 font-semibold">
+                عدم اتصال
               </span>
             )}
             {dbStatus === 'checking' && (
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-slate-400 animate-ping" />
-                بررسی وضعیت اتصال...
+              <span className="flex items-center gap-1.5 text-black/40">
+                بررسی وضعیت...
               </span>
             )}
           </div>
         </div>
 
         {/* Auth Card */}
-        <div className="bg-[#161a28]/95 backdrop-blur-2xl border border-white/[0.1] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-white border border-black/[0.08] rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.06),_0_2px_8px_rgba(0,0,0,0.04)]">
           {/* Tabs */}
-          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-950/80 border border-slate-800/80 mb-6">
+          <div className="grid grid-cols-2 p-1 rounded-xl bg-black/[0.03] border border-black/[0.05] mb-6">
             <button
               type="button"
               onClick={() => {
@@ -139,14 +133,13 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`py-2 text-xs font-medium rounded-lg transition-all ${
                 mode === 'login'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#111] text-white shadow-xs'
+                  : 'text-black/60 hover:text-black'
               }`}
             >
-              <LogIn className="h-4 w-4" />
-              <span>ورود به حساب</span>
+              ورود به حساب
             </button>
             <button
               type="button"
@@ -155,96 +148,79 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`py-2 text-xs font-medium rounded-lg transition-all ${
                 mode === 'register'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#111] text-white shadow-xs'
+                  : 'text-black/60 hover:text-black'
               }`}
             >
-              <UserPlus className="h-4 w-4" />
-              <span>ثبت‌نام جدید</span>
+              ثبت‌نام کاربر جدید
             </button>
           </div>
 
-          {/* Alerts */}
-          {errorMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
-              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {errorMsg && (
+              <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-800 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  نام و نام خانوادگی
+                <label className="block text-xs font-medium text-black/70 mb-1.5">
+                  نام و نام خانوادگی:
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                    <Sparkles className="h-4 w-4" />
-                  </div>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="مثال: علی احمدی"
-                    required
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="مثال: علی احمدی"
+                  className="w-full bg-white border border-black/10 rounded-xl px-3.5 py-2.5 text-xs text-[#111] placeholder:text-black/30 focus:border-black/30 focus:outline-none transition-all"
+                  required
+                />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                نام کاربری
+              <label className="block text-xs font-medium text-black/70 mb-1.5">
+                نام کاربری:
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                  <UserIcon className="h-4 w-4" />
-                </div>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="مثال: user_admin"
-                  dir="ltr"
-                  required
-                  className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
-                />
-              </div>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="نام کاربری (حداقل ۳ حرف انگلیسی یا فارسی)"
+                className="w-full bg-white border border-black/10 rounded-xl px-3.5 py-2.5 text-xs text-[#111] placeholder:text-black/30 focus:border-black/30 focus:outline-none transition-all font-mono"
+                required
+              />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                رمز عبور
+              <label className="block text-xs font-medium text-black/70 mb-1.5">
+                رمز عبور:
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="h-4 w-4" />
-                </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="حداقل ۶ کاراکتر"
-                  dir="ltr"
+                  className="w-full bg-white border border-black/10 rounded-xl px-3.5 py-2.5 pl-10 text-xs text-[#111] placeholder:text-black/30 focus:border-black/30 focus:outline-none transition-all font-mono"
                   required
-                  className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-10 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -253,57 +229,40 @@ export const AuthScreen: React.FC = () => {
 
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  تکرار رمز عبور
+                <label className="block text-xs font-medium text-black/70 mb-1.5">
+                  تکرار رمز عبور:
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                    <KeyRound className="h-4 w-4" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="تکرار همان رمز عبور"
-                    dir="ltr"
-                    required
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
-                  />
-                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="تکرار همان رمز عبور"
+                  className="w-full bg-white border border-black/10 rounded-xl px-3.5 py-2.5 text-xs text-[#111] placeholder:text-black/30 focus:border-black/30 focus:outline-none transition-all font-mono"
+                  required
+                />
               </div>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white py-3 px-4 text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full py-3 rounded-xl bg-[#111] text-white hover:bg-[#2c2c2c] transition-all text-xs font-medium tracking-wide shadow-xs active:scale-[0.98] mt-2 flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>در حال اعتبارسنجی و اتصال به سرور...</span>
-                </div>
+                <span>در حال پردازش...</span>
               ) : mode === 'login' ? (
                 <>
                   <LogIn className="h-4 w-4" />
-                  <span>ورود امن به سامانه</span>
+                  <span>ورود به سامانه</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  <span>ثبت‌نام و ایجاد حساب کاربری</span>
+                  <span>ایجاد حساب کاربری</span>
                 </>
               )}
             </button>
           </form>
-
-          {/* Security details footnote */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-start gap-2.5 text-[11px] text-slate-400 leading-relaxed">
-            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
-            <span>
-              امنیت کامل اطلاعات: کلمات عبور با الگوریتم‌های استاندارد چندمرحله‌ای رمزنگاری شده و نشست‌های کاربری به صورت امن محافظت می‌شوند. در این سامانه می‌توانید اطلاعات تردد خود را به صورت محرمانه روی مرورگر ذخیره کنید یا همگام‌سازی ابری رمزنگاری‌شده (AES-256) را فعال نمایید.
-            </span>
-          </div>
         </div>
       </div>
     </div>

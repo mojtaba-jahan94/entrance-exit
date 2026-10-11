@@ -65,15 +65,12 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
-  // Available year choices for quick selector
   const availableYears = [1401, 1402, 1403, 1404, 1405, 1406];
 
-  // Grid of cells for current selected month
   const calendarCells = useMemo(() => {
     return getJalaliMonthGrid(selectedYear, selectedMonth);
   }, [selectedYear, selectedMonth]);
 
-  // Lookup dictionary of attendance records by date
   const recordsByDate = useMemo(() => {
     const map = new Map<string, AttendanceRecord>();
     for (const r of records) {
@@ -82,7 +79,6 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
     return map;
   }, [records]);
 
-  // Lookup dictionary of leaves by date
   const leavesByDate = useMemo(() => {
     const map = new Map<string, LeaveRecord[]>();
     for (const l of leaves) {
@@ -93,7 +89,6 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
     return map;
   }, [leaves]);
 
-  // Summary counts for this month
   const monthStatsSummary = useMemo(() => {
     let workingDaysCount = 0;
     let holidaysCount = 0;
@@ -123,13 +118,11 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
     };
   }, [calendarCells, recordsByDate]);
 
-  // Record and Leaves for currently selected day
   const selectedDayRecord = recordsByDate.get(selectedDate) || null;
   const selectedDayLeaves = leavesByDate.get(selectedDate) || [];
   const selectedDayHoliday = getHolidayForDate(selectedDate);
   const selectedDayWeekday = getJalaliWeekdayName(selectedDate);
 
-  // Navigate month
   const handlePrevMonth = () => {
     if (selectedMonth === 1) {
       onYearChange(selectedYear - 1);
@@ -155,10 +148,8 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
     setSelectedDate(todayStr);
   };
 
-  // Navigate day in Scheduled sidebar
   const handleShiftSelectedDay = (offsetDays: number) => {
     const parsed = parseJalaliDate(selectedDate);
-    // Find in calendarCells or shift
     const currentIndex = calendarCells.findIndex((c) => c.dateStr === selectedDate);
     if (currentIndex !== -1) {
       const targetIndex = currentIndex + offsetDays;
@@ -172,7 +163,6 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
         return;
       }
     }
-    // Fallback if not in grid
     const newD = Math.max(1, Math.min(30, parsed.jd + offsetDays));
     setSelectedDate(formatJalaliDate(parsed.jy, parsed.jm, newD));
   };
@@ -184,19 +174,14 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      {/* Outer Card: Translucent Frosted Glass Container */}
-      <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#1a0f2b]/75 border border-white/10 backdrop-blur-2xl p-3.5 sm:p-6 shadow-2xl transition-all">
-        {/* Glow ambient background accents */}
-        <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-violet-600/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
-
-        {/* Top Header Bar: Month/Year Selector, Chevrons, Today Button & Month Badges */}
-        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.08] pb-4 mb-4">
-          {/* Left / Title & Selectors */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="rounded-2xl border border-black/[0.08] bg-white p-4 sm:p-6 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all">
+        {/* Top Header Bar */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-black/[0.06] pb-4 mb-4">
+          {/* Selectors */}
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[var(--accent-color)] to-cyan-500 shadow-md shadow-[var(--accent-glow)]">
-                <CalendarIcon className="h-5 w-5 text-white" />
+              <div className="w-9 h-9 rounded-xl border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/70">
+                <CalendarIcon className="h-4 w-4" />
               </div>
 
               {/* Month Dropdown */}
@@ -204,19 +189,14 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 <select
                   value={selectedMonth}
                   onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
-                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.1] bg-white/[0.05] backdrop-blur-md px-3.5 py-2 pl-8 text-sm sm:text-base font-bold text-white shadow-inner hover:border-[var(--accent-color)]/60 hover:bg-white/[0.08] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
+                  className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs sm:text-sm font-semibold text-[#111] hover:border-black/25 transition-all focus:outline-none cursor-pointer"
                 >
                   {PERSIAN_MONTH_NAMES.map((name, idx) => (
-                    <option key={name} value={idx + 1} className="bg-slate-900 text-white">
+                    <option key={name} value={idx + 1}>
                       {name}
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
               </div>
 
               {/* Year Dropdown */}
@@ -224,103 +204,93 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 <select
                   value={selectedYear}
                   onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
-                  className="appearance-none cursor-pointer rounded-2xl border border-white/[0.1] bg-white/[0.05] backdrop-blur-md px-3 py-2 pl-7 text-sm sm:text-base font-bold font-mono text-white shadow-inner hover:border-[var(--accent-color)]/60 hover:bg-white/[0.08] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)]/50"
+                  className="rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs sm:text-sm font-mono text-black/70 hover:border-black/25 transition-all focus:outline-none cursor-pointer"
                 >
                   {availableYears.map((y) => (
-                    <option key={y} value={y} className="bg-slate-900 text-white">
+                    <option key={y} value={y}>
                       {toPersianDigits(y)}
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-slate-400">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
               </div>
             </div>
 
             {/* Prev / Next Chevrons Pill */}
-            <div className="flex items-center gap-1 rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md p-1 shadow-inner">
+            <div className="flex items-center gap-1 rounded-xl border border-black/10 bg-black/[0.02] p-0.5">
               <button
-                onClick={handlePrevMonth}
-                title="ماه قبل"
-                className="rounded-xl p-1.5 text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+                onClick={handleNextMonth}
+                title="ماه بعد"
+                className="p-1 rounded-lg text-black/50 hover:text-black hover:bg-black/[0.04] transition-all"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
               <button
                 onClick={handleGoToToday}
-                className="px-2.5 py-1 text-xs font-semibold text-[var(--accent-color)] hover:bg-white/[0.08] rounded-xl transition-all"
+                className="px-2 py-0.5 text-xs font-medium text-black/70 hover:text-black hover:bg-black/[0.04] rounded-lg transition-all"
               >
                 امروز
               </button>
               <button
-                onClick={handleNextMonth}
-                title="ماه بعد"
-                className="rounded-xl p-1.5 text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all"
+                onClick={handlePrevMonth}
+                title="ماه قبل"
+                className="p-1 rounded-lg text-black/50 hover:text-black hover:bg-black/[0.04] transition-all"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          {/* Month Stats Summary Glass Badges */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar text-[11px] sm:text-xs">
-            <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-md px-2.5 py-1.5 text-slate-300 shrink-0 shadow-sm">
-              <Briefcase className="h-3.5 w-3.5 text-[var(--accent-color)]" />
+          {/* Month Stats Summary Badges */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-mono">
+            <div className="flex items-center gap-1.5 rounded-xl border border-black/[0.06] bg-black/[0.02] px-2.5 py-1 text-black/60 shrink-0">
+              <Briefcase className="h-3.5 w-3.5 text-black/40" />
               <span>کاری:</span>
-              <span className="font-bold font-mono text-white">
+              <strong className="text-[#111]">
                 {toPersianDigits(monthStatsSummary.workingDaysCount)} روز
-              </span>
+              </strong>
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/15 backdrop-blur-md px-2.5 py-1.5 text-rose-300 shrink-0 shadow-sm">
-              <Sun className="h-3.5 w-3.5 text-rose-400" />
-              <span>تعطیلات رسمی:</span>
-              <span className="font-bold font-mono text-rose-200">
-                {toPersianDigits(monthStatsSummary.holidaysCount)} روز
-              </span>
+            <div className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-1 text-rose-800 shrink-0">
+              <Sun className="h-3.5 w-3.5 text-rose-600" />
+              <span>تعطیلات:</span>
+              <strong>{toPersianDigits(monthStatsSummary.holidaysCount)} روز</strong>
             </div>
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/15 backdrop-blur-md px-2.5 py-1.5 text-emerald-300 shrink-0 shadow-sm">
-              <Clock className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800 shrink-0">
+              <Clock className="h-3.5 w-3.5 text-emerald-600" />
               <span>کارکرد:</span>
-              <span className="font-bold font-mono text-emerald-200">
-                {toPersianDigits(monthStatsSummary.totalWorkedHours)} س
-              </span>
+              <strong>{toPersianDigits(monthStatsSummary.totalWorkedHours)} س</strong>
             </div>
           </div>
         </div>
 
         {/* Main Grid + Side Panel Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-          {/* Calendar Grid Section: Left 8 cols */}
-          <div className="lg:col-span-8 xl:col-span-8 flex flex-col justify-between">
-            {/* Weekday Names Header (7 Columns) */}
-            <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-xs font-semibold">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Calendar Grid Section */}
+          <div className="lg:col-span-8 flex flex-col justify-between">
+            {/* Weekday Names Header */}
+            <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-xs font-medium">
               {PERSIAN_WEEKDAY_NAMES.map((name, i) => {
                 const isFri = i === 6;
                 const isThu = i === 5;
                 return (
                   <div
                     key={name}
-                    className={`py-2 px-1 rounded-xl transition-colors ${
+                    className={`py-2 px-1 rounded-xl transition-colors font-mono ${
                       isFri
-                        ? 'text-rose-400 bg-rose-500/15 font-bold border border-rose-500/25 shadow-sm'
-                        : isThu && config.thursdayStatus === 'half_day'
-                        ? 'text-amber-400 bg-amber-500/10 border border-amber-500/20'
-                        : 'text-slate-300 bg-white/[0.03] border border-white/[0.04]'
+                        ? 'text-rose-600 bg-rose-50 border border-rose-200'
+                        : isThu
+                        ? 'text-black/70 bg-black/[0.02]'
+                        : 'text-black/50 bg-black/[0.02]'
                     }`}
                   >
                     <span>{name}</span>
-                    {isFri && <span className="block text-[9px] font-normal text-rose-400/80">تعطیل</span>}
                   </div>
                 );
               })}
             </div>
 
-            {/* Days Grid Cells (7 columns x 5 or 6 rows) */}
+            {/* Days Grid Cells */}
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2 auto-rows-fr">
               {calendarCells.map((cell) => {
                 const isSelected = cell.dateStr === selectedDate;
@@ -333,66 +303,60 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                     key={cell.dateStr}
                     onClick={() => setSelectedDate(cell.dateStr)}
                     onDoubleClick={() => onOpenManualEntryForDate(cell.dateStr)}
-                    className={`group relative flex flex-col justify-between min-h-[78px] sm:min-h-[96px] p-1.5 sm:p-2.5 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
-                      cell.isCurrentMonth ? '' : 'opacity-30 hover:opacity-70'
+                    className={`group relative flex flex-col justify-between min-h-[80px] sm:min-h-[96px] p-2 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+                      cell.isCurrentMonth ? '' : 'opacity-25 hover:opacity-60'
                     } ${
                       isSelected
-                        ? 'bg-gradient-to-b from-[var(--accent-color)] to-[var(--accent-hover)] text-white shadow-xl shadow-[var(--accent-glow)] ring-2 ring-white/40 scale-[1.02] z-20'
+                        ? 'bg-[#111] text-white shadow-md ring-2 ring-black/20 scale-[1.02] z-20'
                         : cell.isToday
-                        ? 'glass-card border-2 border-[var(--accent-color)]/90 shadow-lg shadow-[var(--accent-glow)] hover:border-[var(--accent-color)]'
+                        ? 'bg-black/[0.03] border-2 border-[#111] hover:bg-black/[0.05]'
                         : cell.isHoliday
-                        ? 'bg-rose-500/10 border border-rose-500/25 hover:bg-rose-500/15 hover:border-rose-400/40 text-rose-200 backdrop-blur-md'
-                        : 'glass-card hover:bg-white/[0.08] hover:border-white/[0.18]'
+                        ? 'bg-rose-50/40 border border-rose-200/60 hover:bg-rose-50'
+                        : 'bg-white border border-black/[0.07] hover:border-black/20 hover:bg-[#fafaf8]'
                     }`}
                   >
-                    {/* Top Row: Day Number + Status / Today Badge */}
+                    {/* Top Row: Day Number */}
                     <div className="flex items-start justify-between">
                       <span
-                        className={`text-sm sm:text-base font-black font-mono tracking-tight ${
+                        className={`text-sm sm:text-base font-light font-mono ${
                           isSelected
-                            ? 'text-white'
+                            ? 'text-white font-medium'
                             : cell.isHoliday
-                            ? 'text-rose-400'
-                            : 'text-slate-100'
+                            ? 'text-rose-600 font-medium'
+                            : 'text-[#111]'
                         }`}
                       >
                         {toPersianDigits(cell.jd)}
                       </span>
 
-                      {/* Small Quick Status Indicator / Today Ring */}
                       <div className="flex items-center gap-1">
                         {cell.isToday && !isSelected && (
-                          <span className="h-2 w-2 rounded-full bg-[var(--accent-color)] ring-2 ring-[var(--accent-glow)] animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#111]" />
                         )}
                         {isWorkingLive && (
-                          <span
-                            className="h-2 w-2 rounded-full bg-emerald-400 ring-2 ring-emerald-400/40 animate-ping"
-                            title="در حال کار"
-                          />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         )}
-                        {/* Quick hover add button */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenManualEntryForDate(cell.dateStr);
                           }}
-                          title="ثبت تردد برای این روز"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-lg bg-white/20 hover:bg-white/40 text-white"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-lg text-black/50 hover:text-black"
+                          title="ثبت تردد"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Middle Row: Holiday Pill or Status Pill */}
+                    {/* Middle Row: Badges */}
                     <div className="my-1 space-y-1">
-                      {/* Holiday Badge (Official Iran Holiday) */}
                       {cell.isHoliday && cell.holidayTitle && (
                         <div
-                          className={`truncate text-[9px] sm:text-[10px] font-semibold px-1 py-0.5 rounded-lg ${
+                          className={`truncate text-[9px] font-medium px-1 py-0.5 rounded-md ${
                             isSelected
-                              ? 'bg-rose-500/30 text-rose-100 border border-rose-300/30'
-                              : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              ? 'bg-white/20 text-white'
+                              : 'bg-rose-100/70 text-rose-800'
                           }`}
                           title={cell.holidayTitle}
                         >
@@ -400,61 +364,54 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                         </div>
                       )}
 
-                      {/* Attendance Work Hours Pill */}
                       {rec && rec.workedMinutes > 0 && (
                         <div
-                          className={`flex items-center justify-between text-[9px] sm:text-[10px] font-mono px-1 py-0.5 rounded-md ${
+                          className={`flex items-center justify-between text-[9px] font-mono px-1 py-0.5 rounded-md ${
                             isSelected
-                              ? 'bg-white/20 text-white font-bold'
-                              : 'bg-white/[0.08] text-slate-200 border border-white/[0.1]'
+                              ? 'bg-white/20 text-white font-medium'
+                              : 'bg-black/[0.04] text-[#111]'
                           }`}
                         >
-                          <span className="flex items-center gap-0.5">
-                            <Clock className="h-2.5 w-2.5 text-[var(--accent-color)]" />
-                            <span>{toPersianDigits(formatMinutesToTimeString(rec.workedMinutes))}</span>
-                          </span>
+                          <span>{toPersianDigits(formatMinutesToTimeString(rec.workedMinutes))}</span>
                           {rec.overtimeMinutes > 0 && (
-                            <span className="text-emerald-300 font-bold text-[8px] sm:text-[9px]">
+                            <span className={isSelected ? 'text-emerald-200' : 'text-emerald-700'}>
                               +{toPersianDigits(Math.round(rec.overtimeMinutes / 60))}س
                             </span>
                           )}
                         </div>
                       )}
 
-                      {/* Leave Pill */}
                       {dayLeaves.length > 0 && (
                         <div
-                          className={`truncate text-[9px] sm:text-[10px] font-semibold px-1 py-0.5 rounded-md ${
+                          className={`truncate text-[9px] font-medium px-1 py-0.5 rounded-md ${
                             isSelected
                               ? 'bg-amber-400/30 text-amber-100'
-                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : 'bg-amber-100/70 text-amber-800'
                           }`}
-                          title="مرخصی ثبت شده"
                         >
-                          🏖️ مرخصی
+                          مرخصی
                         </div>
                       )}
                     </div>
 
-                    {/* Bottom Status Dots Row */}
+                    {/* Bottom Status Dot */}
                     <div className="flex items-center gap-1 text-[9px]">
                       {rec?.checkIn && (
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${
+                          className={`w-1.5 h-1.5 rounded-full ${
                             isSelected
                               ? 'bg-white'
                               : rec.checkOut
-                              ? 'bg-emerald-400'
-                              : 'bg-cyan-400 animate-pulse'
+                              ? 'bg-emerald-500'
+                              : 'bg-blue-500 animate-pulse'
                           }`}
                         />
                       )}
-                      {rec?.deficitMinutes ? (
+                      {rec?.delayMinutes ? (
                         <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            isSelected ? 'bg-rose-200' : 'bg-rose-400'
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            isSelected ? 'bg-rose-300' : 'bg-rose-500'
                           }`}
-                          title={`کسر کار: ${toPersianDigits(rec.deficitMinutes)}د`}
                         />
                       ) : null}
                     </div>
@@ -464,140 +421,110 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
             </div>
           </div>
 
-          {/* Right Panel: "برنامه و کارکرد" Frosted Glass Sidebar */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-3xl glass-card p-4 sm:p-5 shadow-xl">
-            {/* Header: Scheduled + Date + Day Chevrons */}
+          {/* Right Panel: Scheduled Day Details */}
+          <div className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-black/[0.08] bg-[#FAF9F7] p-4 sm:p-5">
             <div>
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-black/[0.06] pb-3 mb-4">
                 <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs uppercase tracking-wider font-bold text-[var(--accent-color)]">
-                      برنامه و کارکرد روز
-                    </span>
+                  <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-black/40">
+                    <span>SCHEDULED</span>
                     {selectedDate === todayStr && (
-                      <span className="rounded-full bg-[var(--accent-light)] text-[var(--accent-color)] text-[10px] font-bold px-2 py-0.2 border border-[var(--accent-color)]/30">
+                      <span className="rounded-full bg-black/[0.06] text-[#111] text-[9px] font-bold px-2 py-0.2">
                         امروز
                       </span>
                     )}
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-white mt-0.5">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#111] mt-0.5">
                     {selectedDayWeekday}، {toPersianDigits(selectedDate)}
                   </h3>
                 </div>
 
-                {/* Day navigation arrows */}
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => handleShiftSelectedDay(-1)}
+                    className="p-1.5 rounded-xl border border-black/10 bg-white text-black/60 hover:text-black transition-all"
                     title="روز قبل"
-                    className="p-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.1] transition-all"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleShiftSelectedDay(1)}
+                    className="p-1.5 rounded-xl border border-black/10 bg-white text-black/60 hover:text-black transition-all"
                     title="روز بعد"
-                    className="p-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-300 hover:text-white hover:bg-white/[0.1] transition-all"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Holiday Banner if selected day is holiday */}
+              {/* Holiday Alert */}
               {selectedDayHoliday.isHoliday && (
-                <div className="mb-4 rounded-2xl border border-rose-500/30 bg-gradient-to-r from-rose-500/20 via-rose-500/10 to-transparent p-3 text-rose-200">
+                <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-800 text-xs">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-rose-500/30 text-rose-300">
-                      <Sun className="h-4 w-4" />
-                    </div>
+                    <Sun className="h-4 w-4 text-rose-600 shrink-0" />
                     <div>
-                      <span className="text-[11px] font-semibold text-rose-300 block">تعطیل رسمی تقویم</span>
-                      <span className="text-xs sm:text-sm font-bold text-white">{selectedDayHoliday.title}</span>
+                      <span className="font-semibold block">تعطیل رسمی</span>
+                      <span>{selectedDayHoliday.title}</span>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Cards in Minimal Glass Design */}
+              {/* Detailed Cards for Selected Day */}
               <div className="space-y-3">
-                {/* 1. Check-In & Check-Out Times */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-[var(--accent-color)]/40">
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-bold text-white flex items-center gap-1.5">
-                      <Clock className="h-4 w-4 text-[var(--accent-color)]" />
+                {/* 1. Punches Card */}
+                <div className="rounded-xl border border-black/[0.07] bg-white p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-[#111] flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-black/40" />
                       تردد و ساعات حضور
                     </span>
-                    <span className="text-[10px] text-slate-300 font-mono">
-                      {selectedDayRecord?.status === 'in_progress' ? 'حضور زنده' : 'ثبت ساعت'}
+                    <span className="text-[10px] text-black/40 font-mono">
+                      {selectedDayRecord?.status === 'in_progress' ? 'حضور زنده' : 'ثبت‌شده'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 font-mono text-center">
-                    <div className="rounded-xl glass-pill p-2">
-                      <span className="text-[10px] text-slate-400 block mb-0.5">ساعت ورود</span>
-                      <span className="text-sm sm:text-base font-bold text-emerald-400">
+                  <div className="grid grid-cols-2 gap-2 font-mono text-center text-xs">
+                    <div className="rounded-lg bg-black/[0.02] border border-black/[0.05] p-2">
+                      <span className="text-[10px] text-black/40 block mb-0.5">ساعت ورود</span>
+                      <strong className="text-[#111]">
                         {selectedDayRecord?.checkIn
                           ? toPersianDigits(selectedDayRecord.checkIn)
-                          : 'ثبت‌نشده'}
-                      </span>
+                          : '--:--'}
+                      </strong>
                     </div>
-                    <div className="rounded-xl glass-pill p-2">
-                      <span className="text-[10px] text-slate-400 block mb-0.5">ساعت خروج</span>
-                      <span className="text-sm sm:text-base font-bold text-rose-400">
+                    <div className="rounded-lg bg-black/[0.02] border border-black/[0.05] p-2">
+                      <span className="text-[10px] text-black/40 block mb-0.5">ساعت خروج</span>
+                      <strong className="text-[#111]">
                         {selectedDayRecord?.checkOut
                           ? toPersianDigits(selectedDayRecord.checkOut)
                           : selectedDayRecord?.checkIn
                           ? 'در حال کار'
-                          : 'ثبت‌نشده'}
-                      </span>
+                          : '--:--'}
+                      </strong>
                     </div>
                   </div>
-
-                  {selectedDayRecord?.targetCheckOut && !selectedDayRecord?.checkOut && (
-                    <div className="mt-2 text-[11px] text-slate-300 flex items-center justify-between bg-white/[0.03] px-2 py-1 rounded-lg border border-white/[0.04]">
-                      <span>خروج پیشنهادی استاندارد:</span>
-                      <span className="font-mono text-cyan-300 font-bold">
-                        {toPersianDigits(selectedDayRecord.targetCheckOut)}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                {/* 2. Effective Worked Hours & Daily Progress */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-lime-500/40">
-                  <div className="flex items-center justify-between text-xs mb-1.5">
-                    <span className="font-bold text-white flex items-center gap-1.5">
-                      <Flame className="h-4 w-4 text-lime-400" />
-                      کارکرد موثر روز
+                {/* 2. Effective Worked Hours */}
+                <div className="rounded-xl border border-black/[0.07] bg-white p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-[#111] flex items-center gap-1.5">
+                      <Flame className="h-3.5 w-3.5 text-black/40" />
+                      کارکرد روزانه
                     </span>
-                    <span className="font-mono font-bold text-lime-400 text-xs">
+                    <span className="font-mono font-bold text-[#111]">
                       {selectedDayRecord?.workedMinutes
                         ? toPersianDigits(formatMinutesToTimeString(selectedDayRecord.workedMinutes))
                         : '۰:۰۰'}
                     </span>
                   </div>
 
-                  {/* Progress Bar */}
                   {selectedDayRecord && (
-                    <div className="space-y-1 mt-2">
-                      <div className="flex justify-between text-[10px] text-slate-300">
-                        <span>تحقق شیفت موظف:</span>
-                        <span className="font-mono text-lime-300 font-bold">
-                          {toPersianDigits(
-                            Math.min(
-                              100,
-                              Math.round(
-                                (selectedDayRecord.workedMinutes / Math.max(1, standardDailyNet)) * 100
-                              )
-                            )
-                          )}
-                          ٪
-                        </span>
-                      </div>
-                      <div className="h-2 w-full rounded-full bg-black/40 overflow-hidden">
+                    <div className="space-y-1">
+                      <div className="h-1.5 w-full rounded-full bg-black/[0.06] overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-lime-500 to-emerald-400 transition-all duration-500"
+                          className="h-full rounded-full bg-[#111] transition-all duration-500"
                           style={{
                             width: `${Math.min(
                               100,
@@ -610,81 +537,55 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       </div>
                     </div>
                   )}
-
-                  {selectedDayRecord?.breakMinutes ? (
-                    <div className="mt-2 text-[10px] text-slate-400 flex items-center justify-between">
-                      <span>مدت کسر استراحت ناهار:</span>
-                      <span className="font-mono text-slate-300 font-semibold">
-                        {toPersianDigits(selectedDayRecord.breakMinutes)} دقیقه
-                      </span>
-                    </div>
-                  ) : null}
                 </div>
 
-                {/* 3. Overtime, Deficit & Balance */}
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] glass-subcard p-3.5 transition-all hover:border-[var(--accent-color)]/40">
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="font-bold text-white flex items-center gap-1.5">
-                      <Zap className="h-4 w-4 text-cyan-400" />
-                      اضافه‌کار و تراز
-                    </span>
-                    <span className="text-[10px] font-mono text-cyan-300">
-                      تراز:{' '}
-                      {selectedDayRecord
-                        ? toPersianDigits(
-                            formatMinutesToTimeString(selectedDayRecord.netBalanceMinutes, true)
-                          )
-                        : '۰'}
+                {/* 3. Overtime & Deficit */}
+                <div className="rounded-xl border border-black/[0.07] bg-white p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-[#111] flex items-center gap-1.5">
+                      <Zap className="h-3.5 w-3.5 text-black/40" />
+                      اضافه‌کار و کسر کار
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                    <div className="rounded-xl glass-pill p-2">
-                      <span className="text-[10px] text-slate-400 block">اضافه کاری</span>
-                      <span className="font-bold text-cyan-300">
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <div className="rounded-lg bg-black/[0.02] p-2 border border-black/[0.05] text-center">
+                      <span className="text-[10px] text-black/40 block">اضافه کاری</span>
+                      <strong className="text-emerald-700">
                         {selectedDayRecord?.overtimeMinutes
-                          ? toPersianDigits(
-                              formatMinutesToTimeString(selectedDayRecord.overtimeMinutes)
-                            )
+                          ? `+${toPersianDigits(formatMinutesToTimeString(selectedDayRecord.overtimeMinutes))}`
                           : '۰:۰۰'}
-                      </span>
+                      </strong>
                     </div>
-                    <div className="rounded-xl glass-pill p-2">
-                      <span className="text-[10px] text-slate-400 block">کسر کار</span>
-                      <span className="font-bold text-rose-400">
+                    <div className="rounded-lg bg-black/[0.02] p-2 border border-black/[0.05] text-center">
+                      <span className="text-[10px] text-black/40 block">کسر کار</span>
+                      <strong className="text-rose-600">
                         {selectedDayRecord?.deficitMinutes
-                          ? toPersianDigits(
-                              formatMinutesToTimeString(selectedDayRecord.deficitMinutes)
-                            )
+                          ? `-${toPersianDigits(formatMinutesToTimeString(selectedDayRecord.deficitMinutes))}`
                           : '۰:۰۰'}
-                      </span>
+                      </strong>
                     </div>
                   </div>
                 </div>
 
                 {/* 4. Leaves & Notes */}
                 {(selectedDayLeaves.length > 0 || selectedDayRecord?.note) && (
-                  <div className="rounded-2xl border border-white/[0.08] glass-subcard p-3.5 space-y-2">
-                    <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                      <Coffee className="h-3.5 w-3.5" />
-                      مرخصی‌ها و یادداشت روز
+                  <div className="rounded-xl border border-black/[0.07] bg-white p-3.5 space-y-2 text-xs">
+                    <span className="font-semibold text-black/70 flex items-center gap-1.5">
+                      <Coffee className="h-3.5 w-3.5 text-black/40" />
+                      مرخصی و توضیحات
                     </span>
                     {selectedDayLeaves.map((l) => (
                       <div
                         key={l.id}
-                        className="rounded-xl glass-pill p-2 text-xs border border-amber-500/25 text-slate-200"
+                        className="rounded-lg bg-amber-50 p-2 border border-amber-200 text-amber-800 font-mono text-[11px]"
                       >
-                        <div className="flex justify-between font-semibold">
-                          <span>{l.type === 'hourly' ? 'مرخصی ساعتی' : 'مرخصی روزانه'}</span>
-                          <span className="font-mono text-amber-400">
-                            {toPersianDigits(l.hours)} ساعت
-                          </span>
-                        </div>
-                        {l.reason && <p className="text-[10px] text-slate-400 mt-0.5">{l.reason}</p>}
+                        {l.type === 'hourly' ? 'مرخصی ساعتی: ' : 'مرخصی روزانه: '}
+                        <strong>{toPersianDigits(l.hours)} ساعت</strong>
                       </div>
                     ))}
                     {selectedDayRecord?.note && (
-                      <p className="text-[11px] text-slate-300 glass-pill p-2 rounded-xl italic">
+                      <p className="text-black/60 bg-black/[0.02] p-2 rounded-lg italic text-[11px]">
                         {selectedDayRecord.note}
                       </p>
                     )}
@@ -693,20 +594,20 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               </div>
             </div>
 
-            {/* Action Buttons at the bottom of the sidebar */}
-            <div className="mt-4 pt-3 border-t border-white/[0.08] space-y-2">
+            {/* Bottom Actions */}
+            <div className="mt-4 pt-3 border-t border-black/[0.06] space-y-2">
               <button
                 onClick={() => onOpenManualEntryForDate(selectedDate)}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl glass-button-primary hover:opacity-95 font-bold py-2.5 px-4 text-xs shadow-lg transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#111] text-white hover:bg-[#2c2c2c] transition-all text-xs font-medium tracking-wide flex items-center justify-center gap-2 shadow-xs"
               >
-                <Edit3 className="h-4 w-4" />
+                <Edit3 className="h-3.5 w-3.5" />
                 <span>{selectedDayRecord ? 'ویرایش تردد این روز' : 'ثبت تردد برای این روز'}</span>
               </button>
 
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => onOpenLeaveForDate(selectedDate)}
-                  className="flex items-center justify-center gap-1.5 rounded-2xl border border-amber-500/30 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
+                  className="py-2 px-3 rounded-xl border border-black/10 bg-white hover:bg-black/[0.03] text-black/70 text-xs font-medium transition-all flex items-center justify-center gap-1"
                 >
                   <Coffee className="h-3.5 w-3.5" />
                   <span>ثبت مرخصی</span>
@@ -715,10 +616,10 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 {selectedDayRecord && (
                   <button
                     onClick={() => onDeleteRecord(selectedDayRecord.id)}
-                    className="flex items-center justify-center gap-1.5 rounded-2xl border border-rose-500/30 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 font-semibold py-2 px-3 text-xs transition-all active:scale-[0.98]"
+                    className="py-2 px-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium transition-all flex items-center justify-center gap-1"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    <span>حذف تردد</span>
+                    <span>حذف</span>
                   </button>
                 )}
               </div>

@@ -5,7 +5,7 @@ import {
   Table as TableIcon,
   Coffee,
   TrendingUp,
-  PlusCircle,
+  Plus,
   Settings,
   Database,
   Search,
@@ -17,13 +17,8 @@ import {
   HardDrive,
   Lock,
   X,
+  Menu,
   Sparkles,
-  Sliders,
-  Calendar,
-  Clock,
-  Heart,
-  Video,
-  List,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -69,7 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, logout, dbStatus, storageMode } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [showNotificationToast, setShowNotificationToast] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const todayStr = getTodayJalaliString();
@@ -82,7 +78,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Close user dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -93,328 +88,303 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const displayName = user?.displayName || user?.username || 'کاربر سیستم';
-  const displayEmail = user?.username ? `@${user.username}` : 'حضور و غیاب داخلی';
+  const displayName = user?.displayName || user?.username || 'کاربر سامانه';
 
   const navItems = [
     {
       id: 'dashboard' as ActiveTab,
-      label: 'پیشخوان جامع و تحلیل',
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      label: 'پیشخوان',
+      enLabel: 'Dashboard',
+      icon: <LayoutDashboard className="h-4 w-4" />,
     },
     {
       id: 'timesheet' as ActiveTab,
-      label: 'کارنامه و جدول تردد',
-      icon: <TableIcon className="h-5 w-5" />,
+      label: 'کارنامه تردد',
+      enLabel: 'Timesheet',
+      icon: <TableIcon className="h-4 w-4" />,
     },
     {
       id: 'leaves' as ActiveTab,
-      label: 'مرخصی و استراحت',
-      icon: <Coffee className="h-5 w-5" />,
+      label: 'مرخصی‌ها',
+      enLabel: 'Leaves',
+      icon: <Coffee className="h-4 w-4" />,
     },
     {
       id: 'reports' as ActiveTab,
-      label: 'گزارشات آماری و خروجی',
-      icon: <TrendingUp className="h-5 w-5" />,
+      label: 'گزارشات آماری',
+      enLabel: 'Reports',
+      icon: <TrendingUp className="h-4 w-4" />,
     },
   ];
 
   return (
-    <>
-      {/* 1. DESKTOP FLOATING PILL DOCK (Left side floating capsule matching the reference image) */}
-      <aside className="hidden md:flex fixed top-1/2 -translate-y-1/2 left-5 z-50 flex-col items-center gap-2.5 rounded-[36px] p-2 bg-[#1b102c]/80 border border-white/10 backdrop-blur-2xl shadow-2xl shadow-purple-950/70">
-        {/* Top Logo / Home Glyph */}
-        <button
-          onClick={() => onTabChange('dashboard')}
-          title="پیشخوان اصلی"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-purple-300 hover:text-white hover:bg-white/[0.08] transition-all"
+    <header className="fixed top-3 inset-x-0 z-50 flex justify-center px-3 sm:px-4 pointer-events-none select-none">
+      <div className="pointer-events-auto w-full max-w-5xl">
+        {/* Floating Frosted Capsule Nav */}
+        <nav
+          className="flex items-center justify-between px-3.5 sm:px-5 py-2.5 rounded-2xl border border-black/[0.08] backdrop-blur-xl bg-[#F5F4F0]/85 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.06),_0_2px_8px_rgba(0,0,0,0.04)]"
+          style={{ backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
         >
-          <CalendarClock className="h-5 w-5 text-violet-400" />
-        </button>
-
-        <div className="h-px w-5 bg-white/10" />
-
-        {/* Navigation Tabs */}
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
+          {/* 1. Left Side: Brand Logo & Live Badge */}
+          <div className="flex items-center gap-3">
             <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              title={item.label}
-              className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 group ${
-                isActive
-                  ? 'bg-violet-600 text-white font-bold shadow-lg shadow-violet-600/50 ring-1 ring-violet-400/40 scale-105'
-                  : 'text-slate-400 hover:text-white hover:bg-white/[0.08]'
-              }`}
+              onClick={() => onTabChange('dashboard')}
+              className="flex items-center gap-2.5 group focus:outline-none"
+              title="سامانه مدیریت تردد ایجنتیک"
             >
-              {item.icon}
-
-              {/* Tooltip to the right in LTR / left view */}
-              <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#1e1233]/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-2xl border border-white/10 transition-opacity group-hover:opacity-100 z-50 backdrop-blur-xl">
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-
-        <div className="h-px w-5 bg-white/10" />
-
-        {/* Quick Add Entry (+) */}
-        <button
-          onClick={onOpenManualEntry}
-          title="ثبت سریع تردد جدید"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-violet-300 hover:text-white hover:bg-violet-600/30 transition-all group relative"
-        >
-          <PlusCircle className="h-5 w-5" />
-          <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#1e1233]/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-2xl border border-white/10 transition-opacity group-hover:opacity-100 z-50 backdrop-blur-xl">
-            ثبت تردد جدید (+)
-          </span>
-        </button>
-
-        {/* Settings */}
-        <button
-          onClick={onOpenSettings}
-          title="تنظیمات شیفت و سامانه"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-all group relative"
-        >
-          <Settings className="h-4 w-4" />
-          <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl bg-[#1e1233]/95 px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-2xl border border-white/10 transition-opacity group-hover:opacity-100 z-50 backdrop-blur-xl">
-            تنظیمات شیفت و UI
-          </span>
-        </button>
-      </aside>
-
-      {/* 2. TOP HEADER BAR (Matching reference header: Search pill, Bell, User profile chip) */}
-      <header className="sticky top-0 z-40 w-full border-b border-white/[0.06] bg-[#120a1d]/80 backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-8 py-3.5 md:pl-24">
-          {/* Right Header Area: Search pill (matching "Find any meeting moment..." in reference) */}
-          <div className="flex items-center gap-3 flex-1 max-w-md">
-            {/* Mobile Logo */}
-            <div className="md:hidden flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-600/40 border border-violet-400/30 text-violet-300">
-              <CalendarClock className="h-5 w-5" />
-            </div>
-
-            {/* Pill Search Input */}
-            <div className="relative w-full">
-              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                <Search className="h-4 w-4" />
+              <div className="w-8 h-8 rounded-xl bg-[#111] text-white flex items-center justify-center font-mono text-xs font-bold shadow-sm transition-transform group-hover:scale-105 active:scale-95">
+                <CalendarClock className="h-4 w-4 text-white" />
               </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearchChange?.(e.target.value)}
-                placeholder="جستجو در رویدادها، ترددها و جلسات..."
-                className="w-full rounded-full border border-white/10 bg-white/[0.04] pr-10 pl-8 py-2 text-xs text-white placeholder-slate-400/80 shadow-inner hover:border-violet-500/40 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 transition-all backdrop-blur-md"
+              <div className="flex flex-col text-right">
+                <span className="font-mono text-[11px] sm:text-xs font-bold tracking-[0.22em] text-[#111] uppercase">
+                  AGENTIC
+                </span>
+                <span className="text-[9px] text-black/40 font-mono tracking-wider -mt-0.5 hidden xs:inline">
+                  تردد و شیفت
+                </span>
+              </div>
+            </button>
+
+            {/* Live Status indicator */}
+            <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/[0.04] border border-black/[0.05] text-[10px] font-mono text-black/60">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isWorkingNow
+                    ? 'bg-emerald-500 shadow-[0_0_8px_#4ade80] animate-pulse'
+                    : 'bg-black/30'
+                }`}
               />
-              {searchQuery && (
-                <button
-                  onClick={() => onSearchChange?.('')}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <span>{isWorkingNow ? 'حاضر در شیفت' : toPersianDigits(liveTime)}</span>
             </div>
           </div>
 
-          {/* Left Header Area: Bell, User Profile Chip, Live Clock */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Live Clock Pill */}
-            <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 font-mono text-xs shadow-inner">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-bold text-violet-200 tracking-wider">
-                {toPersianDigits(liveTime)}
+          {/* 2. Middle: Navigation Links in Clean Agentic Style */}
+          <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-black/[0.03] border border-black/[0.05]">
+            {navItems.map((item) => {
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => onTabChange(item.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[#111] text-white shadow-sm'
+                      : 'text-black/60 hover:text-black hover:bg-black/[0.04]'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 3. Right Side Actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Quick Search Button */}
+            {onSearchChange && (
+              <div className="relative hidden xl:block w-40">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder="جستجو در روزها..."
+                  className="w-full bg-white/70 border border-black/10 rounded-xl px-2.5 py-1.5 text-[11px] text-[#111] placeholder:text-black/30 focus:outline-none focus:border-black/30 focus:bg-white transition-all text-right"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => onSearchChange('')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Manual Entry ("START BUILDING" style CTA from reference site) */}
+            <button
+              onClick={onOpenManualEntry}
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#111] text-white text-[11px] font-medium tracking-wide hover:bg-[#2c2c2c] active:scale-95 transition-all shadow-sm"
+              title="ثبت دستی تردد جدید"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>ثبت تردد</span>
+            </button>
+
+            {/* Settings Button */}
+            <button
+              onClick={onOpenSettings}
+              className="hidden sm:flex h-8 w-8 items-center justify-center rounded-xl border border-black/10 text-black/60 hover:text-black hover:bg-black/[0.04] hover:border-black/20 transition-all"
+              title="تنظیمات شیفت"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+
+            {/* Theme Selector */}
+            <div className="hidden sm:block">
+              <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
+            </div>
+
+            {/* User Dropdown */}
+            {user && (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-white border border-black/10 text-[#111] font-mono text-xs font-bold hover:border-black/25 transition-all shadow-sm"
+                  title={`حساب: ${displayName}`}
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-60 rounded-2xl bg-white/95 border border-black/10 shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-2 z-50 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-3 py-2 border-b border-black/[0.06] mb-1">
+                      <p className="font-bold text-[#111] truncate">{displayName}</p>
+                      <p className="text-black/40 font-mono text-[10px] truncate dir-ltr text-right">
+                        @{user.username}
+                      </p>
+                      <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>سیستم همگام و فعال</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0.5">
+                      {onOpenStorageMode && (
+                        <button
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            onOpenStorageMode();
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-black/70 hover:text-black hover:bg-black/[0.04] transition-colors text-right"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5 text-black/50" />
+                          <span>فضای ابری و امنیت</span>
+                        </button>
+                      )}
+
+                      {onOpenChangePassword && (
+                        <button
+                          onClick={() => {
+                            setIsUserMenuOpen(false);
+                            onOpenChangePassword();
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-black/70 hover:text-black hover:bg-black/[0.04] transition-colors text-right"
+                        >
+                          <KeyRound className="h-3.5 w-3.5 text-black/50" />
+                          <span>تغییر رمز عبور</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          onOpenBackup();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-black/70 hover:text-black hover:bg-black/[0.04] transition-colors text-right"
+                      >
+                        <Database className="h-3.5 w-3.5 text-black/50" />
+                        <span>پشتیبان‌گیری داده‌ها</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          onOpenSettings();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-black/70 hover:text-black hover:bg-black/[0.04] transition-colors text-right"
+                      >
+                        <Settings className="h-3.5 w-3.5 text-black/50" />
+                        <span>تنظیمات شیفت کاری</span>
+                      </button>
+                    </div>
+
+                    <div className="pt-1 mt-1 border-t border-black/[0.06]">
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 transition-colors text-right font-medium"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>خروج از حساب</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex h-8 w-8 items-center justify-center rounded-xl border border-black/10 text-black/70 hover:bg-black/[0.04] transition-colors"
+              aria-label="باز کردن منو"
+            >
+              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </button>
+          </div>
+        </nav>
+
+        {/* Mobile Dropdown Menu (Mirroring the reference mobile drawer) */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mt-2 rounded-2xl border border-black/[0.08] backdrop-blur-xl bg-[#F5F4F0]/95 shadow-[0_12px_32px_rgba(0,0,0,0.08)] p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-2 gap-1.5 mb-2">
+              {navItems.map((item) => {
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onTabChange(item.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                      isActive
+                        ? 'bg-[#111] text-white shadow-sm'
+                        : 'text-black/70 hover:bg-black/[0.04]'
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-black/[0.06] flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenSettings();
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-black/10 text-black/70"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                  <span>تنظیمات</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenBackup();
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-black/10 text-black/70"
+                >
+                  <Database className="h-3.5 w-3.5" />
+                  <span>پشتیبان</span>
+                </button>
+              </div>
+
+              <span className="font-mono text-[10px] text-black/40">
+                {weekdayName}، {toPersianDigits(todayStr)}
               </span>
             </div>
-
-            {/* Notification Bell Pill */}
-            <div className="relative">
-              <button
-                onClick={() => setShowNotificationToast(!showNotificationToast)}
-                title="اعلان‌ها"
-                className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white transition-all shadow-sm"
-              >
-                <Bell className="h-4 w-4 text-slate-300" />
-                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-violet-400 ring-2 ring-[#120a1d]" />
-              </button>
-
-              {/* Notification Popover */}
-              {showNotificationToast && (
-                <div className="absolute left-0 mt-2 w-72 sm:w-80 rounded-2xl border border-white/10 bg-[#1e1233]/95 p-3.5 shadow-2xl backdrop-blur-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between border-b border-white/[0.08] pb-2 mb-2">
-                    <span className="font-bold text-white flex items-center gap-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                      اعلان‌های پیشخوان
-                    </span>
-                    <button
-                      onClick={() => setShowNotificationToast(false)}
-                      className="text-slate-400 hover:text-white"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="rounded-xl bg-[#2a1a45]/70 p-2.5 border border-white/[0.06]">
-                      <span className="font-semibold text-violet-300 block text-xs">
-                        تم Dark Glassmorphism فعال است
-                      </span>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                        سامانه به همراه تقویم هوشمند شمسی، نمودارهای شیشه‌ای تیره و وضعیت زنده ترددها آماده استفاده است.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* User Profile Chip (Avatar + Name + Email + Chevron matching reference image) */}
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] px-2.5 sm:px-3 py-1.5 transition-all shadow-sm group"
-              >
-                {/* Avatar circle */}
-                <div className="relative flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-violet-600 to-fuchsia-500 text-white font-bold text-xs ring-1 ring-white/20">
-                  {displayName.charAt(0).toUpperCase()}
-                  <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#120a1d] ${
-                      isWorkingNow
-                        ? 'bg-emerald-400 animate-pulse'
-                        : dbStatus === 'connected'
-                        ? 'bg-cyan-400'
-                        : 'bg-violet-400'
-                    }`}
-                  />
-                </div>
-
-                {/* Name & Title */}
-                <div className="hidden sm:flex flex-col text-right leading-tight">
-                  <span className="text-xs font-bold text-white truncate group-hover:text-violet-200 transition-colors">
-                    {displayName}
-                  </span>
-                  <span className="text-[10px] text-purple-300/80 font-mono truncate dir-ltr text-right">
-                    {displayEmail}
-                  </span>
-                </div>
-
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-white transition-transform" />
-              </button>
-
-              {/* User Dropdown */}
-              {isUserMenuOpen && (
-                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-[#1e1233]/95 backdrop-blur-2xl border border-white/10 shadow-2xl p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-2 border-b border-white/[0.08]">
-                    <p className="font-bold text-white truncate text-sm">{displayName}</p>
-                    <p className="text-purple-300/80 font-mono text-[11px] truncate dir-ltr text-right">
-                      {displayEmail}
-                    </p>
-                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-400">
-                      <ShieldCheck className="h-3 w-3 text-emerald-400" />
-                      <span>اتصال فعال و امن</span>
-                    </div>
-                  </div>
-
-                  <div className="py-1 space-y-0.5">
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenSettings();
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors text-right"
-                    >
-                      <Settings className="h-4 w-4 text-violet-400" />
-                      <span>تنظیمات قوانین و ظاهر (UI)</span>
-                    </button>
-
-                    {onOpenStorageMode && (
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          onOpenStorageMode();
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors text-right"
-                      >
-                        <ShieldCheck className="h-4 w-4 text-cyan-400" />
-                        <span>فضای ابری و امنیت</span>
-                      </button>
-                    )}
-
-                    {onOpenChangePassword && (
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          onOpenChangePassword();
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors text-right"
-                      >
-                        <KeyRound className="h-4 w-4 text-blue-400" />
-                        <span>تغییر رمز عبور</span>
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenBackup();
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.08] transition-colors text-right"
-                    >
-                      <Database className="h-4 w-4 text-cyan-400" />
-                      <span>پشتیبان‌گیری داده‌ها</span>
-                    </button>
-                  </div>
-
-                  <div className="pt-1 border-t border-white/[0.08]">
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        logout();
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors text-right font-semibold"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>خروج از حساب</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
-        </div>
-      </header>
-
-      {/* 3. MOBILE BOTTOM DOCK */}
-      <nav className="md:hidden fixed bottom-3 left-4 right-4 z-50 flex items-center justify-around py-2 px-3 rounded-full bg-[#1b102c]/90 border border-white/10 backdrop-blur-2xl shadow-2xl">
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
-              className={`flex flex-col items-center justify-center p-2 rounded-full transition-all ${
-                isActive
-                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/50'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {item.icon}
-            </button>
-          );
-        })}
-        <button
-          onClick={onOpenManualEntry}
-          className="flex items-center justify-center p-2 rounded-full text-violet-300 hover:text-white"
-        >
-          <PlusCircle className="h-5 w-5" />
-        </button>
-        <button
-          onClick={onOpenSettings}
-          className="flex items-center justify-center p-2 rounded-full text-slate-400 hover:text-white"
-        >
-          <Settings className="h-4 w-4" />
-        </button>
-      </nav>
-    </>
+        )}
+      </div>
+    </header>
   );
 };

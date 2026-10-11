@@ -137,143 +137,129 @@ export const ClockCard: React.FC<ClockCardProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#1a0f2b]/75 border border-white/10 backdrop-blur-2xl p-4 sm:p-6 shadow-2xl transition-all">
-      {/* Background soft ambient glows */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-violet-600/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
+    <div className="group relative rounded-2xl border border-black/[0.08] bg-white p-6 sm:p-8 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-300 hover:border-black/[0.16] hover:bg-[#fafaf8]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        {/* Left Side: Shift status and editorial information */}
+        <div className="flex-1 space-y-4">
+          {/* Top Pill Badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] tracking-widest font-mono text-black/50 bg-black/[0.04] border border-black/[0.06] uppercase">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isCheckedIn
+                    ? 'bg-emerald-500 shadow-[0_0_6px_#4ade80] animate-pulse'
+                    : 'bg-black/30'
+                }`}
+              />
+              {isCheckedIn ? 'LIVE ATTENDANCE // شیفت فعال' : isCheckedOut ? 'COMPLETED // شیفت تکمیل‌شده' : 'STANDBY // در انتظار ثبت ورود'}
+            </span>
 
-      <div className="relative flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
-        {/* Left Side: Status & Timer Information */}
-        <div className="w-full md:w-auto flex-1 space-y-2.5 sm:space-y-3 text-center md:text-right">
-          {/* Shift Policy Badge */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full glass-pill px-2.5 sm:px-3.5 py-1 text-[11px] sm:text-xs font-medium text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-[var(--accent-color)] shrink-0" />
-              {isThursday ? (
-                <span>
-                  شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۰۰')} ساعت حضور</strong> (بدون کسر ناهار)
-                </span>
-              ) : (
-                <span>
-                  ورود شناور: {toPersianDigits(config.flexStartTimeMin || '08:30')} الی {toPersianDigits(config.flexStartTimeMax || '09:30')} | خروج: {toPersianDigits(config.flexDepartureMin || '17:00')} الی {toPersianDigits(config.flexDepartureMax || '18:00')}
-                </span>
-              )}
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-sans text-black/45 bg-black/[0.03] border border-black/[0.06]">
+              <Clock className="h-3 w-3 text-black/40" />
+              {isThursday
+                ? `پنج‌شنبه: ${toPersianDigits('۴:۰۰')} ساعت`
+                : `بازه مجاز ورود: ${toPersianDigits(config.flexStartTimeMin || '08:30')} تا ${toPersianDigits(config.flexStartTimeMax || '09:30')}`}
+            </span>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-blue-300 border border-blue-500/25">
-              <Coffee className="h-3 w-3 text-amber-400 shrink-0" />
-              <span>
-                {isThursday
-                  ? 'موظفی ۴ ساعت'
-                  : `حضور موظفی ۸.۵ ساعت (با کسر ${toPersianDigits(config.defaultBreakMinutes || 30)} د ناهار)`}
+            {todayRecord?.isHoliday && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-sans text-rose-600 bg-rose-50 border border-rose-200">
+                {todayRecord.holidayTitle || 'تعطیل رسمی'}
               </span>
-            </div>
+            )}
           </div>
 
+          {/* Heading */}
           <div>
-            <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
-              <span>میز کار و تردد امروز شما</span>
-              {todayRecord?.isHoliday && (
-                <span className="text-[11px] sm:text-xs font-normal px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30">
-                  {todayRecord.holidayTitle || 'تعطیل'}
-                </span>
-              )}
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#111] tracking-tight leading-tight">
+              میز کار و ثبت برخط تردد امروز
             </h2>
 
-            {/* Subtext description based on state */}
             {!isCheckedIn && !isCheckedOut && (
-              <p className="mt-1 text-xs sm:text-sm text-slate-400 leading-relaxed">
-                هنوز ورود امروز را ثبت نکرده‌اید. ساعت مجاز ورود شما از <strong>{toPersianDigits(config.flexStartTimeMin || '08:30')}</strong> تا <strong>{toPersianDigits(config.flexStartTimeMax || '09:30')}</strong> بدون تاخیر است.
+              <p className="mt-1.5 text-xs sm:text-sm text-black/45 leading-relaxed max-w-xl">
+                آماده ثبت ورود برای شیفت روز جاری. ساعات موظفی کاری بر اساس شیفت شناور محاسبه خواهد شد.
               </p>
             )}
 
             {isCheckedIn && (
-              <div className="mt-1 space-y-1">
-                <p className="text-xs sm:text-sm text-emerald-400 flex items-center justify-center md:justify-start gap-1.5">
-                  <span className="relative flex h-2 w-2 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
+              <div className="mt-2 space-y-1">
+                <p className="text-xs sm:text-sm text-black/60 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>
-                    در حال کار — ورود در ساعت <strong className="font-mono text-white text-sm sm:text-base">{toPersianDigits(todayRecord?.checkIn || '')}</strong> ثبت شده است.
+                    ورود ثبت‌شده: <strong className="font-mono text-[#111] font-semibold">{toPersianDigits(todayRecord?.checkIn || '')}</strong>
                   </span>
-                </p>
-
-                {/* Target Departure notification */}
-                {targetDepartureTime && (
-                  <p className="text-[11px] sm:text-xs text-slate-300 flex items-center justify-center md:justify-start gap-1 flex-wrap">
-                    <Hourglass className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                    <span>ساعت تکمیل موظفی امروز: </span>
-                    <strong className="font-mono text-cyan-300 font-bold text-xs sm:text-sm">
-                      {toPersianDigits(targetDepartureTime)}
-                    </strong>
-                    <span className="text-slate-400">
-                      ({isThursday ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور` : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
+                  {targetDepartureTime && (
+                    <span className="text-black/45 font-mono text-xs">
+                      • زمان اتمام موظفی: <strong className="text-[#111]">{toPersianDigits(targetDepartureTime)}</strong>
                     </span>
-                  </p>
-                )}
+                  )}
+                </p>
               </div>
             )}
 
             {isCheckedOut && (
-              <p className="mt-1 text-xs sm:text-sm text-cyan-300 flex items-center justify-center md:justify-start gap-1.5">
-                <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>شیفت کاری امروز با موفقیت به پایان رسید و محاسبه شد. خسته نباشید!</span>
+              <p className="mt-1.5 text-xs sm:text-sm text-emerald-700 flex items-center gap-1.5">
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
+                <span>شیفت کاری امروز با موفقیت ثبت شد و محاسبات نهایی در کارنامه درج گردید.</span>
               </p>
             )}
           </div>
 
-          {/* Today Metrics Badges (Grid on mobile, flex on desktop) */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-center sm:text-right">
+          {/* Live Progress Bar if Checked In */}
+          {isCheckedIn && (
+            <div className="pt-2 max-w-lg">
+              <div className="flex items-center justify-between text-[11px] font-mono text-black/40 mb-1.5">
+                <span>پیشرفت ساعات موظفی شیفت</span>
+                <span className="font-medium text-[#111]">{toPersianDigits(shiftProgressPercent)}٪</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-black/[0.06] overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    isOvertimeLive ? 'bg-indigo-600' : 'bg-[#111]'
+                  }`}
+                  style={{ width: `${shiftProgressPercent}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Metrics summary badges */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             {todayRecord?.checkIn && (
-              <div className="rounded-xl glass-pill px-2.5 py-1.5 text-xs text-slate-300">
-                <span className="text-slate-400">ورود: </span>
-                <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkIn)}</span>
+              <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3 py-1.5 text-xs text-black/60 font-mono">
+                <span className="text-black/40">ورود: </span>
+                <span className="font-bold text-[#111]">{toPersianDigits(todayRecord.checkIn)}</span>
               </div>
             )}
 
             {todayRecord?.checkOut && (
-              <div className="rounded-xl glass-pill px-2.5 py-1.5 text-xs text-slate-300">
-                <span className="text-slate-400">خروج: </span>
-                <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkOut)}</span>
+              <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3 py-1.5 text-xs text-black/60 font-mono">
+                <span className="text-black/40">خروج: </span>
+                <span className="font-bold text-[#111]">{toPersianDigits(todayRecord.checkOut)}</span>
               </div>
             )}
 
             {todayRecord && todayRecord.workedMinutes > 0 && (
-              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/15 backdrop-blur-md px-2.5 py-1.5 text-xs text-emerald-300 col-span-2 sm:col-span-1 shadow-sm">
-                <span>کارکرد خالص: </span>
-                <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.workedMinutes)}</strong>
+              <div className="rounded-xl border border-black/[0.06] bg-black/[0.02] px-3 py-1.5 text-xs text-black/70">
+                <span className="text-black/40">کارکرد خالص: </span>
+                <strong className="font-medium text-[#111] font-mono">
+                  {formatMinutesToPersianReadable(todayRecord.workedMinutes)}
+                </strong>
               </div>
             )}
 
             {todayRecord && todayRecord.delayMinutes > 0 && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300 flex items-center justify-center gap-1">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700 flex items-center gap-1 font-mono">
+                <AlertTriangle className="h-3 w-3" />
                 <span>تاخیر: </span>
-                <strong className="font-bold">{toPersianDigits(todayRecord.delayMinutes)} د</strong>
-              </div>
-            )}
-
-            {todayRecord && todayRecord.earlyLeaveMinutes > 0 && (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-300">
-                <span>تعجیل: </span>
-                <strong className="font-bold">{toPersianDigits(todayRecord.earlyLeaveMinutes)} د</strong>
-              </div>
-            )}
-
-            {todayRecord && todayRecord.leaveMinutes !== undefined && todayRecord.leaveMinutes > 0 && (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-300 flex items-center justify-center gap-1">
-                <Coffee className="h-3.5 w-3.5 shrink-0" />
-                <span>مرخصی: </span>
-                <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.leaveMinutes)}</strong>
+                <strong>{toPersianDigits(todayRecord.delayMinutes)} د</strong>
               </div>
             )}
 
             {todayRecord && (todayRecord.overtimeMinutes > 0 || todayRecord.holidayOvertimeMinutes > 0) && (
-              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1.5 text-xs text-indigo-300 flex items-center justify-center gap-1 col-span-2 sm:col-span-1">
-                <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800 flex items-center gap-1 font-mono">
+                <TrendingUp className="h-3 w-3" />
                 <span>اضافه کار: </span>
-                <strong className="font-bold">
+                <strong>
                   {formatMinutesToPersianReadable(
                     todayRecord.overtimeMinutes + todayRecord.holidayOvertimeMinutes
                   )}
@@ -282,29 +268,29 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {todayRecord && todayRecord.deficitMinutes > 0 && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs text-amber-800 font-mono">
                 <span>کسر کار: </span>
-                <strong className="font-bold">{toPersianDigits(todayRecord.deficitMinutes)} د</strong>
+                <strong>{toPersianDigits(todayRecord.deficitMinutes)} د</strong>
               </div>
             )}
           </div>
         </div>
 
-        {/* Right Side: Primary Action Buttons & Live Timer */}
-        <div className="flex flex-col items-center justify-center gap-3 w-full md:w-auto">
+        {/* Right Side: Stopwatch box or Action Button */}
+        <div className="w-full lg:w-80 flex flex-col items-center gap-3">
           {/* State 1: Ready to Check In */}
           {!isCheckedIn && !isCheckedOut && (
-            <div className="flex flex-col items-center gap-2.5 w-full md:w-72">
+            <div className="w-full space-y-3">
               <button
                 onClick={handleCheckInClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/25 transition-all duration-200 hover:scale-[1.03] hover:shadow-emerald-500/40 active:scale-[0.98]"
+                className="w-full py-4 px-6 rounded-xl bg-[#111] text-white hover:bg-[#2c2c2c] transition-all duration-200 text-sm font-medium tracking-wide flex items-center justify-center gap-2.5 shadow-sm active:scale-[0.98]"
               >
-                <LogIn className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
+                <LogIn className="h-4 w-4" />
                 <span>ثبت ورود امروز</span>
               </button>
 
-              {/* Custom In Time Toggle */}
-              <div className="w-full text-center">
+              {/* Custom In Time toggle */}
+              <div className="text-center">
                 {!showCustomTime ? (
                   <button
                     type="button"
@@ -312,24 +298,24 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                       setShowCustomTime(true);
                       setCustomInTime(getCurrentTimeString(false));
                     }}
-                    className="text-[11px] text-slate-400 hover:text-indigo-400 transition-colors flex items-center justify-center gap-1 mx-auto"
+                    className="text-[11px] text-black/40 hover:text-black transition-colors inline-flex items-center gap-1"
                   >
                     <Clock className="h-3 w-3" />
-                    <span>ثبت با ساعتی به جز زمان اکنون</span>
+                    <span>ثبت دستی ساعت ورود</span>
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-xl bg-slate-950 p-2 border border-slate-800 text-xs">
-                    <span className="text-slate-400">ساعت ورود:</span>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-black/[0.03] border border-black/[0.08] text-xs">
+                    <span className="text-black/50">ساعت ورود:</span>
                     <input
                       type="time"
                       value={customInTime}
                       onChange={(e) => setCustomInTime(e.target.value)}
-                      className="rounded-lg bg-slate-900 px-2 py-1 font-mono text-white text-xs border border-slate-700 text-center"
+                      className="rounded-lg bg-white px-2 py-1 font-mono text-[#111] text-xs border border-black/10 text-center flex-1 focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCustomTime(false)}
-                      className="text-slate-500 hover:text-white px-1"
+                      className="text-black/40 hover:text-black px-1"
                     >
                       لغو
                     </button>
@@ -339,101 +325,68 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             </div>
           )}
 
-          {/* State 2: Currently Checked In (Live Working Timer & Progress) */}
+          {/* State 2: Checked In (Timer Display & Checkout) */}
           {isCheckedIn && (
-            <div className="flex flex-col items-center gap-3 w-full md:w-80">
-              {/* Working Stopwatch Box */}
-              <div
-                className={`w-full rounded-2xl glass-subcard p-4 text-center shadow-inner transition-all ${
-                  isOvertimeLive
-                    ? 'border-indigo-500/40 bg-indigo-500/15'
-                    : 'border-emerald-500/40 bg-emerald-500/15'
-                }`}
-              >
-                <div className="flex items-center justify-between text-xs font-semibold mb-1">
-                  <span
-                    className={`flex items-center gap-1.5 ${
-                      isOvertimeLive ? 'text-indigo-300' : 'text-emerald-400'
-                    }`}
-                  >
-                    <Timer className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: '6s' }} />
-                    {isOvertimeLive ? 'زمان اضافه کاری زنده' : 'مدت حضور زنده'}
+            <div className="w-full space-y-3">
+              {/* Minimalist Live Stopwatch Box */}
+              <div className="rounded-2xl border border-black/[0.08] bg-black/[0.02] p-4 text-center">
+                <div className="flex items-center justify-between text-xs text-black/50 font-mono mb-1">
+                  <span className="flex items-center gap-1.5">
+                    <Timer className="h-3 w-3 text-black/40" />
+                    <span>{isOvertimeLive ? 'اضافه کار زنده' : 'حضور زنده امروز'}</span>
                   </span>
-                  <span className="font-mono text-[11px] text-slate-300 font-bold">
-                    {toPersianDigits(shiftProgressPercent)}٪ شیفت
-                  </span>
+                  <span>{toPersianDigits(shiftProgressPercent)}٪</span>
                 </div>
 
-                <div
-                  className={`font-mono text-3xl font-black tracking-wider dir-ltr text-center ${
-                    isOvertimeLive ? 'text-indigo-200' : 'text-emerald-200'
-                  }`}
-                >
+                <div className="text-3xl sm:text-4xl font-light font-mono text-[#111] tracking-tight dir-ltr my-1">
                   {formatElapsed(elapsedSeconds)}
                 </div>
 
-                {/* Live Progress Bar */}
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-black/40 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-1000 ${
-                      isOvertimeLive
-                        ? 'bg-gradient-to-r from-emerald-400 to-indigo-400'
-                        : 'bg-gradient-to-r from-teal-400 to-emerald-400'
-                    }`}
-                    style={{ width: `${shiftProgressPercent}%` }}
-                  />
-                </div>
-
-                {/* Overtime or Remaining Time Notice */}
-                <div className="mt-2 text-[11px] text-slate-300">
+                <div className="text-[11px] text-black/45 font-mono mt-1">
                   {isOvertimeLive ? (
-                    <span className="text-indigo-300 font-semibold flex items-center justify-center gap-1">
-                      <Sparkles className="h-3 w-3 text-indigo-400" />
-                      موظفی کامل شد! اضافه کار: +{formatElapsed(overtimeLiveSecs)}
+                    <span className="text-emerald-700 font-medium">
+                      موظفی تکمیل شد (+{formatElapsed(overtimeLiveSecs)} مازاد)
                     </span>
                   ) : (
-                    <span>
-                      {formatElapsed(remainingLiveSecs)} تا پایان حضور موظفی
-                    </span>
+                    <span>{formatElapsed(remainingLiveSecs)} تا اتمام موظفی</span>
                   )}
                 </div>
               </div>
 
-              {/* Break / Lunch Selector */}
-              <div className="w-full rounded-2xl glass-subcard p-2.5 space-y-2 border border-white/[0.08]">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
-                    استراحت و ناهار:
+              {/* Lunch / Break Selector */}
+              <div className="p-2.5 rounded-xl border border-black/[0.06] bg-black/[0.02] space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-black/60 flex items-center gap-1.5">
+                    <Coffee className="h-3 w-3 text-black/40" />
+                    <span>کسر استراحت و ناهار:</span>
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 font-mono">
                     <input
                       type="number"
                       min="0"
                       max="180"
                       value={breakMinutesInput}
                       onChange={(e) => setBreakMinutesInput(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-14 rounded-lg bg-white/[0.08] px-2 py-0.5 text-center font-mono text-white text-xs border border-white/[0.1] focus:outline-none focus:border-[var(--accent-color)]"
+                      className="w-12 rounded-lg bg-white border border-black/10 px-1.5 py-0.5 text-center text-xs focus:outline-none"
                     />
-                    <span className="text-slate-400">دقیقه</span>
+                    <span className="text-black/40 text-[11px]">دقیقه</span>
                   </div>
                 </div>
 
-                {/* Quick Preset Buttons for Lunch */}
+                {/* Preset Chips */}
                 <div className="grid grid-cols-4 gap-1">
                   {[0, 15, 30, 45].map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setBreakMinutesInput(preset)}
-                      className={`rounded-lg py-1 text-[10px] font-medium transition-colors ${
+                      className={`py-1 rounded-lg text-[10px] font-mono transition-all ${
                         breakMinutesInput === preset
-                          ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40 font-bold'
-                          : 'glass-pill text-slate-300 hover:text-white'
+                          ? 'bg-[#111] text-white font-medium'
+                          : 'bg-white border border-black/10 text-black/60 hover:text-black'
                       }`}
                     >
-                      {preset === 0 ? 'بدون ناهار' : `${toPersianDigits(preset)} د`}
-                      {preset === 30 && ' (پیش‌فرض)'}
+                      {preset === 0 ? '۰ د' : `${toPersianDigits(preset)} د`}
                     </button>
                   ))}
                 </div>
@@ -442,32 +395,30 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               {/* Check Out Button */}
               <button
                 onClick={handleCheckOutClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-rose-500/25 transition-all duration-200 hover:scale-[1.03] hover:shadow-rose-500/40 active:scale-[0.98]"
+                className="w-full py-3.5 px-6 rounded-xl bg-[#111] text-white hover:bg-[#2c2c2c] transition-all text-sm font-medium tracking-wide flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]"
               >
-                <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <LogOut className="h-4 w-4" />
                 <span>ثبت پایان کار و خروج</span>
               </button>
             </div>
           )}
 
-          {/* State 3: Already Completed Today */}
+          {/* State 3: Completed Today */}
           {isCheckedOut && (
-            <div className="flex flex-col items-center gap-2.5 w-full md:w-64">
-              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                <CheckCircle className="h-5 w-5" />
-                <span>شیفت امروز ثبت و نهایی شد</span>
+            <div className="w-full space-y-2.5 text-center">
+              <div className="py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium">
+                شیفت امروز نهایی شد
               </div>
-
-              <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={onOpenEdit}
-                  className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 px-3 py-2 text-xs font-medium text-slate-200 transition-all text-center"
+                  className="flex-1 py-2 px-3 rounded-xl border border-black/10 text-black/70 hover:text-black hover:bg-black/[0.04] text-xs font-medium transition-all"
                 >
-                  ویرایش اطلاعات
+                  ویرایش
                 </button>
                 <button
                   onClick={onResetToday}
-                  className="rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-rose-900/40 hover:text-rose-300 px-3 py-2 text-xs font-medium text-slate-400 transition-all"
+                  className="py-2 px-3 rounded-xl border border-black/10 text-black/50 hover:text-rose-600 hover:border-rose-300 text-xs transition-all"
                   title="بازنشانی ثبت امروز"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -480,4 +431,3 @@ export const ClockCard: React.FC<ClockCardProps> = ({
     </div>
   );
 };
-
