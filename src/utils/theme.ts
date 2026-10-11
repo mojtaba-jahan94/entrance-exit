@@ -1,4 +1,4 @@
-export type AppTheme = 'agentic' | 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
+export type AppTheme = 'compute' | 'agentic' | 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -13,10 +13,20 @@ export interface ThemeConfig {
 
 export const APP_THEMES: ThemeConfig[] = [
   {
+    id: 'compute',
+    name: 'Compute 11 (Flagship)',
+    persianName: 'کامپیوتر ۱۱ (الگوی مرجع v0-compute-11)',
+    description: 'تم فوق مدرن الهام‌گرفته از v0-compute-11 با زمینه کربنی ژرف، هاله صورتی ارکید (#eca8d6)، مش‌بندی شبکه و متریک‌های زنده',
+    previewBg: '#050507',
+    previewCard: '#0c0d12',
+    previewAccent: '#eca8d6',
+    isDark: true,
+  },
+  {
     id: 'agentic',
     name: 'Agentic Minimal',
-    persianName: 'ایجنتیک مونوکروم (الگوی اصلی)',
-    description: 'الهام‌گرفته از طراحی مدرن و مینیمال Agentic با زمینه کرم عاجی و تایپوگرافی سوئیسی',
+    persianName: 'ایجنتیک مونوکروم (کرم عاجی)',
+    description: 'طراحی مینیمال Agentic با زمینه کرم عاجی و تایپوگرافی سوئیسی',
     previewBg: '#F5F4F0',
     previewCard: '#ffffff',
     previewAccent: '#111111',
@@ -85,7 +95,7 @@ export function getStoredTheme(): AppTheme {
   } catch {
     // Ignore storage errors
   }
-  return 'agentic';
+  return 'compute';
 }
 
 export function saveStoredTheme(theme: AppTheme): void {

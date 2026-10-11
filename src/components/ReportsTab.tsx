@@ -12,6 +12,8 @@ import {
   Zap,
   Printer,
   FileSpreadsheet,
+  ArrowUpRight,
+  ArrowDownLeft,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, MonthlyStats } from '../types';
 import {
@@ -49,133 +51,181 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* 1. Header Banner & Print/Export */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-black/[0.08] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-widest text-black/45 bg-black/[0.04] border border-black/[0.06] uppercase">
-            <span>FINANCIAL & TIME REPORT // گزارش جامع</span>
+    <div className="space-y-4 text-white">
+      {/* 1. Header Banner & Actions */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-6 shadow-2xl">
+        <div className="absolute top-0 right-0 w-80 h-32 bg-[#eca8d6]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono tracking-widest text-[#eca8d6] bg-[#eca8d6]/10 border border-[#eca8d6]/20 uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
+              <span>04 // PAYROLL & ATTENDANCE AUDIT</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+              گزارش تحلیلی و کارکرد | <span className="text-[#eca8d6] font-medium">{selectedMonthName} {toPersianDigits(selectedYear)}</span>
+            </h2>
+            <p className="text-xs text-zinc-400 font-mono">
+              محاسبه مکانیزه کارکرد موظفی، اضافه کار، انضباط زمانی، کسر کار و برآورد ساعات مفید اداری
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-light text-[#111] tracking-tight">
-            گزارش تحلیلی و مالی | {selectedMonthName} {toPersianDigits(selectedYear)}
-          </h2>
-          <p className="text-xs sm:text-sm text-black/45 leading-relaxed">
-            خلاصه کارکرد موظفی، اضافه کاری، انضباط تردد و برآورد ساعات مفید کاری
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={onExportExcel}
-            className="flex items-center gap-1.5 rounded-xl bg-[#111] hover:bg-[#2c2c2c] text-white px-3.5 py-2 text-xs font-medium tracking-wide shadow-xs transition-all"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5" />
-            <span>خروجی اکسل</span>
-          </button>
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 rounded-xl border border-black/10 bg-white hover:bg-black/[0.02] text-black/70 hover:text-black px-3.5 py-2 text-xs font-medium transition-all"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            <span>چاپ گزارش</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={onExportExcel}
+              className="flex items-center gap-2 rounded-full bg-[#eca8d6] hover:bg-[#e491cc] text-[#050507] px-4 py-2.5 text-xs font-bold tracking-wide transition-all shadow-[0_0_20px_rgba(236,168,214,0.3)] active:scale-95"
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>خروجی اکسل</span>
+            </button>
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white px-4 py-2.5 text-xs font-mono transition-all"
+            >
+              <Printer className="h-4 w-4" />
+              <span>چاپ گزارش</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* 2. Key Metrics Grid */}
+      {/* 2. Key Metrics Bento Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            کارکرد موثر ماه
-          </span>
-          <div className="text-2xl sm:text-3xl font-light text-[#111] font-mono">
+        {/* Card 1: Effective Worked */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-[#eca8d6]/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              01 // کارکرد موثر ماه
+            </span>
+            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-zinc-400">
+              <Clock className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-white font-mono tracking-tight">
             {formatMinutesToPersianReadable(stats.totalWorkedMinutes)}
           </div>
-          <span className="text-xs text-black/40 font-mono block mt-1">
-            از {formatMinutesToPersianReadable(stats.totalRequiredMinutes)} موظفی
-          </span>
+          <p className="text-xs text-zinc-500 font-mono mt-2 pt-2 border-t border-white/5">
+            از کل موظفی: {formatMinutesToPersianReadable(stats.totalRequiredMinutes)}
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            تراز خالص کارکرد
-          </span>
+        {/* Card 2: Net Balance */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-[#eca8d6]/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              02 // تراز خالص کارکرد
+            </span>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                isNetPositive
+                  ? 'bg-emerald-400/10 text-emerald-400'
+                  : 'bg-rose-400/10 text-rose-400'
+              }`}
+            >
+              {isNetPositive ? (
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              ) : (
+                <ArrowDownLeft className="h-3.5 w-3.5" />
+              )}
+            </div>
+          </div>
           <div
-            className={`text-2xl sm:text-3xl font-light font-mono ${
-              isNetPositive ? 'text-emerald-700' : 'text-rose-600'
+            className={`text-2xl sm:text-3xl font-light font-mono tracking-tight ${
+              isNetPositive ? 'text-emerald-400' : 'text-rose-400'
             }`}
           >
             {isNetPositive ? '+' : '-'}
             {formatMinutesToPersianReadable(Math.abs(stats.netBalanceMinutes))}
           </div>
-          <span className="text-xs text-black/40 block mt-1">
-            {isNetPositive ? 'مازاد اضافه کاری' : 'کسر کار بیش از اضافه کار'}
-          </span>
+          <p className="text-xs text-zinc-500 font-mono mt-2 pt-2 border-t border-white/5">
+            {isNetPositive ? 'مازاد مثبت اضافه کاری' : 'کسر کار بیش از اضافه کار'}
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            مجموع اضافه کاری
-          </span>
-          <div className="text-2xl sm:text-3xl font-light text-[#111] font-mono">
+        {/* Card 3: Overtime Breakdown */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-[#eca8d6]/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              03 // اضافه کاری تجمیعی
+            </span>
+            <div className="w-7 h-7 rounded-full bg-[#eca8d6]/10 flex items-center justify-center text-[#eca8d6]">
+              <Zap className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-[#eca8d6] font-mono tracking-tight">
             {formatMinutesToPersianReadable(stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes)}
           </div>
-          <span className="text-xs text-black/40 font-mono block mt-1">
-            عادی: {toPersianDigits(formatMinutesToTimeString(stats.totalOvertimeMinutes))} | تعطیل:{' '}
-            {toPersianDigits(formatMinutesToTimeString(stats.totalHolidayOvertimeMinutes))}
-          </span>
+          <p className="text-xs text-zinc-500 font-mono mt-2 pt-2 border-t border-white/5">
+            عادی: {toPersianDigits(formatMinutesToTimeString(stats.totalOvertimeMinutes))} | تعطیل: {toPersianDigits(formatMinutesToTimeString(stats.totalHolidayOvertimeMinutes))}
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            تاخیر و تعجیل
-          </span>
-          <div className="text-2xl sm:text-3xl font-light text-[#111] font-mono">
+        {/* Card 4: Delays & Early Departures */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-amber-400/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              04 // تاخیر و تعجیل
+            </span>
+            <div className="w-7 h-7 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-300">
+              <AlertTriangle className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-light text-amber-300 font-mono tracking-tight">
             {toPersianDigits(stats.totalDelayMinutes + stats.totalEarlyLeaveMinutes)} دقیقه
           </div>
-          <span className="text-xs text-black/40 font-mono block mt-1">
-            تاخیر ورود: {toPersianDigits(stats.totalDelayMinutes)}د | تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
-          </span>
+          <p className="text-xs text-zinc-500 font-mono mt-2 pt-2 border-t border-white/5">
+            تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د | تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
+          </p>
         </div>
       </div>
 
-      {/* 3. Detailed Breakdown */}
+      {/* 3. Detailed Audit Matrix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Time Details Table */}
-        <div className="rounded-2xl border border-black/[0.08] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
-          <h3 className="text-sm font-semibold text-[#111] border-b border-black/[0.06] pb-2.5 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-black/40" />
-            <span>جزئیات محاسبات زمانی</span>
-          </h3>
+        <div className="rounded-3xl border border-white/10 bg-[#09090d] p-5 sm:p-6 shadow-2xl space-y-3">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-[#eca8d6]" />
+              <h3 className="text-sm font-semibold text-white font-mono">
+                جزئیات و محاسبات زمانی کارکرد
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500">TIME AUDIT</span>
+          </div>
 
-          <div className="divide-y divide-black/[0.04] text-xs">
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">کل روزهای تقویمی ماه:</span>
-              <span className="font-mono font-medium text-[#111]">
+          <div className="divide-y divide-white/5 text-xs font-mono">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">کل روزهای تقویمی ماه:</span>
+              <span className="font-bold text-white">
                 {toPersianDigits(records.length || 30)} روز
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">روزهای ثبت‌شده:</span>
-              <span className="font-mono font-medium text-[#111]">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">روزهای کاری رسمی (غیرتعطیل):</span>
+              <span className="font-bold text-white">
+                {toPersianDigits(stats.workingDaysCount || 0)} روز کاری
+              </span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">روزهای دارای ثبت تردد:</span>
+              <span className="font-bold text-white">
                 {toPersianDigits(stats.presentDaysCount + stats.absentDaysCount + (stats.leaveDaysCount || 0))} روز
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">روزهای حضور موثر:</span>
-              <span className="font-mono font-medium text-emerald-700">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">روزهای حضور موثر:</span>
+              <span className="font-bold text-emerald-400">
                 {toPersianDigits(stats.presentDaysCount)} روز
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">روزهای غیبت یا ثبت‌نشده:</span>
-              <span className="font-mono font-medium text-rose-600">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">روزهای غیبت یا ثبت‌نشده:</span>
+              <span className="font-bold text-rose-400">
                 {toPersianDigits(stats.absentDaysCount)} روز
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">میانگین حضور در روزهای کاری:</span>
-              <span className="font-mono font-medium text-[#111]">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">میانگین حضور در روزهای کاری:</span>
+              <span className="font-bold text-[#eca8d6]">
                 {formatMinutesToPersianReadable(avgWorkedDaily)}
               </span>
             </div>
@@ -183,35 +233,46 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         {/* Attendance Discipline & Leaves Table */}
-        <div className="rounded-2xl border border-black/[0.08] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
-          <h3 className="text-sm font-semibold text-[#111] border-b border-black/[0.06] pb-2.5 flex items-center gap-2">
-            <Award className="h-4 w-4 text-black/40" />
-            <span>انضباط تردد و کاردکس مرخصی</span>
-          </h3>
+        <div className="rounded-3xl border border-white/10 bg-[#09090d] p-5 sm:p-6 shadow-2xl space-y-3">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-[#eca8d6]" />
+              <h3 className="text-sm font-semibold text-white font-mono">
+                شاخص‌های انضباط اداری و مرخصی
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-500">DISCIPLINE MATRIX</span>
+          </div>
 
-          <div className="divide-y divide-black/[0.04] text-xs">
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">کل کسر کار ماهانه:</span>
-              <span className="font-mono font-medium text-amber-800">
+          <div className="divide-y divide-white/5 text-xs font-mono">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">کل کسر کار محاسبه‌شده:</span>
+              <span className="font-bold text-amber-300">
                 {formatMinutesToPersianReadable(stats.totalDeficitMinutes)}
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">کل مرخصی استفاده‌شده:</span>
-              <span className="font-mono font-medium text-[#111]">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">کل مرخصی مصرف‌شده:</span>
+              <span className="font-bold text-white">
                 {formatMinutesToPersianReadable(stats.totalLeaveMinutes)} ({toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز)
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">درصد تحقق کل موظفی:</span>
-              <span className="font-mono font-bold text-[#111]">
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">درصد تحقق کل تعهد ماهانه:</span>
+              <span className="font-bold text-[#eca8d6] text-sm">
                 {toPersianDigits(stats.completionRate)}٪
               </span>
             </div>
-            <div className="py-2.5 flex justify-between">
-              <span className="text-black/60">وضعیت انضباط زمانی:</span>
-              <span className="font-medium text-emerald-700">
-                {stats.totalDelayMinutes === 0 ? 'عالی و بدون تاخیر' : `${toPersianDigits(stats.totalDelayMinutes)} دقیقه تاخیر مجموع`}
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">انضباط ورود و خروج:</span>
+              <span className={`font-bold ${stats.totalDelayMinutes === 0 ? 'text-emerald-400' : 'text-amber-300'}`}>
+                {stats.totalDelayMinutes === 0 ? 'کاملاً منظم و بدون تاخیر' : `${toPersianDigits(stats.totalDelayMinutes)} دقیقه تاخیر ورود`}
+              </span>
+            </div>
+            <div className="py-3 flex justify-between items-center">
+              <span className="text-zinc-400">وضعیت اضافه کاری تعطیلات:</span>
+              <span className="font-bold text-purple-300">
+                {toPersianDigits(formatMinutesToTimeString(stats.totalHolidayOvertimeMinutes))} با ضریب تعطیل کاری
               </span>
             </div>
           </div>

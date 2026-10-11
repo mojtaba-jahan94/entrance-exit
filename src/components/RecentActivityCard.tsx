@@ -7,6 +7,9 @@ import {
   Coffee,
   Calendar,
   ChevronLeft,
+  Activity,
+  Terminal,
+  Edit2,
 } from 'lucide-react';
 import { AttendanceRecord } from '../types';
 import {
@@ -30,142 +33,144 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
   // Sort descending by date and take the top 5
   const recentRecords = [...records]
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 5);
+    .slice(0, 6);
 
   return (
-    <div className="rounded-2xl border border-black/[0.08] bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+    <div className="rounded-2xl border border-white/10 bg-[#09090d] overflow-hidden transition-all duration-300 hover:border-white/20">
       {/* Top Header */}
-      <div className="flex items-center justify-between p-5 border-b border-black/[0.06] bg-black/[0.01]">
+      <div className="flex flex-wrap items-center justify-between p-5 sm:p-6 border-b border-white/10 bg-white/[0.01]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl border border-black/10 bg-black/[0.03] flex items-center justify-center text-black/70">
-            <Clock className="h-4 w-4" />
+          <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center text-[#eca8d6]">
+            <Terminal className="h-4 w-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-[#111]">گزارش فعالیت و ترددهای اخیر</h3>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-mono text-[#eca8d6] uppercase tracking-wider">
+                03 // REAL-TIME AUDIT TRAIL
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
             </div>
-            <p className="text-[11px] text-black/40 font-mono tracking-wide">
-              LIVE AUDIT TRAIL — مرور ۵ رکورد ثبتی اخیر
-            </p>
+            <h3 className="text-sm font-semibold text-white mt-0.5">
+              فید آخرین ترددهای ثبت‌شده در سامانه
+            </h3>
           </div>
         </div>
 
         <button
           onClick={onNavigateToTimesheet}
-          className="flex items-center gap-1 text-xs text-black/60 hover:text-black font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-mono text-white/60 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-white/25 transition-all"
         >
-          <span>مشاهده کامل</span>
+          <span>مشاهده کارنامه کامل ماه</span>
           <ChevronLeft className="h-3.5 w-3.5" />
         </button>
       </div>
 
-      {/* Terminal Grid Headers */}
-      <div className="hidden sm:grid grid-cols-12 px-5 py-2.5 bg-black/[0.02] border-b border-black/[0.06] text-[10px] font-mono tracking-widest text-black/40 uppercase">
-        <div className="col-span-3">تاریخ و روز / DATE</div>
-        <div className="col-span-4">ورود و خروج / PUNCHES</div>
-        <div className="col-span-3">کارکرد مفید / DURATION</div>
-        <div className="col-span-2 text-left">وضعیت / STATUS</div>
-      </div>
-
-      {/* Rows */}
-      <div className="divide-y divide-black/[0.04]">
-        {recentRecords.length === 0 ? (
-          <div className="py-12 text-center text-xs text-black/40 font-mono">
-            هیچ داده‌ای برای نمایش ثبت نشده است.
-          </div>
-        ) : (
-          recentRecords.map((r) => {
-            const weekday = getJalaliWeekdayName(r.date);
-            const isCompleted = Boolean(r.checkIn && r.checkOut);
-            const isCurrent = Boolean(r.checkIn && !r.checkOut);
+      {/* Audit List */}
+      {recentRecords.length === 0 ? (
+        <div className="p-12 text-center text-white/40 font-mono text-xs">
+          هیچ ثبتی در پایگاه داده یافت نشد.
+        </div>
+      ) : (
+        <div className="divide-y divide-white/5">
+          {recentRecords.map((rec) => {
+            const weekday = getJalaliWeekdayName(rec.date);
+            const isCompleted = Boolean(rec.checkIn && rec.checkOut);
+            const isInProgress = Boolean(rec.checkIn && !rec.checkOut);
+            const isLeave = rec.status === 'leave';
+            const isAbsent = rec.status === 'absent';
+            const hasOvertime = rec.overtimeMinutes > 0 || rec.holidayOvertimeMinutes > 0;
+            const hasDeficit = rec.deficitMinutes > 0;
 
             return (
               <div
-                key={r.id || r.date}
-                onClick={() => onEditRecord(r)}
-                className="grid grid-cols-1 sm:grid-cols-12 px-5 py-3.5 items-center gap-2 sm:gap-0 hover:bg-black/[0.02] transition-colors cursor-pointer group"
+                key={rec.id || rec.date}
+                className="flex flex-wrap items-center justify-between p-4 sm:px-6 hover:bg-white/[0.02] transition-colors gap-3"
               >
-                {/* 1. Date & Weekday */}
-                <div className="sm:col-span-3 flex items-center gap-2.5">
-                  <div className="flex flex-col">
-                    <span className="font-mono text-xs font-semibold text-[#111]">
-                      {toPersianDigits(r.date)}
-                    </span>
-                    <span className="text-[10px] text-black/40 font-sans">{weekday}</span>
-                  </div>
-                </div>
-
-                {/* 2. Check In & Check Out with subtle progress */}
-                <div className="sm:col-span-4 flex flex-col justify-center">
-                  <div className="flex items-center gap-2 text-xs font-mono">
-                    <span className="text-black/70">
-                      ورود: <strong className="text-[#111]">{r.checkIn ? toPersianDigits(r.checkIn) : '--:--'}</strong>
-                    </span>
-                    <span className="text-black/30">|</span>
-                    <span className="text-black/70">
-                      خروج: <strong className="text-[#111]">{r.checkOut ? toPersianDigits(r.checkOut) : '--:--'}</strong>
-                    </span>
-                  </div>
-                  {/* Thin Progress bar */}
-                  <div className="w-36 h-1 bg-black/[0.06] rounded-full overflow-hidden mt-1.5">
-                    <div
-                      className={`h-full rounded-full ${
-                        isCurrent ? 'bg-emerald-500' : 'bg-black/30'
-                      }`}
-                      style={{
-                        width: isCompleted ? '100%' : isCurrent ? '60%' : '0%',
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* 3. Duration & Overtime / Delay */}
-                <div className="sm:col-span-3 text-xs font-mono">
-                  {r.workedMinutes > 0 ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#111] font-medium">
-                        {formatMinutesToPersianReadable(r.workedMinutes)}
-                      </span>
-                      {r.overtimeMinutes > 0 && (
-                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                          +{toPersianDigits(r.overtimeMinutes)}د
-                        </span>
-                      )}
+                {/* Date & Weekday */}
+                <div className="flex items-center gap-3 min-w-[140px]">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isInProgress
+                        ? 'bg-[#eca8d6] animate-pulse'
+                        : isCompleted
+                        ? 'bg-emerald-400'
+                        : isLeave
+                        ? 'bg-amber-400'
+                        : 'bg-rose-400'
+                    }`}
+                  />
+                  <div>
+                    <div className="font-mono text-xs font-semibold text-white">
+                      {toPersianDigits(rec.date)}
                     </div>
-                  ) : r.status === 'leave' ? (
-                    <span className="text-amber-700 text-xs">مرخصی استحقاقی</span>
-                  ) : (
-                    <span className="text-black/35 text-xs">در حال پردازش</span>
-                  )}
+                    <div className="text-[11px] text-white/40">{weekday}</div>
+                  </div>
                 </div>
 
-                {/* 4. Status Indicator */}
-                <div className="sm:col-span-2 flex items-center justify-between sm:justify-end gap-1.5 font-mono text-[11px]">
-                  {r.status === 'present' && (
-                    <span className="inline-flex items-center gap-1.5 text-black/60">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      حاضر
+                {/* Clock In / Out */}
+                <div className="flex items-center gap-6 text-xs font-mono">
+                  <div>
+                    <span className="text-white/40 text-[10px] block">ورود:</span>
+                    <span className="text-white font-medium">
+                      {rec.checkIn ? toPersianDigits(rec.checkIn) : '—'}
                     </span>
-                  )}
-                  {r.status === 'leave' && (
-                    <span className="inline-flex items-center gap-1.5 text-amber-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      مرخصی
+                  </div>
+                  <div>
+                    <span className="text-white/40 text-[10px] block">خروج:</span>
+                    <span className="text-white font-medium">
+                      {rec.checkOut ? toPersianDigits(rec.checkOut) : isInProgress ? 'حاضر' : '—'}
                     </span>
-                  )}
-                  {isCurrent && (
-                    <span className="inline-flex items-center gap-1.5 text-emerald-600 font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      در حال کار
-                    </span>
-                  )}
+                  </div>
                 </div>
+
+                {/* Worked Time & Balance */}
+                <div className="flex items-center gap-4 text-xs font-mono">
+                  <div className="text-right">
+                    <span className="text-white/40 text-[10px] block">کارکرد مفید:</span>
+                    <span className="text-white font-medium">
+                      {rec.workedMinutes > 0 ? toPersianDigits(formatMinutesToTimeString(rec.workedMinutes)) : '—'}
+                    </span>
+                  </div>
+
+                  {/* Status Tag */}
+                  <div>
+                    {hasOvertime && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-[#eca8d6]/10 text-[#eca8d6] border border-[#eca8d6]/30">
+                        +{toPersianDigits(rec.overtimeMinutes + rec.holidayOvertimeMinutes)}د اضافه‌کار
+                      </span>
+                    )}
+                    {hasDeficit && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                        -{toPersianDigits(rec.deficitMinutes)}د کسرکار
+                      </span>
+                    )}
+                    {!hasOvertime && !hasDeficit && isCompleted && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-white/[0.04] text-white/60 border border-white/10">
+                        تراز دقیق
+                      </span>
+                    )}
+                    {isLeave && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                        مرخصی
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Edit Button */}
+                <button
+                  type="button"
+                  onClick={() => onEditRecord(rec)}
+                  className="p-1.5 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-all"
+                  title="ویرایش تردد"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                </button>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 };

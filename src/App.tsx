@@ -10,7 +10,7 @@ import {
   TrendingUp,
   CalendarClock,
 } from 'lucide-react';
-import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
+import { AttendanceRecord, ShiftConfig, LeaveRecord, ActiveTab } from './types';
 import {
   getCurrentJalaliDate,
   getTodayJalaliString,
@@ -46,7 +46,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { StorageModeModal } from './components/StorageModeModal';
 
-import { Navbar, ActiveTab } from './components/Navbar';
+import { Navbar } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
 import { AttendanceTable } from './components/AttendanceTable';
@@ -55,6 +55,7 @@ import { DashboardCharts } from './components/DashboardCharts';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
+import { SettingsTab } from './components/SettingsTab';
 import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -413,7 +414,7 @@ function DashboardApp() {
           setEditingRecord(null);
           setIsManualModalOpen(true);
         }}
-        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        onOpenSettings={() => setActiveTab('settings')}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenStorageMode={() => setIsStorageModalOpen(true)}
@@ -427,69 +428,69 @@ function DashboardApp() {
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-            {/* Agentic Hero Header */}
+            {/* Compute 11 Hero Header */}
             <header className="relative pt-2 pb-1 text-right">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                <div className="agentic-pill">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-status-pulse" />
-                  <span>AGENTIC SYSTEM // v2.6.4</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono tracking-widest text-[#eca8d6] bg-[#eca8d6]/10 border border-[#eca8d6]/20 uppercase shadow-[0_0_15px_rgba(236,168,214,0.15)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
+                  <span>COMPUTE.11 // ENTERPRISE HR RUNTIME</span>
                 </div>
-                <div className="text-[11px] font-mono text-stone-500 bg-black/[0.03] border border-black/[0.06] px-2.5 py-1 rounded-full">
+                <div className="text-[11px] font-mono text-zinc-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
                   <span>{todayWeekdayName}</span> • <span>{toPersianDigits(todayStr)}</span>
                 </div>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-[#111111] leading-tight">
-                سامانه هوشمند <span className="font-semibold">ثبت تردد و مدیریت شیفت</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight text-white leading-tight">
+                سامانه هوشمند <span className="text-[#eca8d6] font-medium">تردد و پردازش شیفت</span>
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-stone-600 max-w-2xl leading-relaxed">
-                محاسبه بلادرنگ ساعات کاری، اضافه‌کار، کسرکار و سقف مرخصی بر اساس تقویم رسمی و شناوری اداری
+              <p className="mt-1 text-xs sm:text-sm text-zinc-400 max-w-2xl leading-relaxed font-mono">
+                محاسبه بلادرنگ ساعات کاری، اضافه‌کار، شناوری اداری و سقف مجاز مرخصی بر پایه تقویم رسمی
               </p>
             </header>
 
             {/* Continuous Marquee Ticker Ribbon */}
-            <div className="relative overflow-hidden rounded-xl border border-black/[0.07] bg-white/60 backdrop-blur-md py-2 shadow-xs">
-              <div className="animate-marquee-left flex items-center gap-8 text-[11px] font-mono text-stone-600 select-none">
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#09090d]/80 backdrop-blur-md py-2.5 shadow-xl">
+              <div className="animate-marquee-left flex items-center gap-8 text-[11px] font-mono text-zinc-400 select-none">
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#eca8d6]" />
                   <span>شیفت استاندارد: {config.startTime} الی {config.endTime}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span>ورود شناور: {config.flexStartTimeMin} تا {config.flexStartTimeMax}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴.۵ ساعت)' : 'روز کاری کامل'}</span>
+                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴ ساعت)' : 'روز کاری کامل'}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span>فرجه ناهار و استراحت: {toPersianDigits(config.defaultBreakMinutes || 30)} دقیقه</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span>سهمیه مرخصی ماهانه: {toPersianDigits(config.monthlyLeaveDays || 2.5)} روز</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   <span>وضعیت اتصال: ابری و همگام</span>
                 </div>
                 {/* Repeat for seamless loop */}
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#eca8d6]" />
                   <span>شیفت استاندارد: {config.startTime} الی {config.endTime}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span>ورود شناور: {config.flexStartTimeMin} تا {config.flexStartTimeMax}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴.۵ ساعت)' : 'روز کاری کامل'}</span>
+                  <span>پنجشنبه: {config.thursdayStatus === 'off' ? 'تعطیل' : config.thursdayStatus === 'half_day' ? 'نیمه‌وقت (۴ ساعت)' : 'روز کاری کامل'}</span>
                 </div>
-                <span className="text-stone-300">/</span>
+                <span className="text-zinc-600">/</span>
                 <div className="flex items-center gap-2 shrink-0">
                   <span>فرجه ناهار و استراحت: {toPersianDigits(config.defaultBreakMinutes || 30)} دقیقه</span>
                 </div>
@@ -662,16 +663,32 @@ function DashboardApp() {
             />
           </div>
         )}
+
+        {/* Tab 5: Dedicated Settings Cockpit */}
+        {activeTab === 'settings' && (
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            <SettingsTab
+              config={config}
+              onSaveConfig={handleSaveConfig}
+              currentTheme={currentTheme}
+              onSelectTheme={handleSelectTheme}
+              onDataRestored={handleDataRestored}
+              onResetAllData={handleResetAllData}
+              onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+              onOpenStorageMode={() => setIsStorageModalOpen(true)}
+            />
+          </div>
+        )}
       </main>
 
       {/* Mobile Floating Bottom Bar */}
-      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-lg shadow-black/[0.06] rounded-2xl px-2 py-1.5 flex items-center justify-around text-[11px]">
+      <div className="md:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#09090d]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl px-2 py-1.5 flex items-center justify-around text-[10px] font-mono">
         <button
           onClick={() => setActiveTab('dashboard')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 transition-all rounded-xl ${
             activeTab === 'dashboard'
-              ? 'text-black font-bold'
-              : 'text-stone-500 hover:text-stone-900'
+              ? 'text-[#eca8d6] font-bold'
+              : 'text-zinc-500 hover:text-white'
           }`}
         >
           <LayoutDashboard className="h-4 w-4" />
@@ -680,10 +697,10 @@ function DashboardApp() {
 
         <button
           onClick={() => setActiveTab('timesheet')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 transition-all rounded-xl ${
             activeTab === 'timesheet'
-              ? 'text-black font-bold'
-              : 'text-stone-500 hover:text-stone-900'
+              ? 'text-[#eca8d6] font-bold'
+              : 'text-zinc-500 hover:text-white'
           }`}
         >
           <TableIcon className="h-4 w-4" />
@@ -698,18 +715,18 @@ function DashboardApp() {
           }}
           className="flex flex-col items-center gap-1 py-0.5 px-2 active:scale-95 transition-all"
         >
-          <div className="h-8 w-8 rounded-full bg-[#111111] shadow-md shadow-black/20 flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-full bg-[#eca8d6] shadow-[0_0_15px_rgba(236,168,214,0.4)] flex items-center justify-center text-[#050507]">
             <PlusCircle className="h-4 w-4" />
           </div>
-          <span className="text-[9px] font-bold text-stone-900">ثبت</span>
+          <span className="text-[9px] font-bold text-white">ثبت</span>
         </button>
 
         <button
           onClick={() => setActiveTab('leaves')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 transition-all rounded-xl ${
             activeTab === 'leaves'
-              ? 'text-black font-bold'
-              : 'text-stone-500 hover:text-stone-900'
+              ? 'text-[#eca8d6] font-bold'
+              : 'text-zinc-500 hover:text-white'
           }`}
         >
           <Coffee className="h-4 w-4" />
@@ -718,14 +735,26 @@ function DashboardApp() {
 
         <button
           onClick={() => setActiveTab('reports')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all rounded-xl ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 transition-all rounded-xl ${
             activeTab === 'reports'
-              ? 'text-black font-bold'
-              : 'text-stone-500 hover:text-stone-900'
+              ? 'text-[#eca8d6] font-bold'
+              : 'text-zinc-500 hover:text-white'
           }`}
         >
           <TrendingUp className="h-4 w-4" />
-          <span>گزارشات</span>
+          <span>گزارش</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`flex flex-col items-center gap-1 py-1 px-2 transition-all rounded-xl ${
+            activeTab === 'settings'
+              ? 'text-[#eca8d6] font-bold'
+              : 'text-zinc-500 hover:text-white'
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+          <span>تنظیمات</span>
         </button>
       </div>
 
@@ -792,15 +821,15 @@ function AppWithAuth() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#F5F4F0] text-[#111111] p-4">
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#050507] text-white p-4 font-sans bg-grid-compute">
         <div className="relative flex items-center justify-center mb-4">
-          <div className="h-14 w-14 rounded-2xl bg-[#111111] flex items-center justify-center shadow-lg shadow-black/10">
-            <CalendarClock className="h-7 w-7 text-white animate-pulse" />
+          <div className="h-14 w-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl">
+            <CalendarClock className="h-7 w-7 text-[#eca8d6] animate-pulse" />
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-mono text-stone-500 tracking-wider">
-          <span className="h-3.5 w-3.5 rounded-full border-2 border-stone-800 border-t-transparent animate-spin" />
-          <span>INITIALIZING AGENTIC ATTENDANCE...</span>
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 tracking-wider">
+          <span className="h-3.5 w-3.5 rounded-full border-2 border-[#eca8d6] border-t-transparent animate-spin" />
+          <span>INITIALIZING COMPUTE.11 HR RUNTIME...</span>
         </div>
       </div>
     );

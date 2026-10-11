@@ -9,6 +9,8 @@ import {
   Zap,
   Scale,
   CheckCircle2,
+  Activity,
+  Layers,
 } from 'lucide-react';
 import { MonthlyStats } from '../types';
 import {
@@ -38,165 +40,157 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
   const isNetZero = stats.netBalanceMinutes === 0;
 
   const deficitHours = (stats.totalDeficitMinutes / 60).toFixed(1);
-  const hasDeficit = stats.totalDeficitMinutes > 0;
-
-  const totalDelayAndEarlyMins = stats.totalDelayMinutes + stats.totalEarlyLeaveMinutes;
-  const hasDelayOrEarly = totalDelayAndEarlyMins > 0;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      {/* 1. کارکرد مفید ماه */}
-      <div className="group relative rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6 transition-all duration-300 hover:border-black/[0.16] hover:bg-[#fafaf8] shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Card 01: موظفی ماهانه */}
+      <div className="group relative rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 transition-all duration-300 hover:border-white/20 hover:bg-[#0c0c12] flex flex-col justify-between overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#eca8d6] to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
         <div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/70">
-              <Clock className="h-4 w-4" />
-            </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider text-black/45 bg-black/[0.04]">
-              {toPersianDigits(stats.completionRate)}٪ موظفی
+            <span className="text-[10px] font-mono text-[#eca8d6] uppercase tracking-wider">
+              01 // OBLIGATION
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono text-white/50 bg-white/[0.04] border border-white/10">
+              {toPersianDigits(stats.workingDaysCount || 0)} روز کاری
             </span>
           </div>
 
-          <div className="text-[11px] font-mono tracking-widest text-black/40 uppercase mb-1">
-            کارکرد ماه {monthName}
+          <div className="text-[11px] font-mono tracking-widest text-white/40 uppercase mb-1">
+            ساعت موظف ({monthName})
           </div>
 
-          <div className="flex items-baseline gap-1.5 mb-2">
-            <span className="text-3xl font-light text-[#111] font-mono tracking-tight">
-              {toPersianDigits(workedHours)}
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-3xl sm:text-4xl font-light text-white font-mono tracking-tight tabular-nums">
+              {toPersianDigits(requiredHours)}
             </span>
-            <span className="text-xs text-black/40 font-mono">
-              / {toPersianDigits(requiredHours)} ساعت
-            </span>
+            <span className="text-xs text-white/40 font-mono">ساعت تا امروز</span>
           </div>
+        </div>
 
-          <div className="w-full h-1 bg-black/[0.06] rounded-full overflow-hidden my-3">
+        <div className="space-y-1.5 pt-3 border-t border-white/10">
+          <div className="flex justify-between text-[11px] font-mono text-white/50">
+            <span>نرخ تکمیل:</span>
+            <span className="text-[#eca8d6] font-semibold">{toPersianDigits(stats.completionRate)}%</span>
+          </div>
+          <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#111] rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, stats.completionRate)}%` }}
+              className="h-full bg-[#eca8d6] rounded-full transition-all duration-500"
+              style={{ width: `${stats.completionRate}%` }}
             />
           </div>
         </div>
-
-        <p className="text-xs text-black/45 leading-relaxed pt-2 border-t border-black/[0.05]">
-          کل موظفی تقویمی ماه: <span className="font-mono font-medium text-[#111]">{toPersianDigits(totalMonthHours)} ساعت</span>
-        </p>
       </div>
 
-      {/* 2. تراز اضافه کاری و کارکرد خالص */}
-      <div className="group relative rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6 transition-all duration-300 hover:border-black/[0.16] hover:bg-[#fafaf8] shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+      {/* Card 02: کارکرد خالص */}
+      <div className="group relative rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 transition-all duration-300 hover:border-white/20 hover:bg-[#0c0c12] flex flex-col justify-between overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#c597eb] to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
         <div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/70">
-              <Scale className="h-4 w-4" />
-            </div>
+            <span className="text-[10px] font-mono text-[#c597eb] uppercase tracking-wider">
+              02 // WORKED EFFORT
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono text-white/50 bg-white/[0.04] border border-white/10">
+              {toPersianDigits(stats.presentDaysCount)} روز حضور
+            </span>
+          </div>
+
+          <div className="text-[11px] font-mono tracking-widest text-white/40 uppercase mb-1">
+            کارکرد موثر ثبت‌شده
+          </div>
+
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-3xl sm:text-4xl font-light text-white font-mono tracking-tight tabular-nums">
+              {toPersianDigits(workedHours)}
+            </span>
+            <span className="text-xs text-white/40 font-mono">ساعت کار مفید</span>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-white/10 text-[11px] font-mono text-white/50 flex justify-between">
+          <span>میانگین روزانه:</span>
+          <span className="text-white">
+            {stats.presentDaysCount > 0
+              ? toPersianDigits((stats.totalWorkedMinutes / stats.presentDaysCount / 60).toFixed(1))
+              : '۰'} ساعت
+          </span>
+        </div>
+      </div>
+
+      {/* Card 03: تراز زمانی ماه */}
+      <div className="group relative rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 transition-all duration-300 hover:border-white/20 hover:bg-[#0c0c12] flex flex-col justify-between overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#79cdf9] to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-mono text-[#79cdf9] uppercase tracking-wider">
+              03 // TIME BALANCE
+            </span>
             <span
-              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider ${
+              className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${
                 isNetPositive
-                  ? 'text-emerald-700 bg-emerald-50'
+                  ? 'border-[#eca8d6]/30 text-[#eca8d6] bg-[#eca8d6]/10'
                   : isNetZero
-                  ? 'text-black/50 bg-black/[0.04]'
-                  : 'text-rose-700 bg-rose-50'
+                  ? 'border-white/10 text-white/60 bg-white/[0.04]'
+                  : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
               }`}
             >
-              {isNetPositive ? '+ مثبت' : isNetZero ? 'سر‌به‌سر' : '- منفی'}
+              {isNetPositive ? 'مازاد مثبت' : isNetZero ? 'تراز دقیق' : 'کسر کار'}
             </span>
           </div>
 
-          <div className="text-[11px] font-mono tracking-widest text-black/40 uppercase mb-1">
-            تراز اضافه کار
+          <div className="text-[11px] font-mono tracking-widest text-white/40 uppercase mb-1">
+            تراز اضافه/کسر کار
           </div>
 
-          <div className="flex items-baseline gap-1.5 mb-2">
+          <div className="flex items-baseline gap-2 mb-3">
             <span
-              className={`text-3xl font-light font-mono tracking-tight ${
-                isNetPositive ? 'text-emerald-700' : isNetZero ? 'text-[#111]' : 'text-rose-600'
+              className={`text-3xl sm:text-4xl font-light font-mono tracking-tight tabular-nums ${
+                isNetPositive ? 'text-[#eca8d6]' : isNetZero ? 'text-white' : 'text-rose-400'
               }`}
             >
-              {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}
-              {toPersianDigits(netBalanceHours)}
+              {isNetPositive ? `+${toPersianDigits(netBalanceHours)}` : isNetZero ? '۰.۰' : `-${toPersianDigits(netBalanceHours)}`}
             </span>
-            <span className="text-xs text-black/40 font-mono">
-              ساعت خالص
-            </span>
+            <span className="text-xs text-white/40 font-mono">ساعت تراز</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-black/45 pt-3 border-t border-black/[0.05]">
-          <span className="flex items-center gap-1 font-mono text-emerald-700 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            اضافه: {toPersianDigits(totalOvertimeHours)}س
-          </span>
-          <span className="flex items-center gap-1 font-mono text-black/50">
-            کسری: {toPersianDigits(deficitHours)}س
+        <div className="pt-3 border-t border-white/10 text-[11px] font-mono text-white/50 flex justify-between">
+          <span>اضافه‌کاری / کسرکار:</span>
+          <span className="text-white">
+            <span className="text-[#eca8d6]">+{toPersianDigits(totalOvertimeHours)}</span> / <span className="text-rose-400">-{toPersianDigits(deficitHours)}</span>
           </span>
         </div>
       </div>
 
-      {/* 3. انضباط تردد (تاخیر و تعجیل) */}
-      <div className="group relative rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6 transition-all duration-300 hover:border-black/[0.16] hover:bg-[#fafaf8] shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+      {/* Card 04: روزهای حضور و مانده مرخصی */}
+      <div className="group relative rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 transition-all duration-300 hover:border-white/20 hover:bg-[#0c0c12] flex flex-col justify-between overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-40 group-hover:opacity-100 transition-opacity" />
         <div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/70">
-              <AlertCircle className="h-4 w-4" />
-            </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider text-black/45 bg-black/[0.04]">
-              {hasDelayOrEarly ? `${toPersianDigits(totalDelayAndEarlyMins)} د مجموع` : 'انضباط کامل'}
+            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">
+              04 // PRESENCE & LEAVE
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono text-white/50 bg-white/[0.04] border border-white/10">
+              کل {toPersianDigits(stats.monthTotalDays || 30)} روز
             </span>
           </div>
 
-          <div className="text-[11px] font-mono tracking-widest text-black/40 uppercase mb-1">
-            تاخیر و تعجیل
+          <div className="text-[11px] font-mono tracking-widest text-white/40 uppercase mb-1">
+            وضعیت حضور و مرخصی
           </div>
 
-          <div className="flex items-baseline gap-1.5 mb-2">
-            <span className="text-3xl font-light text-[#111] font-mono tracking-tight">
-              {toPersianDigits(stats.totalDelayMinutes)}
-            </span>
-            <span className="text-xs text-black/40 font-mono">
-              دقیقه تاخیر
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-black/45 pt-3 border-t border-black/[0.05]">
-          <span>تعجیل در خروج:</span>
-          <span className="font-mono font-medium text-[#111]">
-            {toPersianDigits(stats.totalEarlyLeaveMinutes)} دقیقه
-          </span>
-        </div>
-      </div>
-
-      {/* 4. روزهای حاضر و مرخصی */}
-      <div className="group relative rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6 transition-all duration-300 hover:border-black/[0.16] hover:bg-[#fafaf8] shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/70">
-              <CalendarCheck2 className="h-4 w-4" />
-            </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono tracking-wider text-black/45 bg-black/[0.04]">
-              {toPersianDigits(stats.presentDaysCount + (stats.leaveDaysCount || 0))} روز ثبت‌شده
-            </span>
-          </div>
-
-          <div className="text-[11px] font-mono tracking-widest text-black/40 uppercase mb-1">
-            روزهای حضور
-          </div>
-
-          <div className="flex items-baseline gap-1.5 mb-2">
-            <span className="text-3xl font-light text-[#111] font-mono tracking-tight">
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-3xl sm:text-4xl font-light text-white font-mono tracking-tight tabular-nums">
               {toPersianDigits(stats.presentDaysCount)}
             </span>
-            <span className="text-xs text-black/40 font-mono">
-              روز حاضر در محل کار
-            </span>
+            <span className="text-xs text-white/40 font-mono">روز حضور فیزیکی</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-black/45 pt-3 border-t border-black/[0.05]">
-          <span>مرخصی استفاده‌شده:</span>
-          <span className="font-mono font-medium text-[#111]">
-            {toPersianDigits((stats.totalLeaveMinutes / 60).toFixed(1))} ساعت
+        <div className="pt-3 border-t border-white/10 text-[11px] font-mono text-white/50 flex justify-between">
+          <span>مانده سهمیه مرخصی:</span>
+          <span className="text-emerald-400 font-medium">
+            {toPersianDigits(stats.remainingLeaveDays)} روز ({toPersianDigits(stats.remainingLeaveHours)} ساعت)
           </span>
         </div>
       </div>

@@ -90,35 +90,35 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg rounded-[28px] sm:rounded-[32px] border border-white/[0.1] bg-[#161a28] p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-[#09090d] text-white p-6 shadow-2xl max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-3 sm:pb-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-2xl bg-blue-500/10 p-2 text-blue-400 border border-blue-500/20">
-              <Calendar className="h-5 w-5" />
+            <div className="w-8 h-8 rounded-full bg-[#eca8d6]/10 flex items-center justify-center text-[#eca8d6] border border-[#eca8d6]/20">
+              <Calendar className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">
-                {initialRecord ? 'ویرایش تردد' : 'ثبت تردد جدید'}
+              <h3 className="text-sm sm:text-base font-bold text-white font-mono">
+                {initialRecord ? 'ویرایش رکورد تردد' : 'ثبت دستی تردد جدید'}
               </h3>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                تاریخ انتخاب‌شده: {weekdayName}، {toPersianDigits(dateStr)}
+              <p className="text-[11px] text-zinc-400 font-mono">
+                {weekdayName}، {toPersianDigits(dateStr)}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-white/[0.08] hover:text-white transition-colors"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form Body with Smooth Scroll */}
-        <form onSubmit={handleSubmit} className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 overflow-y-auto pr-0.5">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4 overflow-y-auto pr-0.5">
           {/* Jalali Date Selection */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-mono text-zinc-400 mb-1.5">
               تاریخ شمسی
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -126,7 +126,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               <select
                 value={day}
                 onChange={(e) => setDay(parseInt(e.target.value, 10))}
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none"
+                className="rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-xs font-medium text-white focus:border-[#eca8d6] focus:outline-none"
               >
                 {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                   <option key={d} value={d}>
@@ -139,7 +139,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               <select
                 value={month}
                 onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none"
+                className="rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-xs font-medium text-white focus:border-[#eca8d6] focus:outline-none"
               >
                 {PERSIAN_MONTH_NAMES.map((m, idx) => (
                   <option key={m} value={idx + 1}>
@@ -152,7 +152,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               <select
                 value={year}
                 onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none font-mono"
+                className="rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-xs font-medium text-white focus:border-[#eca8d6] focus:outline-none font-mono"
               >
                 {[1402, 1403, 1404, 1405, 1406].map((yr) => (
                   <option key={yr} value={yr}>
@@ -166,7 +166,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           {/* Time Check-In & Check-Out */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
                 ساعت ورود
               </label>
               <div className="relative">
@@ -174,13 +174,13 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   type="time"
                   value={checkIn}
                   onChange={(e) => setCheckIn(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none text-center"
+                  className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-sm font-mono text-white focus:border-[#eca8d6] focus:outline-none text-center"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
                 ساعت خروج
               </label>
               <div className="relative">
@@ -188,7 +188,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   type="time"
                   value={checkOut}
                   onChange={(e) => setCheckOut(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none text-center"
+                  className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-sm font-mono text-white focus:border-[#eca8d6] focus:outline-none text-center"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           {/* Break and Status */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
                 مدت استراحت / ناهار (دقیقه)
               </label>
               <input
@@ -206,18 +206,18 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 max="240"
                 value={breakMinutes}
                 onChange={(e) => setBreakMinutes(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-mono text-white focus:border-indigo-500 focus:outline-none text-center"
+                className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-xs font-mono text-white focus:border-[#eca8d6] focus:outline-none text-center"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
                 وضعیت روز
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DayStatus)}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-3 py-2 text-xs font-medium text-white focus:border-[#eca8d6] focus:outline-none"
               >
                 <option value="present">حاضر عادی</option>
                 <option value="leave">مرخصی</option>
@@ -230,7 +230,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
           {/* Note / Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-mono text-zinc-400 mb-1.5">
               یادداشت یا علت تاخیر / اضافه کاری
             </label>
             <textarea
@@ -238,37 +238,37 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="مثال: حضور در جلسه، ماموریت، تاخیر با هماهنگی..."
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none resize-none"
+              className="w-full rounded-xl border border-white/10 bg-[#0c0d14] p-2.5 text-xs text-white placeholder-zinc-600 focus:border-[#eca8d6] focus:outline-none resize-none font-mono"
             />
           </div>
 
           {/* Live Calculation Preview Banner */}
           {checkIn && checkOut && (
-            <div className="flex items-center justify-between rounded-2xl bg-[#121622] p-3 border border-white/[0.06] text-[11px] text-slate-300">
+            <div className="flex items-center justify-between rounded-2xl bg-white/5 p-3 border border-white/10 text-[11px] font-mono text-zinc-300">
               <span>
-                کل حضور: <strong className="font-mono text-white">{toPersianDigits(Math.floor(rawPresence / 60))}س و {toPersianDigits(rawPresence % 60)}د</strong>
+                کل حضور: <strong className="text-white">{toPersianDigits(Math.floor(rawPresence / 60))}س و {toPersianDigits(rawPresence % 60)}د</strong>
               </span>
               <span>
-                کسر ناهار: <strong className="font-mono text-amber-400">{toPersianDigits(breakMinutes)}د</strong>
+                کسر ناهار: <strong className="text-amber-400">{toPersianDigits(breakMinutes)}د</strong>
               </span>
               <span>
-                کارکرد مفید خالص: <strong className="font-mono text-emerald-400 font-bold">{toPersianDigits(Math.floor(netWorked / 60))}س و {toPersianDigits(netWorked % 60)}د</strong>
+                کارکرد مفید خالص: <strong className="text-[#eca8d6] font-bold">{toPersianDigits(Math.floor(netWorked / 60))}س و {toPersianDigits(netWorked % 60)}د</strong>
               </span>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/[0.08]">
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-2xl border border-white/[0.08] px-4 py-2.5 text-xs font-semibold text-slate-400 hover:bg-white/[0.06] hover:text-white transition-colors"
+              className="rounded-full border border-white/10 px-5 py-2.5 text-xs font-mono text-zinc-400 hover:bg-white/5 hover:text-white transition-colors"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-2xl bg-[#2f68fd] hover:bg-[#2554d4] px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98]"
+              className="flex items-center gap-1.5 rounded-full bg-[#eca8d6] hover:bg-[#e491cc] px-6 py-2.5 text-xs font-bold text-[#050507] shadow-[0_0_20px_rgba(236,168,214,0.3)] transition-all active:scale-[0.98]"
             >
               <Check className="h-4 w-4" />
               <span>ذخیره تردد</span>

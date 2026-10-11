@@ -6,12 +6,11 @@ import {
   Edit2,
   Calendar,
   Clock,
-  CheckCircle2,
-  AlertCircle,
-  FileSpreadsheet,
+  Sparkles,
+  ChevronLeft,
   Filter,
 } from 'lucide-react';
-import { LeaveRecord, LeaveType, ShiftConfig, AttendanceRecord } from '../types';
+import { LeaveRecord, LeaveType } from '../types';
 import {
   toPersianDigits,
   formatMinutesToPersianReadable,
@@ -60,106 +59,141 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-white">
       {/* 1. Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl border border-black/[0.08] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-widest text-black/45 bg-black/[0.04] border border-black/[0.06] uppercase">
-            <span>LEAVE MANAGEMENT // مدیریت مرخصی</span>
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-6 shadow-2xl">
+        <div className="absolute top-0 right-0 w-80 h-32 bg-[#eca8d6]/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono tracking-widest text-[#eca8d6] bg-[#eca8d6]/10 border border-[#eca8d6]/20 uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
+              <span>03 // LEAVE & ABSENCE ENGINE</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-light text-white tracking-tight">
+              کاردکس سهمیه و مرخصی‌ها | <span className="text-[#eca8d6] font-medium">{selectedMonthName}</span>
+            </h2>
+            <p className="text-xs text-zinc-400 font-mono">
+              محاسبه مکانیزه مرخصی روزانه، ساعتی و استعلاجی بر پایه استانداردهای قانون کار و شناوری شیفت
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-light text-[#111] tracking-tight">
-            کاردکس و سوابق مرخصی‌ها
-          </h2>
-          <p className="text-xs sm:text-sm text-black/45 leading-relaxed">
-            محاسبه دقیق مرخصی‌های روزانه، ساعتی و استعلاجی بر پایه استانداردهای قانون کار
-          </p>
-        </div>
 
-        <button
-          onClick={onOpenAddModal}
-          className="flex items-center justify-center gap-2 rounded-xl bg-[#111] hover:bg-[#2c2c2c] text-white px-4 py-2.5 text-xs font-medium tracking-wide shadow-xs transition-all active:scale-[0.98] shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>ثبت درخواست مرخصی</span>
-        </button>
+          <button
+            onClick={onOpenAddModal}
+            className="flex items-center justify-center gap-2 rounded-full bg-[#eca8d6] hover:bg-[#e491cc] text-[#050507] px-5 py-3 text-xs font-bold tracking-wide transition-all shadow-[0_0_25px_rgba(236,168,214,0.3)] active:scale-95 shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>ثبت درخواست مرخصی</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Quota Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            سهمیه قانونی ماه
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-light text-[#111] font-mono">
+        {/* Card 1: Monthly Legal Quota */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-[#eca8d6]/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              01 // سهمیه قانونی ماه
+            </span>
+            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-zinc-400">
+              <Calendar className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl sm:text-4xl font-light text-white font-mono tracking-tight">
               {toPersianDigits(monthlyQuotaDays)}
             </span>
-            <span className="text-xs text-black/40">روز کاری</span>
+            <span className="text-xs text-zinc-400 font-mono">روز کاری</span>
           </div>
-          <p className="text-xs text-black/45 font-mono mt-1">
-            معادل {toPersianDigits(monthlyQuotaHours)} ساعت کار موظفی
+          <p className="text-xs text-zinc-500 font-mono mt-2 pt-2 border-t border-white/5">
+            معادل {toPersianDigits(monthlyQuotaHours)} ساعت موظفی مصوب
           </p>
         </div>
 
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            استفاده شده تاکنون
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-light text-amber-800 font-mono">
+        {/* Card 2: Used Quota */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-amber-400/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              02 // مصرف‌شده تاکنون
+            </span>
+            <div className="w-7 h-7 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-300">
+              <Coffee className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl sm:text-4xl font-light text-amber-300 font-mono tracking-tight">
               {toPersianDigits(usedDays)}
             </span>
-            <span className="text-xs text-black/40">روز</span>
+            <span className="text-xs text-zinc-400 font-mono">روز</span>
           </div>
-          <p className="text-xs text-amber-700 font-mono mt-1">
-            ({formatMinutesToPersianReadable(totalUsedMinutes)})
+          <p className="text-xs text-amber-400/80 font-mono mt-2 pt-2 border-t border-white/5">
+            {formatMinutesToPersianReadable(totalUsedMinutes)} کسر از سهمیه
           </p>
         </div>
 
-        <div className="rounded-2xl border border-black/[0.07] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-          <span className="text-[11px] font-mono tracking-widest text-black/40 uppercase block mb-1">
-            مانده سهمیه باقیمانده
-          </span>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-3xl font-light text-emerald-700 font-mono">
+        {/* Card 3: Remaining Balance */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl group hover:border-emerald-400/40 transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+              03 // باقیمانده مجاز
+            </span>
+            <div className="w-7 h-7 rounded-full bg-emerald-400/10 flex items-center justify-center text-emerald-300">
+              <Sparkles className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl sm:text-4xl font-light text-emerald-400 font-mono tracking-tight">
               {toPersianDigits(remainingDays)}
             </span>
-            <span className="text-xs text-black/40">روز</span>
+            <span className="text-xs text-zinc-400 font-mono">روز</span>
           </div>
-          <p className="text-xs text-emerald-700 font-mono mt-1">
-            ({formatMinutesToPersianReadable(remainingMinutes)})
+          <p className="text-xs text-emerald-400/80 font-mono mt-2 pt-2 border-t border-white/5">
+            {formatMinutesToPersianReadable(remainingMinutes)} قابل استفاده
           </p>
         </div>
       </div>
 
-      {/* 3. Progress Bar */}
-      <div className="rounded-2xl border border-black/[0.07] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-        <div className="flex items-center justify-between text-xs mb-2 font-mono">
-          <span className="text-black/60">میزان مصرف سهمیه مرخصی این دوره</span>
-          <span className="font-bold text-[#111]">{toPersianDigits(usedPercent)}%</span>
+      {/* 3. High-Tech Consumption Gauge */}
+      <div className="rounded-3xl border border-white/10 bg-[#09090d] p-5 shadow-xl space-y-2">
+        <div className="flex items-center justify-between text-xs font-mono">
+          <span className="text-zinc-400 uppercase tracking-wider">
+            درصد اشغال سهمیه مرخصی ماه ({selectedMonthName})
+          </span>
+          <span className="text-[#eca8d6] font-bold text-sm">
+            {toPersianDigits(usedPercent)}%
+          </span>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-black/[0.06] overflow-hidden">
+        <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden p-0.5 border border-white/5">
           <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              usedPercent > 80 ? 'bg-rose-500' : 'bg-[#111]'
+            className={`h-full rounded-full transition-all duration-700 ${
+              usedPercent > 80
+                ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]'
+                : 'bg-gradient-to-r from-[#eca8d6] to-[#c597eb] shadow-[0_0_10px_rgba(236,168,214,0.5)]'
             }`}
             style={{ width: `${usedPercent}%` }}
           />
         </div>
+        <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-1">
+          <span>۰٪ شروع دوره</span>
+          <span>{toPersianDigits(usedDays)} روز مصرف شده از {toPersianDigits(monthlyQuotaDays)} روز سهمیه</span>
+          <span>۱۰۰٪ تکمیل سقف</span>
+        </div>
       </div>
 
-      {/* 4. Leaves List */}
-      <div className="rounded-2xl border border-black/[0.08] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/[0.06] pb-3">
-          <h3 className="text-sm font-semibold text-[#111] flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-black/40" />
-            <span>سوابق مرخصی‌های ثبت‌شده ({toPersianDigits(leaves.length)} مورد)</span>
-          </h3>
+      {/* 4. Leaves History Matrix */}
+      <div className="rounded-3xl border border-white/10 bg-[#09090d] p-5 sm:p-6 shadow-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#eca8d6] animate-pulse" />
+            <h3 className="text-sm font-medium text-white font-mono tracking-wide">
+              سوابق درخواست‌های ثبت‌شده ({toPersianDigits(leaves.length)} رکورد)
+            </h3>
+          </div>
 
           {/* Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs no-scrollbar">
             {[
-              { id: 'all', label: 'همه' },
+              { id: 'all', label: 'همه موارد' },
               { id: 'hourly', label: 'ساعتی' },
               { id: 'daily', label: 'روزانه' },
               { id: 'half_day', label: 'نیم‌روز' },
@@ -168,10 +202,10 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
               <button
                 key={f.id}
                 onClick={() => setFilterType(f.id)}
-                className={`px-3 py-1.5 rounded-xl font-mono text-xs transition-all ${
+                className={`px-3 py-1.5 rounded-full font-mono text-xs transition-all ${
                   filterType === f.id
-                    ? 'bg-[#111] text-white font-medium shadow-xs'
-                    : 'border border-black/10 bg-white text-black/60 hover:text-black hover:bg-black/[0.02]'
+                    ? 'bg-[#eca8d6] text-[#050507] font-bold shadow-[0_0_12px_rgba(236,168,214,0.3)]'
+                    : 'bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/5'
                 }`}
               >
                 {f.label}
@@ -180,11 +214,11 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
           </div>
         </div>
 
-        {/* List */}
-        <div className="space-y-2">
+        {/* Records List */}
+        <div className="space-y-2.5">
           {filteredLeaves.length === 0 ? (
-            <div className="py-12 text-center text-xs text-black/40 font-mono">
-              هیچ مرخصی‌ای با این فیلتر ثبت نشده است.
+            <div className="py-16 text-center text-xs text-zinc-500 font-mono">
+              هیچ مرخصی‌ای با این فیلتر برای این بازه یافت نشد.
             </div>
           ) : (
             filteredLeaves.map((l) => {
@@ -193,19 +227,19 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
               return (
                 <div
                   key={l.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-black/[0.07] bg-white hover:bg-[#fafaf8] p-3.5 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0c0d14] hover:bg-[#11121c] p-4 transition-all group"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg border border-black/10 bg-black/[0.02] flex items-center justify-center text-black/60 shrink-0">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#eca8d6] shrink-0 group-hover:border-[#eca8d6]/30 transition-colors">
                       <Coffee className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-semibold text-[#111]">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs font-bold text-white tracking-wider">
                           {toPersianDigits(l.date)}
                         </span>
-                        <span className="text-[11px] text-black/40">({weekday})</span>
-                        <span className="rounded bg-black/[0.04] px-1.5 py-0.5 text-[10px] font-mono text-black/70">
+                        <span className="text-[11px] text-zinc-500">({weekday})</span>
+                        <span className="rounded-full bg-[#eca8d6]/10 border border-[#eca8d6]/20 px-2 py-0.5 text-[10px] font-mono text-[#eca8d6]">
                           {l.type === 'hourly'
                             ? `ساعتی (${formatMinutesToPersianReadable(durMinutes)})`
                             : l.type === 'half_day'
@@ -215,10 +249,10 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                             : 'روزانه کامل'}
                         </span>
                       </div>
-                      <div className="text-xs text-black/50 mt-1 truncate">
+                      <div className="text-xs text-zinc-400 mt-1 truncate">
                         {l.startTime && l.endTime && (
-                          <span className="font-mono text-black/70 ml-2">
-                            از {toPersianDigits(l.startTime)} تا {toPersianDigits(l.endTime)}
+                          <span className="font-mono text-zinc-300 ml-2 bg-white/5 px-1.5 py-0.5 rounded">
+                            {toPersianDigits(l.startTime)} الی {toPersianDigits(l.endTime)}
                           </span>
                         )}
                         <span>{l.reason || 'بدون توضیح'}</span>
@@ -226,26 +260,26 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/[0.05]">
+                  <div className="flex items-center justify-between sm:justify-end gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 border-white/5">
                     <div className="text-left font-mono">
-                      <span className="text-sm font-semibold text-[#111]">
+                      <span className="text-sm font-bold text-[#eca8d6]">
                         {formatMinutesToTimeString(durMinutes)}
                       </span>
-                      <span className="text-[10px] text-black/40 block">مدت کسر</span>
+                      <span className="text-[10px] text-zinc-500 block">مدت کسر سهمیه</span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => onEditLeave(l)}
-                        className="p-1.5 rounded-lg text-black/40 hover:text-black hover:bg-black/[0.04] transition-colors"
-                        title="ویرایش"
+                        className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                        title="ویرایش مرخصی"
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => onDeleteLeave(l.id)}
-                        className="p-1.5 rounded-lg text-black/40 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="حذف"
+                        className="p-2 rounded-xl text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        title="حذف مرخصی"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

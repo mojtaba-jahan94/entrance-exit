@@ -19,9 +19,33 @@
 }
 
 /* ======================================================== */
-/* 0. AGENTIC MINIMAL (پیش‌فرض - الگوبرداری کامل از v0-modern-agentic.vercel.app) */
+/* 0. COMPUTE 11 (پیش‌فرض - الگوبرداری کامل از v0-compute-11.vercel.app) */
 /* ======================================================== */
 :root,
+[data-theme="compute"],
+body[data-theme="compute"] {
+  --theme-bg-gradient: radial-gradient(circle at 50% 0%, #0d0c14 0%, #050507 80%);
+  --theme-card-bg: #09090d;
+  --theme-surface-bg: #050507;
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-border-highlight: rgba(236, 168, 214, 0.45);
+  --theme-accent: #eca8d6;
+  --theme-accent-hover: #f3c2e4;
+  --theme-text: #ffffff;
+  --theme-text-muted: rgba(255, 255, 255, 0.6);
+}
+
+:root body,
+[data-theme="compute"] body,
+body[data-theme="compute"],
+[data-theme="compute"] #root > div {
+  background-color: #050507 !important;
+  color: #ffffff !important;
+}
+
+/* ======================================================== */
+/* 0.1 AGENTIC MINIMAL (ایجنتیک مونوکروم) */
+/* ======================================================== */
 [data-theme="agentic"],
 body[data-theme="agentic"] {
   --theme-bg-gradient: #F5F4F0;
@@ -35,7 +59,6 @@ body[data-theme="agentic"] {
   --theme-text-muted: rgba(0, 0, 0, 0.45);
 }
 
-:root body,
 [data-theme="agentic"] body,
 body[data-theme="agentic"],
 [data-theme="agentic"] #root > div {
@@ -465,6 +488,51 @@ body[data-theme="light"],
   color: rgba(0, 0, 0, 0.45);
   background-color: rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ======================================================== */
+/* COMPUTE 11 Specific Utility Classes (v0-compute-11) */
+/* ======================================================== */
+.bg-grid-compute {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+.compute-card {
+  background-color: #09090d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.25rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.compute-card:hover {
+  border-color: rgba(236, 168, 214, 0.35);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 20px -5px rgba(236, 168, 214, 0.12);
+}
+
+.compute-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  font-family: monospace;
+  color: #eca8d6;
+  background: rgba(236, 168, 214, 0.08);
+  border: 1px solid rgba(236, 168, 214, 0.25);
+}
+
+@keyframes computeGlow {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 8px rgba(236, 168, 214, 0.5)); }
+  50% { opacity: 0.35; filter: drop-shadow(0 0 2px rgba(236, 168, 214, 0.15)); }
+}
+
+.compute-glow {
+  animation: computeGlow 3s ease-in-out infinite;
 }
 
 /* ======================================================== */
