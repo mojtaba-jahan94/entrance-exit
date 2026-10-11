@@ -252,7 +252,7 @@ export function parseJalaliDate(dateStr: string): { jy: number; jm: number; jd: 
 export function jalaliToGregorianDate(dateStr: string): Date {
   const { jy, jm, jd } = parseJalaliDate(dateStr);
   const { gy, gm, gd } = jalaali.toGregorian(jy, jm, jd);
-  return new Date(gy, gm - 1, gd);
+  return new Date(gy, gm - 1, gd, 12, 0, 0);
 }
 
 /**
@@ -306,9 +306,13 @@ export function checkOfficialHoliday(jy: number, jm: number, jd: number): { isHo
   }
 
   // 3. Check known lunar holidays for the year
-  const key = `${jy}/${jm}/${jd}`;
-  if (KNOWN_LUNAR_HOLIDAYS[key]) {
-    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[key] };
+  const keyUnpadded = `${jy}/${jm}/${jd}`;
+  const keyPadded = `${jy}/${jm < 10 ? '0' + jm : jm}/${jd < 10 ? '0' + jd : jd}`;
+  if (KNOWN_LUNAR_HOLIDAYS[keyUnpadded]) {
+    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[keyUnpadded] };
+  }
+  if (KNOWN_LUNAR_HOLIDAYS[keyPadded]) {
+    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[keyPadded] };
   }
 
   return { isHoliday: false };

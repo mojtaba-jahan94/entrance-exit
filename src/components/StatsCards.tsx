@@ -4,12 +4,8 @@ import {
   TrendingUp,
   AlertCircle,
   Coffee,
-  CalendarCheck2,
-  Hourglass,
-  Zap,
   Scale,
   Banknote,
-  CheckCircle2,
 } from 'lucide-react';
 import { MonthlyStats } from '../types';
 import {
@@ -17,6 +13,7 @@ import {
   formatMinutesToTimeString,
   formatMinutesToPersianReadable,
 } from '../utils/jalali';
+import { LiquidGlassCard } from './LiquidGlassCard';
 
 interface StatsCardsProps {
   stats: MonthlyStats;
@@ -47,143 +44,178 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* Bento Grid: 2 columns on mobile, 4 columns on large screens */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-        {/* 1. کارکرد مفید ماه (Blue Top Accent) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl glass-card p-3.5 sm:p-5 shadow-xl transition-all hover:border-[var(--accent-color)]/50 flex flex-col justify-between">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--accent-color)] to-cyan-400" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* 1. کارکرد مفید ماه (Blue/Cyan Sheen) */}
+        <LiquidGlassCard
+          glowColor="rgba(59, 130, 246, 0.28)"
+          className="rounded-[28px] p-4 sm:p-5 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-medium text-slate-300 truncate">کارکرد ماه {monthName}</span>
-            <div className="rounded-xl bg-blue-500/15 p-1.5 sm:p-2 text-blue-300 border border-blue-500/25 shrink-0">
+            <span className="text-xs font-semibold text-white/70 truncate">کارکرد ماه {monthName}</span>
+            <div className="rounded-2xl bg-blue-500/20 p-2 text-cyan-300 border border-blue-400/30 backdrop-blur-md shrink-0 shadow-sm shadow-blue-500/20">
               <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
-            <span className="text-xl sm:text-3xl font-black text-white font-mono">
+          <div className="mt-3 flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-2xl sm:text-3.5xl font-black text-white font-mono tracking-tight">
               {toPersianDigits(workedHours)}
             </span>
-            <span className="text-[10px] sm:text-xs text-slate-300 truncate">
+            <span className="text-xs text-white/60 truncate">
               ساعت از {toPersianDigits(requiredHours)}
             </span>
           </div>
 
           {/* Progress Bar & Sub-row */}
-          <div className="mt-2 sm:mt-3">
-            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 mb-1">
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-white/70 mb-1.5 font-medium">
               <span>تحقق موظفی</span>
-              <span className="font-bold text-[var(--accent-color)] font-mono">{toPersianDigits(stats.completionRate)}٪</span>
+              <span className="font-bold text-cyan-300 font-mono">{toPersianDigits(stats.completionRate)}٪</span>
             </div>
-            <div className="h-1.5 sm:h-2 w-full rounded-full bg-black/40 overflow-hidden">
+            <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[var(--accent-color)] to-cyan-400 transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-700 shadow-sm shadow-cyan-400/40"
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
               />
             </div>
             {stats.totalMonthRequiredMinutes && (
-              <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 border-t border-white/[0.06] pt-1.5">
+              <div className="mt-2.5 flex items-center justify-between text-[11px] text-white/50 border-t border-white/10 pt-2">
                 <span>کل موظفی تقویمی:</span>
-                <span className="font-mono text-slate-300 font-medium">{toPersianDigits(totalMonthHours)} ساعت</span>
+                <span className="font-mono text-white/80 font-medium">{toPersianDigits(totalMonthHours)} ساعت</span>
               </div>
             )}
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 2. تراز اضافه کاری و کارکرد خالص (Lime/Emerald Top Accent) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl glass-card p-3.5 sm:p-5 shadow-xl transition-all hover:border-lime-500/50 flex flex-col justify-between">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-lime-500 to-emerald-400" />
+        {/* 2. تراز اضافه کاری و کارکرد خالص (Lime/Emerald Sheen) */}
+        <LiquidGlassCard
+          glowColor="rgba(16, 185, 129, 0.28)"
+          className="rounded-[28px] p-4 sm:p-5 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-medium text-slate-300 truncate">تراز اضافه کار</span>
-            <div className={`rounded-xl p-1.5 sm:p-2 border shrink-0 ${
-              isNetPositive
-                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
-                : isNetZero
-                ? 'bg-white/[0.05] text-slate-400 border-white/[0.08]'
-                : 'bg-rose-500/15 text-rose-300 border-rose-500/25'
-            }`}>
+            <span className="text-xs font-semibold text-white/70 truncate">تراز اضافه کار</span>
+            <div
+              className={`rounded-2xl p-2 border shrink-0 backdrop-blur-md shadow-sm ${
+                isNetPositive
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/35 shadow-emerald-500/20'
+                  : isNetZero
+                  ? 'bg-white/10 text-white/60 border-white/20'
+                  : 'bg-rose-500/20 text-rose-300 border-rose-400/35 shadow-rose-500/20'
+              }`}
+            >
               <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
-            <span className={`text-xl sm:text-3xl font-black font-mono ${
-              isNetPositive ? 'text-emerald-400' : isNetZero ? 'text-slate-200' : 'text-rose-400'
-            }`}>
+          <div className="mt-3 flex items-baseline gap-1.5 sm:gap-2">
+            <span
+              className={`text-2xl sm:text-3.5xl font-black font-mono tracking-tight ${
+                isNetPositive ? 'text-emerald-300' : isNetZero ? 'text-white' : 'text-rose-300'
+              }`}
+            >
               {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}{toPersianDigits(netBalanceHours)}
             </span>
-            <span className="text-[10px] sm:text-xs text-slate-300 truncate">
+            <span className="text-xs text-white/60 truncate">
               {isNetPositive ? 'ساعت مازاد' : isNetZero ? 'ساعت (سر‌به‌سر)' : 'ساعت کسری'}
             </span>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-300 border-t border-white/[0.06] pt-2">
-            <span className="flex items-center gap-1 truncate text-emerald-400 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+          <div className="mt-3 flex items-center justify-between text-xs text-white/70 border-t border-white/10 pt-2.5">
+            <span className="flex items-center gap-1.5 truncate text-emerald-300 font-semibold">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0 shadow-sm shadow-emerald-400" />
               اضافه: {toPersianDigits(totalOvertimeHours)}س
             </span>
-            <span className={`flex items-center gap-1 truncate font-medium ${hasDeficit ? 'text-rose-400' : 'text-slate-400'}`}>
-              <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${hasDeficit ? 'bg-rose-400' : 'bg-slate-500'}`} />
+            <span
+              className={`flex items-center gap-1.5 truncate font-semibold ${
+                hasDeficit ? 'text-rose-300' : 'text-white/60'
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  hasDeficit ? 'bg-rose-400 shadow-sm shadow-rose-400' : 'bg-white/40'
+                }`}
+              />
               کسر کار: {toPersianDigits(deficitHours)}س
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 3. تاخیر و تعجیل (Orange/Amber Top Accent) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl glass-card p-3.5 sm:p-5 shadow-xl transition-all hover:border-amber-500/50 flex flex-col justify-between">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-400" />
+        {/* 3. تاخیر و تعجیل (Amber/Orange Sheen) */}
+        <LiquidGlassCard
+          glowColor="rgba(245, 158, 11, 0.28)"
+          className="rounded-[28px] p-4 sm:p-5 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 via-orange-400 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-medium text-slate-300 truncate">تاخیر و تعجیل</span>
-            <div className={`rounded-xl p-1.5 sm:p-2 border shrink-0 ${
-              hasDelayOrEarly
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/25'
-                : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
-            }`}>
+            <span className="text-xs font-semibold text-white/70 truncate">تاخیر و تعجیل</span>
+            <div
+              className={`rounded-2xl p-2 border shrink-0 backdrop-blur-md shadow-sm ${
+                hasDelayOrEarly
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/35 shadow-amber-500/20'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-400/35 shadow-emerald-500/20'
+              }`}
+            >
               <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-2">
-            <span className={`text-xl sm:text-3xl font-black font-mono ${
-              hasDelayOrEarly ? 'text-amber-400' : 'text-emerald-400'
-            }`}>
+          <div className="mt-3 flex items-baseline gap-1.5 sm:gap-2">
+            <span
+              className={`text-2xl sm:text-3.5xl font-black font-mono tracking-tight ${
+                hasDelayOrEarly ? 'text-amber-300' : 'text-emerald-300'
+              }`}
+            >
               {toPersianDigits(totalDelayAndEarlyMins)}
             </span>
-            <span className="text-[10px] sm:text-xs text-slate-300 truncate">
+            <span className="text-xs text-white/60 truncate">
               {hasDelayOrEarly ? 'دقیقه مجموع' : 'دقیقه (بدون تاخیر)'}
             </span>
             {totalDelayAndEarlyMins >= 60 && (
-              <span className="text-[10px] sm:text-xs text-slate-400 font-mono truncate" title={formatMinutesToPersianReadable(totalDelayAndEarlyMins)}>
+              <span
+                className="text-xs text-white/50 font-mono truncate"
+                title={formatMinutesToPersianReadable(totalDelayAndEarlyMins)}
+              >
                 ({toPersianDigits(formatMinutesToTimeString(totalDelayAndEarlyMins))})
               </span>
             )}
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-300 border-t border-white/[0.06] pt-2">
-            <span className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
+          <div className="mt-3 flex items-center justify-between text-xs text-white/70 border-t border-white/10 pt-2.5">
+            <span
+              className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-amber-300 font-semibold' : 'text-white/60'}`}
+            >
               تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د
             </span>
-            <span className={`truncate ${stats.totalEarlyLeaveMinutes > 0 ? 'text-amber-300 font-medium' : 'text-slate-400'}`}>
+            <span
+              className={`truncate ${stats.totalEarlyLeaveMinutes > 0 ? 'text-amber-300 font-semibold' : 'text-white/60'}`}
+            >
               تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 4. کاردکس مرخصی (Purple/Pink Top Accent) */}
-        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl glass-card p-3.5 sm:p-5 shadow-xl transition-all hover:border-purple-500/50 flex flex-col justify-between">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
+        {/* 4. کاردکس مرخصی (Fuchsia/Pink Sheen) */}
+        <LiquidGlassCard
+          glowColor="rgba(217, 70, 239, 0.28)"
+          className="rounded-[28px] p-4 sm:p-5 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-pink-400 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-medium text-slate-300 truncate">مانده مرخصی</span>
-            <div className="rounded-xl bg-purple-500/15 p-1.5 sm:p-2 text-purple-300 border border-purple-500/25 shrink-0">
+            <span className="text-xs font-semibold text-white/70 truncate">مانده مرخصی</span>
+            <div className="rounded-2xl bg-fuchsia-500/20 p-2 text-fuchsia-300 border border-fuchsia-400/35 backdrop-blur-md shrink-0 shadow-sm shadow-fuchsia-500/20">
               <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-baseline gap-1 sm:gap-1.5">
-            <span className="text-xl sm:text-3xl font-black text-purple-300 font-mono">
+          <div className="mt-3 flex items-baseline gap-1.5 sm:gap-2">
+            <span className="text-2xl sm:text-3.5xl font-black text-fuchsia-300 font-mono tracking-tight">
               {toPersianDigits(stats.remainingLeaveDays.toFixed(1))}
             </span>
-            <span className="text-[10px] sm:text-xs text-slate-200 font-semibold">روز</span>
+            <span className="text-xs text-white/90 font-semibold">روز</span>
             <span
-              className="text-[9px] sm:text-xs text-slate-400 font-mono truncate"
+              className="text-[11px] sm:text-xs text-white/60 font-mono truncate"
               title={
                 stats.remainingLeaveMinutes !== undefined
                   ? formatMinutesToPersianReadable(stats.remainingLeaveMinutes)
@@ -198,28 +230,32 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             </span>
           </div>
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-between text-[10px] sm:text-xs text-slate-300 border-t border-white/[0.06] pt-2">
+          <div className="mt-3 flex items-center justify-between text-xs text-white/70 border-t border-white/10 pt-2.5">
             <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز</span>
-            <span className="text-emerald-400 font-medium truncate">
+            <span className="text-emerald-300 font-semibold truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
       </div>
 
       {/* Optional Financial Summary Banner if salary estimate active */}
       {stats.estimatedOvertimePay !== undefined && stats.estimatedOvertimePay > 0 && (
-        <div className="flex items-center justify-between rounded-2xl glass-card p-3.5 border border-emerald-500/30 text-xs">
-          <div className="flex items-center gap-2 text-emerald-300">
-            <Banknote className="h-4 w-4" />
+        <LiquidGlassCard
+          variant="subtle"
+          className="rounded-[24px] p-4 flex items-center justify-between border-emerald-400/30 text-xs shadow-lg"
+        >
+          <div className="flex items-center gap-2.5 text-emerald-300 font-medium">
+            <div className="rounded-xl bg-emerald-500/20 p-1.5 border border-emerald-400/30">
+              <Banknote className="h-4 w-4" />
+            </div>
             <span>برآورد ارزش ریالی اضافه کاری این ماه (بر اساس نرخ تنظیمی شما):</span>
           </div>
-          <div className="font-mono text-base font-bold text-emerald-400">
+          <div className="font-mono text-base font-black text-emerald-300">
             {toPersianDigits(stats.estimatedOvertimePay.toLocaleString())} تومان
           </div>
-        </div>
+        </LiquidGlassCard>
       )}
     </div>
   );
 };
-

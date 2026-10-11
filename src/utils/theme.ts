@@ -14,12 +14,12 @@ export interface ThemeConfig {
 export const APP_THEMES: ThemeConfig[] = [
   {
     id: 'obsidian',
-    name: 'Plum Violet Glass',
-    persianName: 'یاقوت بنفش شیشه‌ای (پیش‌فرض)',
-    description: 'تم فوق‌العاده مدرن شیشه‌ای تیره با هاله‌های بادمجانی، بنفش و نئون ارغوانی',
-    previewBg: '#110b1a',
-    previewCard: '#1f132f',
-    previewAccent: '#8b5cf6',
+    name: 'Obsidian Aurora',
+    persianName: 'شفق نوکتورن (پیش‌فرض)',
+    description: 'تم لوکس تیره با هاله‌های سرمه‌ای و اکسنت‌های فیروزه‌ای و نیلی',
+    previewBg: '#090b14',
+    previewCard: '#121526',
+    previewAccent: '#6366f1',
     isDark: true,
   },
   {
@@ -82,7 +82,6 @@ export function saveStoredTheme(theme: AppTheme): void {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
     applyThemeToDOM(theme);
-    window.dispatchEvent(new CustomEvent('app-theme-changed', { detail: theme }));
   } catch {
     // Ignore storage errors
   }

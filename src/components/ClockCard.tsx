@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AttendanceRecord, ShiftConfig } from '../types';
+import { LiquidGlassCard } from './LiquidGlassCard';
 import {
   getCurrentTimeString,
   toPersianDigits,
@@ -137,18 +138,14 @@ export const ClockCard: React.FC<ClockCardProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] sm:rounded-[32px] bg-[#1a0f2b]/75 border border-white/10 backdrop-blur-2xl p-4 sm:p-6 shadow-2xl transition-all">
-      {/* Background soft ambient glows */}
-      <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-violet-600/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
-
+    <LiquidGlassCard className="rounded-[32px] p-5 sm:p-7 shadow-2xl">
       <div className="relative flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
         {/* Left Side: Status & Timer Information */}
-        <div className="w-full md:w-auto flex-1 space-y-2.5 sm:space-y-3 text-center md:text-right">
+        <div className="w-full md:w-auto flex-1 space-y-3 sm:space-y-4 text-center md:text-right">
           {/* Shift Policy Badge */}
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full glass-pill px-2.5 sm:px-3.5 py-1 text-[11px] sm:text-xs font-medium text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-[var(--accent-color)] shrink-0" />
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.1] px-3.5 py-1 text-[11px] sm:text-xs font-medium text-white/90 border border-white/20 backdrop-blur-md shadow-sm">
+              <Clock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
               {isThursday ? (
                 <span>
                   شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۰۰')} ساعت حضور</strong> (بدون کسر ناهار)
@@ -160,7 +157,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               )}
             </div>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-medium text-blue-300 border border-blue-500/25">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3.5 py-1 text-[11px] sm:text-xs font-semibold text-blue-200 border border-blue-400/30 backdrop-blur-md">
               <Coffee className="h-3 w-3 text-amber-400 shrink-0" />
               <span>
                 {isThursday
@@ -171,10 +168,10 @@ export const ClockCard: React.FC<ClockCardProps> = ({
           </div>
 
           <div>
-            <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white flex items-center justify-center md:justify-start gap-2">
+            <h2 className="text-xl sm:text-3xl font-black tracking-tight text-white/95 flex items-center justify-center md:justify-start gap-2.5">
               <span>میز کار و تردد امروز شما</span>
               {todayRecord?.isHoliday && (
-                <span className="text-[11px] sm:text-xs font-normal px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                <span className="text-[11px] sm:text-xs font-semibold px-3 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 backdrop-blur-md">
                   {todayRecord.holidayTitle || 'تعطیل'}
                 </span>
               )}
@@ -182,17 +179,17 @@ export const ClockCard: React.FC<ClockCardProps> = ({
 
             {/* Subtext description based on state */}
             {!isCheckedIn && !isCheckedOut && (
-              <p className="mt-1 text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <p className="mt-1.5 text-xs sm:text-sm text-white/70 leading-relaxed">
                 هنوز ورود امروز را ثبت نکرده‌اید. ساعت مجاز ورود شما از <strong>{toPersianDigits(config.flexStartTimeMin || '08:30')}</strong> تا <strong>{toPersianDigits(config.flexStartTimeMax || '09:30')}</strong> بدون تاخیر است.
               </p>
             )}
 
             {isCheckedIn && (
-              <div className="mt-1 space-y-1">
-                <p className="text-xs sm:text-sm text-emerald-400 flex items-center justify-center md:justify-start gap-1.5">
-                  <span className="relative flex h-2 w-2 shrink-0">
+              <div className="mt-1.5 space-y-1">
+                <p className="text-xs sm:text-sm text-emerald-300 flex items-center justify-center md:justify-start gap-2">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-sm shadow-emerald-400"></span>
                   </span>
                   <span>
                     در حال کار — ورود در ساعت <strong className="font-mono text-white text-sm sm:text-base">{toPersianDigits(todayRecord?.checkIn || '')}</strong> ثبت شده است.
@@ -201,13 +198,13 @@ export const ClockCard: React.FC<ClockCardProps> = ({
 
                 {/* Target Departure notification */}
                 {targetDepartureTime && (
-                  <p className="text-[11px] sm:text-xs text-slate-300 flex items-center justify-center md:justify-start gap-1 flex-wrap">
+                  <p className="text-xs text-white/80 flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
                     <Hourglass className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                     <span>ساعت تکمیل موظفی امروز: </span>
                     <strong className="font-mono text-cyan-300 font-bold text-xs sm:text-sm">
                       {toPersianDigits(targetDepartureTime)}
                     </strong>
-                    <span className="text-slate-400">
+                    <span className="text-white/60">
                       ({isThursday ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور` : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
                     </span>
                   </p>
@@ -216,38 +213,38 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {isCheckedOut && (
-              <p className="mt-1 text-xs sm:text-sm text-cyan-300 flex items-center justify-center md:justify-start gap-1.5">
+              <p className="mt-1.5 text-xs sm:text-sm text-cyan-300 flex items-center justify-center md:justify-start gap-1.5">
                 <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>شیفت کاری امروز با موفقیت به پایان رسید و محاسبه شد. خسته نباشید!</span>
               </p>
             )}
           </div>
 
-          {/* Today Metrics Badges (Grid on mobile, flex on desktop) */}
+          {/* Today Metrics Badges */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-center sm:text-right">
             {todayRecord?.checkIn && (
-              <div className="rounded-xl glass-pill px-2.5 py-1.5 text-xs text-slate-300">
-                <span className="text-slate-400">ورود: </span>
+              <div className="rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-md px-3 py-1.5 text-xs text-white/85">
+                <span className="text-white/60">ورود: </span>
                 <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkIn)}</span>
               </div>
             )}
 
             {todayRecord?.checkOut && (
-              <div className="rounded-xl glass-pill px-2.5 py-1.5 text-xs text-slate-300">
-                <span className="text-slate-400">خروج: </span>
+              <div className="rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-md px-3 py-1.5 text-xs text-white/85">
+                <span className="text-white/60">خروج: </span>
                 <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkOut)}</span>
               </div>
             )}
 
             {todayRecord && todayRecord.workedMinutes > 0 && (
-              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/15 backdrop-blur-md px-2.5 py-1.5 text-xs text-emerald-300 col-span-2 sm:col-span-1 shadow-sm">
+              <div className="rounded-full border border-emerald-400/30 bg-emerald-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-emerald-300 col-span-2 sm:col-span-1">
                 <span>کارکرد خالص: </span>
                 <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.workedMinutes)}</strong>
               </div>
             )}
 
             {todayRecord && todayRecord.delayMinutes > 0 && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300 flex items-center justify-center gap-1">
+              <div className="rounded-full border border-rose-400/30 bg-rose-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-rose-300 flex items-center justify-center gap-1">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span>تاخیر: </span>
                 <strong className="font-bold">{toPersianDigits(todayRecord.delayMinutes)} د</strong>
@@ -255,14 +252,14 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {todayRecord && todayRecord.earlyLeaveMinutes > 0 && (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-300">
+              <div className="rounded-full border border-amber-400/30 bg-amber-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-amber-300">
                 <span>تعجیل: </span>
                 <strong className="font-bold">{toPersianDigits(todayRecord.earlyLeaveMinutes)} د</strong>
               </div>
             )}
 
             {todayRecord && todayRecord.leaveMinutes !== undefined && todayRecord.leaveMinutes > 0 && (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-2.5 py-1.5 text-xs text-amber-300 flex items-center justify-center gap-1">
+              <div className="rounded-full border border-amber-400/30 bg-amber-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-amber-300 flex items-center justify-center gap-1">
                 <Coffee className="h-3.5 w-3.5 shrink-0" />
                 <span>مرخصی: </span>
                 <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.leaveMinutes)}</strong>
@@ -270,7 +267,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {todayRecord && (todayRecord.overtimeMinutes > 0 || todayRecord.holidayOvertimeMinutes > 0) && (
-              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-2.5 py-1.5 text-xs text-indigo-300 flex items-center justify-center gap-1 col-span-2 sm:col-span-1">
+              <div className="rounded-full border border-indigo-400/30 bg-indigo-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-indigo-300 flex items-center justify-center gap-1 col-span-2 sm:col-span-1">
                 <TrendingUp className="h-3.5 w-3.5 shrink-0" />
                 <span>اضافه کار: </span>
                 <strong className="font-bold">
@@ -282,7 +279,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {todayRecord && todayRecord.deficitMinutes > 0 && (
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
+              <div className="rounded-full border border-rose-400/30 bg-rose-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-rose-300">
                 <span>کسر کار: </span>
                 <strong className="font-bold">{toPersianDigits(todayRecord.deficitMinutes)} د</strong>
               </div>
@@ -294,10 +291,10 @@ export const ClockCard: React.FC<ClockCardProps> = ({
         <div className="flex flex-col items-center justify-center gap-3 w-full md:w-auto">
           {/* State 1: Ready to Check In */}
           {!isCheckedIn && !isCheckedOut && (
-            <div className="flex flex-col items-center gap-2.5 w-full md:w-72">
+            <div className="flex flex-col items-center gap-3 w-full md:w-72">
               <button
                 onClick={handleCheckInClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/25 transition-all duration-200 hover:scale-[1.03] hover:shadow-emerald-500/40 active:scale-[0.98]"
+                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-emerald-500/90 via-teal-500/90 to-cyan-500/90 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
               >
                 <LogIn className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
                 <span>ثبت ورود امروز</span>
@@ -312,24 +309,24 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                       setShowCustomTime(true);
                       setCustomInTime(getCurrentTimeString(false));
                     }}
-                    className="text-[11px] text-slate-400 hover:text-indigo-400 transition-colors flex items-center justify-center gap-1 mx-auto"
+                    className="text-xs text-white/60 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto"
                   >
-                    <Clock className="h-3 w-3" />
+                    <Clock className="h-3.5 w-3.5" />
                     <span>ثبت با ساعتی به جز زمان اکنون</span>
                   </button>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-xl bg-slate-950 p-2 border border-slate-800 text-xs">
-                    <span className="text-slate-400">ساعت ورود:</span>
+                  <div className="flex items-center gap-2 rounded-2xl liquid-glass-subtle p-2 border border-white/20 text-xs">
+                    <span className="text-white/70">ساعت ورود:</span>
                     <input
                       type="time"
                       value={customInTime}
                       onChange={(e) => setCustomInTime(e.target.value)}
-                      className="rounded-lg bg-slate-900 px-2 py-1 font-mono text-white text-xs border border-slate-700 text-center"
+                      className="rounded-xl liquid-input px-2.5 py-1 font-mono text-white text-xs border border-white/25 text-center"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCustomTime(false)}
-                      className="text-slate-500 hover:text-white px-1"
+                      className="text-white/60 hover:text-white px-1.5"
                     >
                       لغو
                     </button>
@@ -344,28 +341,28 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             <div className="flex flex-col items-center gap-3 w-full md:w-80">
               {/* Working Stopwatch Box */}
               <div
-                className={`w-full rounded-2xl glass-subcard p-4 text-center shadow-inner transition-all ${
+                className={`w-full rounded-[24px] border p-4 text-center transition-all liquid-glass-subtle ${
                   isOvertimeLive
-                    ? 'border-indigo-500/40 bg-indigo-500/15'
-                    : 'border-emerald-500/40 bg-emerald-500/15'
+                    ? 'border-indigo-400/40 bg-indigo-950/40 shadow-lg shadow-indigo-500/20'
+                    : 'border-emerald-400/40 bg-emerald-950/30 shadow-lg shadow-emerald-500/20'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs font-semibold mb-1">
                   <span
                     className={`flex items-center gap-1.5 ${
-                      isOvertimeLive ? 'text-indigo-300' : 'text-emerald-400'
+                      isOvertimeLive ? 'text-indigo-300' : 'text-emerald-300'
                     }`}
                   >
                     <Timer className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: '6s' }} />
                     {isOvertimeLive ? 'زمان اضافه کاری زنده' : 'مدت حضور زنده'}
                   </span>
-                  <span className="font-mono text-[11px] text-slate-300 font-bold">
+                  <span className="font-mono text-[11px] text-white/70">
                     {toPersianDigits(shiftProgressPercent)}٪ شیفت
                   </span>
                 </div>
 
                 <div
-                  className={`font-mono text-3xl font-black tracking-wider dir-ltr text-center ${
+                  className={`font-mono text-3xl sm:text-4xl font-black tracking-wider dir-ltr text-center py-0.5 ${
                     isOvertimeLive ? 'text-indigo-200' : 'text-emerald-200'
                   }`}
                 >
@@ -373,11 +370,11 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                 </div>
 
                 {/* Live Progress Bar */}
-                <div className="mt-2.5 h-1.5 w-full rounded-full bg-black/40 overflow-hidden">
+                <div className="mt-2.5 h-2 w-full rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/10">
                   <div
-                    className={`h-full rounded-full transition-all duration-1000 ${
+                    className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
                       isOvertimeLive
-                        ? 'bg-gradient-to-r from-emerald-400 to-indigo-400'
+                        ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400'
                         : 'bg-gradient-to-r from-teal-400 to-emerald-400'
                     }`}
                     style={{ width: `${shiftProgressPercent}%` }}
@@ -385,10 +382,10 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                 </div>
 
                 {/* Overtime or Remaining Time Notice */}
-                <div className="mt-2 text-[11px] text-slate-300">
+                <div className="mt-2 text-xs text-white/80">
                   {isOvertimeLive ? (
                     <span className="text-indigo-300 font-semibold flex items-center justify-center gap-1">
-                      <Sparkles className="h-3 w-3 text-indigo-400" />
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
                       موظفی کامل شد! اضافه کار: +{formatElapsed(overtimeLiveSecs)}
                     </span>
                   ) : (
@@ -400,8 +397,8 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               </div>
 
               {/* Break / Lunch Selector */}
-              <div className="w-full rounded-2xl glass-subcard p-2.5 space-y-2 border border-white/[0.08]">
-                <div className="flex items-center justify-between text-xs text-slate-300">
+              <div className="w-full rounded-[22px] liquid-glass-subtle p-3 border border-white/20 space-y-2">
+                <div className="flex items-center justify-between text-xs text-white/90">
                   <span className="flex items-center gap-1.5 font-medium">
                     <Coffee className="h-3.5 w-3.5 text-amber-400" />
                     استراحت و ناهار:
@@ -413,23 +410,23 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                       max="180"
                       value={breakMinutesInput}
                       onChange={(e) => setBreakMinutesInput(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="w-14 rounded-lg bg-white/[0.08] px-2 py-0.5 text-center font-mono text-white text-xs border border-white/[0.1] focus:outline-none focus:border-[var(--accent-color)]"
+                      className="w-14 rounded-xl liquid-input px-2 py-0.5 text-center font-mono text-white text-xs border border-white/25 focus:outline-none focus:border-cyan-400"
                     />
-                    <span className="text-slate-400">دقیقه</span>
+                    <span className="text-white/60">دقیقه</span>
                   </div>
                 </div>
 
                 {/* Quick Preset Buttons for Lunch */}
-                <div className="grid grid-cols-4 gap-1">
+                <div className="grid grid-cols-4 gap-1.5">
                   {[0, 15, 30, 45].map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setBreakMinutesInput(preset)}
-                      className={`rounded-lg py-1 text-[10px] font-medium transition-colors ${
+                      className={`rounded-xl py-1 text-[11px] font-medium transition-all ${
                         breakMinutesInput === preset
-                          ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40 font-bold'
-                          : 'glass-pill text-slate-300 hover:text-white'
+                          ? 'bg-amber-400/25 text-amber-200 border border-amber-400/40 font-bold shadow-sm'
+                          : 'bg-white/[0.06] text-white/60 hover:text-white border border-white/10'
                       }`}
                     >
                       {preset === 0 ? 'بدون ناهار' : `${toPersianDigits(preset)} د`}
@@ -442,7 +439,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               {/* Check Out Button */}
               <button
                 onClick={handleCheckOutClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-rose-500/25 transition-all duration-200 hover:scale-[1.03] hover:shadow-rose-500/40 active:scale-[0.98]"
+                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-rose-500/90 via-pink-600/90 to-amber-600/90 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-rose-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
               >
                 <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 <span>ثبت پایان کار و خروج</span>
@@ -452,22 +449,22 @@ export const ClockCard: React.FC<ClockCardProps> = ({
 
           {/* State 3: Already Completed Today */}
           {isCheckedOut && (
-            <div className="flex flex-col items-center gap-2.5 w-full md:w-64">
-              <div className="flex items-center gap-2 text-emerald-400 font-semibold text-sm">
-                <CheckCircle className="h-5 w-5" />
+            <div className="flex flex-col items-center gap-3 w-full md:w-64">
+              <div className="flex items-center gap-2 text-emerald-300 font-semibold text-sm">
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 <span>شیفت امروز ثبت و نهایی شد</span>
               </div>
 
               <div className="flex items-center gap-2 w-full">
                 <button
                   onClick={onOpenEdit}
-                  className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 px-3 py-2 text-xs font-medium text-slate-200 transition-all text-center"
+                  className="liquid-pill-btn flex-1 px-4 py-2 text-xs font-semibold"
                 >
                   ویرایش اطلاعات
                 </button>
                 <button
                   onClick={onResetToday}
-                  className="rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-rose-900/40 hover:text-rose-300 px-3 py-2 text-xs font-medium text-slate-400 transition-all"
+                  className="liquid-pill-btn-danger px-3.5 py-2 text-xs"
                   title="بازنشانی ثبت امروز"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -477,7 +474,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </LiquidGlassCard>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, KeyRound, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { X, KeyRound, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface ChangePasswordModalProps {
@@ -57,35 +57,35 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#161a28] border border-white/[0.1] rounded-[28px] sm:rounded-[32px] p-6 shadow-2xl text-slate-100">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md liquid-glass-modal border border-white/20 rounded-[32px] p-6 shadow-2xl text-slate-100">
+        <div className="flex items-center justify-between pb-4 border-b border-white/15">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 shadow-inner">
               <KeyRound className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base text-white">تغییر کلمه عبور امن</h3>
-              <p className="text-xs text-slate-400">به‌روزرسانی امن کلمه عبور در سرور مرکزی</p>
+              <h3 className="font-bold text-sm sm:text-base text-white/95">تغییر کلمه عبور امن</h3>
+              <p className="text-xs text-white/60">به‌روزرسانی امن کلمه عبور در سرور مرکزی</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mt-4 flex items-start gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
@@ -93,7 +93,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-white/80 mb-1.5">
               رمز عبور فعلی
             </label>
             <input
@@ -103,12 +103,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="••••••••"
-              className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-white/80 mb-1.5">
               رمز عبور جدید
             </label>
             <input
@@ -118,12 +118,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="حداقل ۶ کاراکتر"
-              className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-white/80 mb-1.5">
               تکرار رمز عبور جدید
             </label>
             <input
@@ -133,22 +133,22 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="تکرار رمز عبور جدید"
-              className="w-full rounded-xl bg-slate-950 border border-slate-800 px-3.5 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
             />
           </div>
 
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="pt-2 flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+              className="liquid-pill-btn px-4 py-2 text-xs font-semibold"
             >
               انصراف
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all disabled:opacity-50"
+              className="liquid-pill-btn-primary flex items-center gap-1.5 px-5 py-2 text-xs font-bold disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -158,7 +158,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               ) : (
                 <>
                   <ShieldCheck className="h-4 w-4" />
-                  <span>ذخیره رمز جدید</span>
+                  <span>به‌روزرسانی رمز عبور</span>
                 </>
               )}
             </button>

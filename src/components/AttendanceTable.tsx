@@ -19,6 +19,7 @@ import {
   Table as TableIcon,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig } from '../types';
+import { LiquidGlassCard } from './LiquidGlassCard';
 import {
   PERSIAN_MONTH_NAMES,
   PERSIAN_WEEKDAY_NAMES,
@@ -129,16 +130,16 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const monthName = PERSIAN_MONTH_NAMES[selectedMonth - 1] || '';
 
   return (
-    <div className="rounded-[28px] sm:rounded-[32px] border border-white/10 bg-[#1a0f2b]/75 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
+    <LiquidGlassCard className="rounded-[32px] p-4 sm:p-6 shadow-2xl">
       {/* Table Header Controls */}
-      <div className="flex flex-col gap-3.5 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col gap-3.5 border-b border-white/15 pb-4">
         {/* Row 1: Month/Year Nav + View Switcher + Record Count */}
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           {/* Month & Year Selectors */}
-          <div className="flex items-center rounded-2xl bg-slate-950/70 border border-slate-800 p-1">
+          <div className="flex items-center rounded-full bg-white/[0.08] border border-white/20 backdrop-blur-md p-1 shadow-inner">
             <button
               onClick={handleNextMonth}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
               title="ماه بعد"
             >
               <ChevronRight className="h-4 w-4" />
@@ -151,7 +152,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               className="bg-transparent px-2.5 py-1 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
             >
               {PERSIAN_MONTH_NAMES.map((name, idx) => (
-                <option key={name} value={idx + 1} className="bg-slate-900 text-white">
+                <option key={name} value={idx + 1} className="bg-[#0f121d] text-white">
                   {name}
                 </option>
               ))}
@@ -161,10 +162,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             <select
               value={selectedYear}
               onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
-              className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-indigo-400 focus:outline-none cursor-pointer font-mono"
+              className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-cyan-300 focus:outline-none cursor-pointer font-mono"
             >
               {[1402, 1403, 1404, 1405, 1406].map((yr) => (
-                <option key={yr} value={yr} className="bg-slate-900 text-white">
+                <option key={yr} value={yr} className="bg-[#0f121d] text-white">
                   {toPersianDigits(yr)}
                 </option>
               ))}
@@ -172,7 +173,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
               title="ماه قبل"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -184,17 +185,17 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             {/* View Mode Switcher Button */}
             <button
               onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-850 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-all"
+              className="liquid-pill-btn px-3 py-1.5 text-xs"
               title="تغییر نحوه نمایش"
             >
               {viewMode === 'cards' ? (
                 <>
-                  <TableIcon className="h-3.5 w-3.5 text-indigo-400" />
+                  <TableIcon className="h-3.5 w-3.5 text-cyan-300 ml-1.5" />
                   <span className="text-[11px] sm:text-xs">نمای جدولی</span>
                 </>
               ) : (
                 <>
-                  <LayoutGrid className="h-3.5 w-3.5 text-cyan-400" />
+                  <LayoutGrid className="h-3.5 w-3.5 text-cyan-300 ml-1.5" />
                   <span className="text-[11px] sm:text-xs">نمای کارتی</span>
                 </>
               )}
@@ -203,73 +204,73 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             {/* Export Excel */}
             <button
               onClick={onExportExcel}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 sm:px-3 py-1.5 text-xs font-semibold shadow-sm transition-all"
+              className="liquid-pill-btn px-3 py-1.5 text-xs text-emerald-200 border-emerald-400/30 bg-emerald-500/20 shadow-sm"
               title="دانلود اکسل"
             >
-              <FileSpreadsheet className="h-3.5 w-3.5" />
+              <FileSpreadsheet className="h-3.5 w-3.5 ml-1" />
               <span className="hidden xs:inline text-[11px] sm:text-xs">اکسل</span>
             </button>
 
             {/* Print / PDF */}
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 text-xs font-semibold transition-all"
+              className="liquid-pill-btn px-3 py-1.5 text-xs"
               title="چاپ یا ذخیره PDF"
             >
-              <Printer className="h-3.5 w-3.5" />
+              <Printer className="h-3.5 w-3.5 ml-1" />
               <span className="hidden sm:inline text-xs">چاپ</span>
             </button>
           </div>
         </div>
 
         {/* Row 2: Smooth Horizontal Scrollable Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full text-xs no-scrollbar">
           <button
             onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
               filterType === 'all'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'bg-slate-950/50 text-slate-400 hover:text-white border border-slate-800/80'
+                ? 'liquid-pill-btn-primary shadow-md'
+                : 'liquid-pill-btn text-white/70'
             }`}
           >
             همه روزها ({toPersianDigits(monthRecords.length)})
           </button>
           <button
             onClick={() => setFilterType('delays')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
               filterType === 'delays'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-rose-400 border border-slate-800/80'
+                ? 'bg-rose-500/25 text-rose-200 border border-rose-400/40 shadow-sm'
+                : 'liquid-pill-btn text-white/70 hover:text-rose-300'
             }`}
           >
             تاخیر / تعجیل
           </button>
           <button
             onClick={() => setFilterType('overtime')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
               filterType === 'overtime'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-emerald-400 border border-slate-800/80'
+                ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/40 shadow-sm'
+                : 'liquid-pill-btn text-white/70 hover:text-emerald-300'
             }`}
           >
             اضافه کاری
           </button>
           <button
             onClick={() => setFilterType('thursdays')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
               filterType === 'thursdays'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-cyan-400 border border-slate-800/80'
+                ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-400/40 shadow-sm'
+                : 'liquid-pill-btn text-white/70 hover:text-cyan-300'
             }`}
           >
             پنج‌شنبه‌ها
           </button>
           <button
             onClick={() => setFilterType('leaves')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+            className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
               filterType === 'leaves'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-amber-400 border border-slate-800/80'
+                ? 'bg-amber-500/25 text-amber-200 border border-amber-400/40 shadow-sm'
+                : 'liquid-pill-btn text-white/70 hover:text-amber-300'
             }`}
           >
             مرخصی‌ها
@@ -281,8 +282,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       {viewMode === 'cards' && (
         <div className="mt-4 space-y-3">
           {filteredRecords.length === 0 ? (
-            <div className="py-10 text-center text-slate-400 bg-slate-950/40 rounded-2xl border border-slate-800">
-              <Calendar className="h-8 w-8 text-slate-600 mx-auto mb-2" />
+            <div className="py-10 text-center text-white/50 bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10">
+              <Calendar className="h-8 w-8 text-white/30 mx-auto mb-2" />
               <span className="text-xs">هیچ ترددی برای این فیلتر ثبت نشده است.</span>
             </div>
           ) : (
@@ -294,14 +295,14 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               return (
                 <div
                   key={r.id}
-                  className={`rounded-2xl border p-3.5 transition-all shadow-md ${
+                  className={`rounded-2xl border p-3.5 transition-all shadow-lg backdrop-blur-md ${
                     r.isHoliday
-                      ? 'border-rose-900/40 bg-rose-950/20'
-                      : 'border-slate-800/90 bg-slate-950/60 hover:border-slate-700'
+                      ? 'border-rose-400/30 bg-rose-500/10'
+                      : 'border-white/15 bg-white/[0.04] hover:bg-white/[0.07] hover:border-white/25'
                   }`}
                 >
                   {/* Top row: Date + Weekday + Status */}
-                  <div className="flex items-center justify-between border-b border-slate-800/70 pb-2 mb-2.5">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2.5">
                     <div className="flex items-center gap-2">
                       <span
                         className={`text-xs font-bold ${
@@ -352,7 +353,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   </div>
 
                   {/* Middle Grid: Check In, Check Out, Net Worked, Break */}
-                  <div className="grid grid-cols-3 gap-2 text-center bg-slate-900/60 p-2.5 rounded-xl border border-slate-850 text-xs">
+                  <div className="grid grid-cols-3 gap-2 text-center bg-white/[0.03] p-2.5 rounded-xl border border-white/10 text-xs">
                     <div>
                       <span className="text-[10px] text-slate-400 block mb-0.5">ورود</span>
                       <span className="font-mono font-bold text-white text-xs">
@@ -479,28 +480,28 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
           {/* Mobile Totals Footer Card */}
           {filteredRecords.length > 0 && (
-            <div className="rounded-2xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/30 to-slate-900 p-3.5 shadow-lg text-xs space-y-2">
+            <div className="rounded-2xl border border-indigo-400/30 bg-indigo-500/15 backdrop-blur-md p-3.5 shadow-lg text-xs space-y-2">
               <div className="font-bold text-white flex items-center justify-between">
                 <span>جمع کل روزهای نمایش‌داده‌شده:</span>
-                <span className="text-emerald-400 font-mono text-sm">
+                <span className="text-emerald-300 font-mono text-sm">
                   {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} ساعت کار مفید
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-slate-800/80">
+              <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-white/10">
                 <div>
-                  <span className="text-slate-400 block">اضافه کاری</span>
+                  <span className="text-white/60 block">اضافه کاری</span>
                   <span className="font-bold text-indigo-300 font-mono">
                     {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">تاخیر ورود</span>
+                  <span className="text-white/60 block">تاخیر ورود</span>
                   <span className="font-bold text-rose-400 font-mono">
                     {toPersianDigits(visibleTotals.delay)} د
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">تراز نهایی</span>
+                  <span className="text-white/60 block">تراز نهایی</span>
                   <span
                     className={`font-black font-mono ${
                       visibleTotals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -518,27 +519,27 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
       {/* VIEW 2: Desktop Full Table View */}
       {viewMode === 'table' && (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-800/80">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/15 bg-white/[0.02] backdrop-blur-md shadow-xl">
           <table className="w-full text-right text-xs">
-            <thead className="bg-slate-950/90 text-slate-400 border-b border-slate-800">
+            <thead className="bg-white/[0.06] text-white/70 border-b border-white/15 backdrop-blur-sm">
               <tr>
-                <th className="py-3.5 px-3 font-semibold">تاریخ</th>
-                <th className="py-3.5 px-3 font-semibold">روز</th>
-                <th className="py-3.5 px-3 font-semibold text-center">وضعیت</th>
-                <th className="py-3.5 px-3 font-semibold text-center">ورود</th>
-                <th className="py-3.5 px-3 font-semibold text-center">خروج</th>
-                <th className="py-3.5 px-3 font-semibold text-center">خروج هدف</th>
-                <th className="py-3.5 px-3 font-semibold text-center">ناهار</th>
-                <th className="py-3.5 px-3 font-semibold text-center">کارکرد مفید</th>
-                <th className="py-3.5 px-3 font-semibold text-center">تاخیر</th>
-                <th className="py-3.5 px-3 font-semibold text-center">اضافه کاری</th>
-                <th className="py-3.5 px-3 font-semibold text-center">کسر کار</th>
-                <th className="py-3.5 px-3 font-semibold text-center">تراز روز</th>
-                <th className="py-3.5 px-4 font-semibold">یادداشت</th>
-                <th className="py-3.5 px-3 font-semibold text-center">عملیات</th>
+                <th className="py-3.5 px-3 font-semibold text-white/90">تاریخ</th>
+                <th className="py-3.5 px-3 font-semibold text-white/90">روز</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">وضعیت</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">ورود</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">خروج</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">خروج هدف</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">ناهار</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">کارکرد مفید</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">تاخیر</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">اضافه کاری</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">کسر کار</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">تراز روز</th>
+                <th className="py-3.5 px-4 font-semibold text-white/90">یادداشت</th>
+                <th className="py-3.5 px-3 font-semibold text-center text-white/90">عملیات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-white/[0.06]">
               {filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan={14} className="py-12 text-center text-slate-400">
@@ -740,7 +741,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </tbody>
             {/* Table Summary Footer */}
             {filteredRecords.length > 0 && (
-              <tfoot className="bg-slate-950 font-semibold text-slate-300 border-t-2 border-slate-800">
+              <tfoot className="bg-white/[0.08] font-semibold text-white/90 border-t-2 border-white/20 backdrop-blur-md">
                 <tr>
                   <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white">
                     مجموع اقلام جدول:
@@ -776,7 +777,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </table>
         </div>
       )}
-    </div>
+    </LiquidGlassCard>
   );
 };
 
