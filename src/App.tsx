@@ -1150,6 +1150,10 @@ function DashboardApp() {
         onClose={() => setIsStorageModalOpen(false)}
         onTriggerSync={handleTriggerSync}
         onTriggerPull={handleTriggerPull}
+        onOpenBackup={() => {
+          setIsStorageModalOpen(false);
+          setIsBackupModalOpen(true);
+        }}
       />
     </div>
   );

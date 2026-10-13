@@ -7,6 +7,8 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
+  Download,
   Laptop,
   Check,
   Server,
@@ -14,12 +16,44 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { StorageMode } from '../types';
 import { toPersianDigits } from '../utils/jalali';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 interface StorageModeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTriggerSync: () => Promise<void>;
   onTriggerPull: () => Promise<void>;
+  onOpenBackup?: () => void;
+}
+
+/**
+ * Maps raw or English error strings into friendly Persian messages.
+ */
+function toSimplePersianError(err: any): string {
+  const msg = String(err?.message || err || '');
+  if (
+    msg.includes('passphrase') ||
+    msg.includes('decrypt') ||
+    msg.includes('password') ||
+    msg.includes('رمز') ||
+    msg.includes('key')
+  ) {
+    return 'رمز عبور یا کلید رمزنگاری اشتباه است. امکان رمزگشایی و دسترسی به اطلاعات وجود ندارد.';
+  }
+  if (
+    msg.includes('network') ||
+    msg.includes('fetch') ||
+    msg.includes('connect') ||
+    msg.includes('اتصال') ||
+    msg.includes('internet') ||
+    msg.includes('Failed to fetch')
+  ) {
+    return 'خطا در ارتباط با سرور ابری. لطفاً اتصال اینترنت خود را بررسی کرده و دوباره تلاش کنید.';
+  }
+  if (msg.includes('unauthorized') || msg.includes('auth') || msg.includes('401')) {
+    return 'نشست کاربری شما منقضی شده است. لطفاً یک‌بار خارج شده و دوباره وارد حساب شوید.';
+  }
+  return msg || 'خطایی در فرآیند همگام‌سازی رخ داده است. داده‌های شما در حافظه محلی محفوظ است.';
 }
 
 export const StorageModeModal: React.FC<StorageModeModalProps> = ({
@@ -27,25 +61,52 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
   onClose,
   onTriggerSync,
   onTriggerPull,
+  onOpenBackup,
 }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   const { storageMode, setStorageMode, lastSyncedAt, isSyncing } = useAuth();
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Warning acknowledgment state before switching to cloud_encrypted
+  const [pendingCloudActivation, setPendingCloudActivation] = useState<boolean>(false);
+  const [lossAcknowledged, setLossAcknowledged] = useState<boolean>(false);
+
   if (!isOpen) return null;
 
-  const handleModeChange = async (mode: StorageMode) => {
+  const handleSelectLocal = async () => {
+    setPendingCloudActivation(false);
+    setLossAcknowledged(false);
+    setErrorMsg(null);
     try {
-      await setStorageMode(mode);
-      if (mode === 'cloud_encrypted') {
-        setSuccessMsg('حالت همگام‌سازی ابری با رمزنگاری پیشرفته فعال شد.');
-        await onTriggerSync();
-      } else {
-        setSuccessMsg('حالت ذخیره‌سازی محلی (فقط مرورگر) فعال شد.');
-      }
+      await setStorageMode('local');
+      setSuccessMsg('حالت ذخیره‌سازی محلی (فقط مرورگر) فعال شد.');
       setTimeout(() => setSuccessMsg(null), 3500);
     } catch (err: any) {
-      setErrorMsg(err.message || 'خطا در تغییر حالت ذخیره‌سازی.');
+      setErrorMsg(toSimplePersianError(err));
+    }
+  };
+
+  const handleSelectCloudCard = () => {
+    if (storageMode === 'cloud_encrypted') {
+      return; // Already active
+    }
+    setErrorMsg(null);
+    setPendingCloudActivation(true);
+  };
+
+  const handleConfirmActivateCloud = async () => {
+    if (!lossAcknowledged) return;
+    setErrorMsg(null);
+    try {
+      await setStorageMode('cloud_encrypted');
+      setPendingCloudActivation(false);
+      setLossAcknowledged(false);
+      setSuccessMsg('حالت همگام‌سازی ابری با رمزنگاری پیشرفته فعال شد.');
+      await onTriggerSync();
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err: any) {
+      setErrorMsg(toSimplePersianError(err));
     }
   };
 
@@ -57,14 +118,18 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
       setSuccessMsg('اطلاعات با موفقیت رمزنگاری و در سرور ابری همگام شدند.');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setErrorMsg(err.message || 'خطا در همگام‌سازی اطلاعات.');
+      setErrorMsg(toSimplePersianError(err));
     }
   };
 
   const handleManualPull = async () => {
     setErrorMsg(null);
     setSuccessMsg(null);
-    if (!window.confirm('آیا مایلید اطلاعات ذخیره‌شده در سرور ابری رمزگشایی و در این مرورگر بارگذاری شوند؟')) {
+    if (
+      !window.confirm(
+        'آیا مایلید اطلاعات ذخیره‌شده در سرور ابری رمزگشایی و در این مرورگر بارگذاری شوند؟'
+      )
+    ) {
       return;
     }
     try {
@@ -72,7 +137,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
       setSuccessMsg('اطلاعات با موفقیت از سرور ابری بارگذاری و رمزگشایی شدند.');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setErrorMsg(err.message || 'خطا در بارگذاری اطلاعات ابری.');
+      setErrorMsg(toSimplePersianError(err));
     }
   };
 
@@ -80,7 +145,18 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
     if (!isoStr) return 'تاکنون همگام‌سازی نشده است';
     try {
       const d = new Date(isoStr);
-      return toPersianDigits(d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })) + ' (' + toPersianDigits(d.toLocaleDateString('fa-IR')) + ')';
+      return (
+        toPersianDigits(
+          d.toLocaleTimeString('fa-IR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+        ) +
+        ' (' +
+        toPersianDigits(d.toLocaleDateString('fa-IR')) +
+        ')'
+      );
     } catch {
       return isoStr;
     }
@@ -88,7 +164,13 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl liquid-glass-modal border border-white/20 rounded-[32px] p-5 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="storage-mode-modal-title"
+        className="relative w-full max-w-xl liquid-glass-modal border border-white/20 rounded-[32px] p-5 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/15">
           <div className="flex items-center gap-3">
@@ -96,7 +178,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="font-bold text-base sm:text-lg text-white/95">
+              <h3 id="storage-mode-modal-title" className="font-bold text-base sm:text-lg text-white/95">
                 مدیریت محل ذخیره‌سازی و امنیت داده‌ها
               </h3>
               <p className="text-xs text-white/60">
@@ -106,6 +188,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="بستن پنجره"
             className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
@@ -114,14 +197,21 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
         {/* Alerts */}
         {successMsg && (
-          <div className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md">
+          <div
+            role="status"
+            aria-live="polite"
+            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md"
+          >
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
         )}
 
         {errorMsg && (
-          <div className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md">
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md"
+          >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
@@ -135,7 +225,16 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
           {/* Option 1: Local Browser Only */}
           <div
-            onClick={() => handleModeChange('local')}
+            role="button"
+            tabIndex={0}
+            onClick={handleSelectLocal}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSelectLocal();
+              }
+            }}
+            aria-pressed={storageMode === 'local'}
             className={`cursor-pointer p-4 rounded-2xl border transition-all relative backdrop-blur-md ${
               storageMode === 'local'
                 ? 'bg-indigo-500/20 border-indigo-400/60 shadow-xl shadow-indigo-500/10'
@@ -183,7 +282,16 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
           {/* Option 2: Cloud Sync with AES-256 Encryption */}
           <div
-            onClick={() => handleModeChange('cloud_encrypted')}
+            role="button"
+            tabIndex={0}
+            onClick={handleSelectCloudCard}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSelectCloudCard();
+              }
+            }}
+            aria-pressed={storageMode === 'cloud_encrypted'}
             className={`cursor-pointer p-4 rounded-2xl border transition-all relative backdrop-blur-md ${
               storageMode === 'cloud_encrypted'
                 ? 'bg-cyan-500/20 border-cyan-400/60 shadow-xl shadow-cyan-500/10'
@@ -227,10 +335,90 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Warning Card before activation */}
+            {pendingCloudActivation && storageMode !== 'cloud_encrypted' && (
+              <div
+                role="region"
+                aria-label="هشدار مهم رمزنگاری ابری"
+                onClick={(e) => e.stopPropagation()}
+                className="mt-4 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-xs space-y-3.5 backdrop-blur-lg animate-in fade-in duration-200"
+              >
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle className="h-5 w-5 text-amber-300 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-sm text-amber-200">
+                      هشدار امنیتی بسیار مهم قبل از فعال‌سازی:
+                    </h4>
+                    <p className="text-amber-100/90 leading-relaxed text-[11px] sm:text-xs">
+                      داده‌های شما پیش از ارسال با کلید مشتق‌شده از رمز عبورتان رمزنگاری می‌شوند.
+                      {' '}
+                      <strong className="text-white font-bold">
+                        در صورتی که کلید یا رمز عبور حساب خود را فراموش یا گم کنید، داده‌های ابری به هیچ عنوان قابل بازیابی یا رمزگشایی نخواهند بود
+                      </strong>
+                      {' '}
+                      و هیچ فردی (حتی پشتیبانی و مدیر سرور) امکان بازگردانی داده‌های شما را نخواهد داشت.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Recommendation & Backup Shortcut Button */}
+                <div className="p-3 rounded-xl bg-black/40 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <span className="text-[11px] text-white/80">
+                    پیشنهاد امنیتی: توصیه می‌شود ابتدا یک نسخه پشتیبان آفلاین JSON از داده‌های فعلی خود دریافت نمایید.
+                  </span>
+                  {onOpenBackup && (
+                    <button
+                      type="button"
+                      onClick={onOpenBackup}
+                      className="liquid-pill-btn shrink-0 text-cyan-300 border-cyan-400/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold hover:bg-cyan-500/30 transition-all flex items-center gap-1.5 self-start sm:self-auto"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span>ابتدا پشتیبان JSON بگیر</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Mandatory Confirmation Checkbox */}
+                <label className="flex items-start gap-2.5 cursor-pointer pt-1 select-none">
+                  <input
+                    type="checkbox"
+                    checked={lossAcknowledged}
+                    onChange={(e) => setLossAcknowledged(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-amber-400/50 bg-slate-900 text-amber-500 focus:ring-amber-400 focus:ring-offset-0 cursor-pointer"
+                  />
+                  <span className="text-xs text-white font-medium leading-relaxed">
+                    متوجه شدم و می‌دانم در صورت گم شدن رمز عبور، اطلاعات ابری به هیچ وجه قابل بازیابی نیست.
+                  </span>
+                </label>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-400/20">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingCloudActivation(false);
+                      setLossAcknowledged(false);
+                    }}
+                    className="liquid-pill-btn px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white"
+                  >
+                    انصراف
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!lossAcknowledged}
+                    onClick={handleConfirmActivateCloud}
+                    className="liquid-pill-btn-primary px-4 py-2 text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed shadow-md"
+                  >
+                    فعال‌سازی همگام‌سازی ابری رمزنگاری‌شده
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Sync Controls (Visible when Cloud Sync is selected) */}
+        {/* Sync Controls (Visible when Cloud Sync is active) */}
         {storageMode === 'cloud_encrypted' && (
           <div className="mt-5 p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3 backdrop-blur-md">
             <div className="flex items-center justify-between text-xs">
@@ -250,6 +438,21 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 {formatLastSync(lastSyncedAt)}
               </span>
             </div>
+
+            {/* Security Backup Shortcut */}
+            {onOpenBackup && (
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+                <span className="text-white/70">پشتیبان‌گیری محلی از نسخه فعلی:</span>
+                <button
+                  type="button"
+                  onClick={onOpenBackup}
+                  className="liquid-pill-btn text-cyan-300 border-cyan-400/30 px-3 py-1 text-[11px] font-semibold flex items-center gap-1"
+                >
+                  <Download className="h-3 w-3" />
+                  <span>پشتیبان‌گیری JSON</span>
+                </button>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               <button
