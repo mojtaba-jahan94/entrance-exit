@@ -660,13 +660,13 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <div
                 ref={tableScrollRef}
                 onScroll={checkTableScroll}
-                className="overflow-x-auto rounded-2xl border border-white/15 bg-white/[0.02] backdrop-blur-md shadow-xl"
+                className="max-h-[calc(100vh-14rem)] min-h-[360px] overflow-auto rounded-2xl border border-white/15 bg-white/[0.02] backdrop-blur-md shadow-xl"
               >
                 <table className="w-full text-right text-xs border-collapse">
-                  <thead className="bg-slate-900/95 text-white border-b border-white/20 backdrop-blur-md sticky top-0 z-20">
+                  <thead className="bg-[#0b0d17] text-white border-b border-white/20 sticky top-0 z-20 shadow-md">
                     <tr>
-                      {/* Sticky Date Column Header */}
-                      <th className="py-3.5 px-3 font-bold text-white sticky right-0 top-0 z-30 bg-slate-900/95 backdrop-blur-md border-l border-white/10 shadow-sm">
+                      {/* Sticky Date Column Header (Completely Opaque) */}
+                      <th className="py-3.5 px-3 font-bold text-white sticky right-0 top-0 z-30 bg-[#0b0d17] border-l border-white/10 shadow-sm">
                         تاریخ
                       </th>
                       <th className="py-3.5 px-3 font-bold text-white">روز</th>
@@ -707,8 +707,8 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                               r.isHoliday ? 'bg-rose-950/20' : ''
                             }`}
                           >
-                            {/* Sticky Date Column Body */}
-                            <td className="py-3 px-3 font-mono font-medium text-white sticky right-0 z-10 bg-slate-950/90 backdrop-blur-md border-l border-white/10 shadow-sm">
+                            {/* Sticky Date Column Body (Completely Opaque) */}
+                            <td className="py-3 px-3 font-mono font-medium text-white sticky right-0 z-10 bg-[#0b0d17] border-l border-white/10 shadow-sm">
                               {toPersianDigits(r.date)}
                             </td>
 
@@ -862,7 +862,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   {filteredRecords.length > 0 && (
                     <tfoot className="bg-white/[0.08] font-semibold text-white/90 border-t-2 border-white/20 backdrop-blur-md">
                       <tr>
-                        <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white sticky right-0 z-10 bg-slate-950/90 border-l border-white/10">
+                        <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white sticky right-0 z-10 bg-[#0b0d17] border-l border-white/10">
                           مجموع اقلام جدول:
                         </td>
                         <td className="py-3.5 px-3 text-center font-mono text-emerald-300 font-bold">

@@ -129,17 +129,19 @@ function DashboardApp() {
       if (storageMode === 'cloud_encrypted') {
         // Enqueue onto FIFO Promise chain to strictly guarantee sequential execution
         syncQueueRef.current = syncQueueRef.current
+          .catch(() => {})
           .then(async () => {
-            await syncDataToCloud({
-              records: updatedRecords,
-              leaves: updatedLeaves,
-              config: updatedConfig,
-            });
-            setCloudSyncError(null);
-          })
-          .catch((e) => {
-            console.warn('Sequential cloud sync notice:', e);
-            setCloudSyncError('خطا در همگام‌سازی ابری. تغییرات شما به صورت امن در حافظه محلی ذخیره شده است.');
+            try {
+              await syncDataToCloud({
+                records: updatedRecords,
+                leaves: updatedLeaves,
+                config: updatedConfig,
+              });
+              setCloudSyncError(null);
+            } catch (e) {
+              console.warn('Sequential cloud sync notice:', e);
+              setCloudSyncError('خطا در همگام‌سازی ابری. تغییرات شما به صورت امن در حافظه محلی ذخیره شده است.');
+            }
           });
       }
     },
