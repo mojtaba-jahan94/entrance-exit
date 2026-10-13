@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FileSpreadsheet,
   Printer,
   ChevronRight,
   ChevronLeft,
   Calendar,
-  Filter,
   Edit2,
   Trash2,
   Clock,
-  AlertCircle,
   Plus,
   CheckCircle2,
   AlertTriangle,
   MinusCircle,
-  Search,
   LayoutGrid,
   Table as TableIcon,
+  Coffee,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  CalendarOff,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig } from '../types';
 import { LiquidGlassCard } from './LiquidGlassCard';
@@ -45,7 +47,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   records,
   selectedYear,
   selectedMonth,
-  config,
+  config: _config,
   onYearChange,
   onMonthChange,
   onEditRecord,
@@ -55,12 +57,45 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>(() =>
-    typeof window !== 'undefined' && window.innerWidth < 768 ? 'cards' : 'table'
-  );
+
+  // 1. Reactive matchMedia listener for mobile card/table view switching
+  const [userViewOverride, setUserViewOverride] = useState<'cards' | 'table' | null>(null);
+  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const updateMatches = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobileScreen(e.matches);
+    };
+
+    updateMatches(mediaQuery);
+    const listener = (e: MediaQueryListEvent) => updateMatches(e);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+
+  const activeViewMode = userViewOverride ?? (isMobileScreen ? 'cards' : 'table');
+
+  // 2. Horizontal scroll guide shadows for table view
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState<boolean>(false);
+  const [canScrollRight, setCanScrollRight] = useState<boolean>(false);
+
+  const checkTableScroll = () => {
+    const el = tableScrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const currentScroll = Math.abs(el.scrollLeft);
+    setCanScrollLeft(maxScroll > 10 && currentScroll < maxScroll - 4);
+    setCanScrollRight(currentScroll > 4);
+  };
 
   const monthPrefix = `${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`;
-  
+
   // Filter records for this month
   const monthRecords = records
     .filter((r) => r.date.startsWith(monthPrefix))
@@ -92,17 +127,24 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     return true;
   });
 
-  // Calculate visible totals for the footer
+  useEffect(() => {
+    checkTableScroll();
+    window.addEventListener('resize', checkTableScroll);
+    return () => window.removeEventListener('resize', checkTableScroll);
+  }, [filteredRecords.length, activeViewMode]);
+
+  // Calculate visible totals for both table and cards footer
   const visibleTotals = filteredRecords.reduce(
     (acc, r) => {
       acc.worked += r.workedMinutes;
       acc.delay += r.delayMinutes;
+      acc.early += r.earlyLeaveMinutes;
       acc.overtime += r.overtimeMinutes + r.holidayOvertimeMinutes;
       acc.deficit += r.deficitMinutes;
       acc.balance += r.netBalanceMinutes;
       return acc;
     },
-    { worked: 0, delay: 0, overtime: 0, deficit: 0, balance: 0 }
+    { worked: 0, delay: 0, early: 0, overtime: 0, deficit: 0, balance: 0 }
   );
 
   const handlePrevMonth = () => {
@@ -129,6 +171,98 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 
   const monthName = PERSIAN_MONTH_NAMES[selectedMonth - 1] || '';
 
+  // Render distinct status badge with text and icon (no color-only semantics)
+  const renderStatusBadge = (r: AttendanceRecord) => {
+    if (r.status === 'present') {
+      if (r.dayOfWeek === 5) {
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-200 border border-cyan-400/35">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span>پنج‌شنبه نیمه‌وقت</span>
+          </span>
+        );
+      }
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300 border border-emerald-400/35">
+          <CheckCircle2 className="h-3 w-3 shrink-0" />
+          <span>حاضر عادی</span>
+        </span>
+      );
+    }
+    if (r.status === 'in_progress') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-cyan-400/35">
+          <Clock className="h-3 w-3 animate-pulse shrink-0" />
+          <span>در حال کار</span>
+        </span>
+      );
+    }
+    if (r.status === 'leave') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-200 border border-amber-400/35">
+          <Coffee className="h-3 w-3 shrink-0" />
+          <span>مرخصی</span>
+        </span>
+      );
+    }
+    if (r.status === 'absent') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-300 border border-rose-400/35">
+          <MinusCircle className="h-3 w-3 shrink-0" />
+          <span>غایب / بدون ثبت</span>
+        </span>
+      );
+    }
+    if (r.isHoliday || r.status === 'holiday' || r.status === 'weekend') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300 border border-rose-400/30">
+          <CalendarOff className="h-3 w-3 shrink-0" />
+          <span>{r.holidayTitle || (r.dayOfWeek === 6 ? 'جمعه (تعطیل)' : 'تعطیل رسمی')}</span>
+        </span>
+      );
+    }
+    if (r.dayOfWeek === 5) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-200 border border-cyan-400/35">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span>پنج‌شنبه نیمه‌وقت (بدون ثبت)</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/80 px-2 py-0.5 text-xs font-medium text-slate-300 border border-slate-700">
+        <Minus className="h-3 w-3 shrink-0" />
+        <span>بدون ثبت</span>
+      </span>
+    );
+  };
+
+  // Render net balance with <bdi dir="ltr">, sign, and icon
+  const renderBalance = (balanceMins: number) => {
+    if (balanceMins > 0) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-xs text-emerald-300 font-bold border border-emerald-400/35 font-mono">
+          <TrendingUp className="h-3 w-3 shrink-0" />
+          <bdi dir="ltr">+{toPersianDigits(formatMinutesToTimeString(balanceMins))}</bdi>
+        </span>
+      );
+    }
+    if (balanceMins < 0) {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/20 px-1.5 py-0.5 text-xs text-rose-300 font-bold border border-rose-400/35 font-mono">
+          <TrendingDown className="h-3 w-3 shrink-0" />
+          <bdi dir="ltr">-{toPersianDigits(formatMinutesToTimeString(Math.abs(balanceMins)))}</bdi>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 text-slate-400 font-medium text-xs font-mono">
+        <Minus className="h-3 w-3 shrink-0" />
+        <bdi dir="ltr">۰</bdi>
+      </span>
+    );
+  };
+
   return (
     <LiquidGlassCard className="rounded-[32px] p-4 sm:p-6 shadow-2xl">
       {/* Table Header Controls */}
@@ -141,6 +275,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               onClick={handleNextMonth}
               className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
               title="ماه بعد"
+              aria-label="ماه بعد"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -150,6 +285,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               value={selectedMonth}
               onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
               className="bg-transparent px-2.5 py-1 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
+              aria-label="انتخاب ماه"
             >
               {PERSIAN_MONTH_NAMES.map((name, idx) => (
                 <option key={name} value={idx + 1} className="bg-[#0f121d] text-white">
@@ -163,6 +299,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               value={selectedYear}
               onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
               className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-cyan-300 focus:outline-none cursor-pointer font-mono"
+              aria-label="انتخاب سال"
             >
               {[1402, 1403, 1404, 1405, 1406].map((yr) => (
                 <option key={yr} value={yr} className="bg-[#0f121d] text-white">
@@ -175,6 +312,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               onClick={handlePrevMonth}
               className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
               title="ماه قبل"
+              aria-label="ماه قبل"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -184,11 +322,12 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* View Mode Switcher Button */}
             <button
-              onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
-              className="liquid-pill-btn px-3 py-1.5 text-xs"
+              onClick={() => setUserViewOverride(activeViewMode === 'cards' ? 'table' : 'cards')}
+              className="liquid-pill-btn px-3 py-1.5 text-xs flex items-center"
               title="تغییر نحوه نمایش"
+              aria-label="تغییر نمای نمایش به کارتی یا جدولی"
             >
-              {viewMode === 'cards' ? (
+              {activeViewMode === 'cards' ? (
                 <>
                   <TableIcon className="h-3.5 w-3.5 text-cyan-300 ml-1.5" />
                   <span className="text-[11px] sm:text-xs">نمای جدولی</span>
@@ -206,6 +345,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               onClick={onExportExcel}
               className="liquid-pill-btn px-3 py-1.5 text-xs text-emerald-200 border-emerald-400/30 bg-emerald-500/20 shadow-sm"
               title="دانلود اکسل"
+              aria-label="خروجی فایل اکسل"
             >
               <FileSpreadsheet className="h-3.5 w-3.5 ml-1" />
               <span className="hidden xs:inline text-[11px] sm:text-xs">اکسل</span>
@@ -216,6 +356,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               onClick={handlePrint}
               className="liquid-pill-btn px-3 py-1.5 text-xs"
               title="چاپ یا ذخیره PDF"
+              aria-label="چاپ گزارش"
             >
               <Printer className="h-3.5 w-3.5 ml-1" />
               <span className="hidden sm:inline text-xs">چاپ</span>
@@ -223,7 +364,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Smooth Horizontal Scrollable Filter Chips */}
+        {/* Row 2: Filter Chips */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full text-xs no-scrollbar">
           <button
             onClick={() => setFilterType('all')}
@@ -278,277 +419,39 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
         </div>
       </div>
 
-      {/* VIEW 1: Mobile Cards View */}
-      {viewMode === 'cards' && (
-        <div className="mt-4 space-y-3">
-          {filteredRecords.length === 0 ? (
-            <div className="py-10 text-center text-white/50 bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10">
-              <Calendar className="h-8 w-8 text-white/30 mx-auto mb-2" />
-              <span className="text-xs">هیچ ترددی برای این فیلتر ثبت نشده است.</span>
-            </div>
-          ) : (
-            filteredRecords.map((r) => {
-              const weekdayName = PERSIAN_WEEKDAY_NAMES[r.dayOfWeek] || '';
-              const isLate = r.delayMinutes > 0;
-              const hasOT = r.overtimeMinutes > 0 || r.holidayOvertimeMinutes > 0;
-
-              return (
-                <div
-                  key={r.id}
-                  className={`rounded-2xl border p-3.5 transition-all shadow-lg backdrop-blur-md ${
-                    r.isHoliday
-                      ? 'border-rose-400/30 bg-rose-500/10'
-                      : 'border-white/15 bg-white/[0.04] hover:bg-white/[0.07] hover:border-white/25'
-                  }`}
-                >
-                  {/* Top row: Date + Weekday + Status */}
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-xs font-bold ${
-                          r.dayOfWeek === 6
-                            ? 'text-rose-400'
-                            : r.dayOfWeek === 5
-                            ? 'text-cyan-400'
-                            : 'text-slate-200'
-                        }`}
-                      >
-                        {weekdayName}
-                      </span>
-                      <span className="font-mono text-xs font-semibold text-white">
-                        {toPersianDigits(r.date)}
-                      </span>
-                    </div>
-
-                    {/* Status Pill */}
-                    <div>
-                      {r.status === 'present' && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/25">
-                          <CheckCircle2 className="h-3 w-3" />
-                          حاضر
-                        </span>
-                      )}
-                      {r.status === 'in_progress' && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-semibold text-cyan-400 border border-cyan-500/25">
-                          <Clock className="h-3 w-3 animate-pulse" />
-                          در حال کار
-                        </span>
-                      )}
-                      {r.status === 'leave' && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400 border border-amber-500/25">
-                          مرخصی
-                        </span>
-                      )}
-                      {r.status === 'absent' && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[10px] font-semibold text-rose-400 border border-rose-500/25">
-                          غایب
-                        </span>
-                      )}
-                      {(r.status === 'holiday' || r.status === 'weekend') && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-400 border border-slate-700">
-                          {r.holidayTitle || (r.dayOfWeek === 6 ? 'جمعه' : 'تعطیل')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Middle Grid: Check In, Check Out, Net Worked, Break */}
-                  <div className="grid grid-cols-3 gap-2 text-center bg-white/[0.04] p-2.5 rounded-xl border border-white/10 text-xs">
-                    <div>
-                      <span className="text-xs text-slate-300 font-medium block mb-0.5">ورود</span>
-                      <span className="font-mono font-bold text-white text-xs">
-                        {r.checkIn ? toPersianDigits(r.checkIn) : '-'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-300 font-medium block mb-0.5">خروج</span>
-                      <span className="font-mono font-bold text-white text-xs">
-                        {r.checkOut ? toPersianDigits(r.checkOut) : '-'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-300 font-medium block mb-0.5">کارکرد خالص</span>
-                      <span className="font-mono font-black text-emerald-300 text-xs">
-                        {r.workedMinutes > 0
-                          ? toPersianDigits(formatMinutesToTimeString(r.workedMinutes))
-                          : '-'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Badges row: Delays, Overtime, Deficit, Target Departure, Leave */}
-                  {(isLate ||
-                    hasOT ||
-                    r.deficitMinutes > 0 ||
-                    r.earlyLeaveMinutes > 0 ||
-                    r.breakMinutes > 0 ||
-                    (r.leaveMinutes !== undefined && r.leaveMinutes > 0)) && (
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs font-medium">
-                      {r.targetCheckOut && (
-                        <span className="rounded-lg bg-slate-900/80 px-2 py-0.5 text-cyan-300 border border-slate-700 font-mono">
-                          خروج هدف: {toPersianDigits(r.targetCheckOut)}
-                        </span>
-                      )}
-                      {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
-                        <span
-                          className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-200 font-semibold border border-amber-400/40"
-                          title={`مرخصی ساعتی: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
-                        >
-                          مرخصی: {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
-                        </span>
-                      )}
-                      {r.breakMinutes > 0 && (
-                        <span className="rounded-lg bg-slate-900/80 px-2 py-0.5 text-slate-200 border border-slate-700">
-                          ناهار: {toPersianDigits(r.breakMinutes)}د
-                        </span>
-                      )}
-                      {isLate && (
-                        <span className="rounded-lg bg-rose-500/20 px-2 py-0.5 text-rose-200 font-bold border border-rose-400/40">
-                          تاخیر: {toPersianDigits(r.delayMinutes)}د
-                        </span>
-                      )}
-                      {r.earlyLeaveMinutes > 0 && (
-                        <span className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-200 font-bold border border-amber-400/40">
-                          تعجیل: {toPersianDigits(r.earlyLeaveMinutes)}د
-                        </span>
-                      )}
-                      {hasOT && (
-                        <span className="rounded-lg bg-indigo-500/20 px-2 py-0.5 text-indigo-200 font-bold border border-indigo-400/40">
-                          اضافه کار:{' '}
-                          {toPersianDigits(
-                            formatMinutesToTimeString(r.overtimeMinutes + r.holidayOvertimeMinutes)
-                          )}
-                          {r.holidayOvertimeMinutes > 0 && ' (ت)'}
-                        </span>
-                      )}
-                      {r.deficitMinutes > 0 && (
-                        <span className="rounded-lg bg-rose-500/20 px-2 py-0.5 text-rose-200 font-bold border border-rose-400/40">
-                          کسر کار: {toPersianDigits(r.deficitMinutes)}د
-                        </span>
-                      )}
-                      {r.netBalanceMinutes !== 0 && (
-                        <span
-                          className={`rounded-lg px-2 py-0.5 font-bold font-mono ${
-                            r.netBalanceMinutes > 0
-                              ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
-                              : 'bg-rose-500/20 text-rose-200 border border-rose-400/40'
-                          }`}
-                        >
-                          تراز:{' '}
-                          {r.netBalanceMinutes > 0 ? '+' : '-'}
-                          {toPersianDigits(
-                            formatMinutesToTimeString(Math.abs(r.netBalanceMinutes))
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Note row */}
-                  {r.note && (
-                    <p className="mt-2 text-xs text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/80 font-medium">
-                      📝 {r.note}
-                    </p>
-                  )}
-
-                  {/* Actions footer */}
-                  <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 mt-2.5">
-                    <span className="text-xs text-slate-400 font-mono font-medium">
-                      #{r.id.slice(-6)}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => onEditRecord(r)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-indigo-300 text-xs font-medium border border-slate-800 transition-colors"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                        <span>ویرایش</span>
-                      </button>
-                      <button
-                        onClick={() => onDeleteRecord(r.id)}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-rose-950/40 text-rose-400 text-xs font-medium border border-slate-800 hover:border-rose-900/40 transition-colors"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                        <span>حذف</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-
-          {/* Mobile Totals Footer Card */}
-          {filteredRecords.length > 0 && (
-            <div className="rounded-2xl border border-indigo-400/30 bg-indigo-500/15 backdrop-blur-md p-3.5 shadow-lg text-xs space-y-2">
-              <div className="font-bold text-white flex items-center justify-between">
-                <span>جمع کل روزهای نمایش‌داده‌شده:</span>
-                <span className="text-emerald-300 font-mono text-sm">
-                  {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} ساعت کار مفید
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-white/10">
-                <div>
-                  <span className="text-white/60 block">اضافه کاری</span>
-                  <span className="font-bold text-indigo-300 font-mono">
-                    {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
-                  </span>
-                </div>
-                <div>
-                  <span className="text-white/60 block">تاخیر ورود</span>
-                  <span className="font-bold text-rose-400 font-mono">
-                    {toPersianDigits(visibleTotals.delay)} د
-                  </span>
-                </div>
-                <div>
-                  <span className="text-white/60 block">تراز نهایی</span>
-                  <span
-                    className={`font-black font-mono ${
-                      visibleTotals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}
-                  >
-                    {visibleTotals.balance >= 0 ? '+' : '-'}
-                    {toPersianDigits((Math.abs(visibleTotals.balance) / 60).toFixed(1))} س
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
+      {/* 5. Empty State (ماه بدون داده با پیام فارسی و دکمه ثبت تردد) */}
+      {monthRecords.length === 0 ? (
+        <div className="my-8 py-12 px-4 text-center bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10 flex flex-col items-center justify-center gap-3">
+          <div className="rounded-2xl bg-cyan-500/20 p-3 text-cyan-300 border border-cyan-400/30">
+            <Calendar className="h-8 w-8" />
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-white">
+              هیچ ترددی برای {monthName} {toPersianDigits(selectedYear)} ثبت نشده است
+            </h4>
+            <p className="text-xs text-slate-300">
+              می‌توانید با دکمه زیر تردد اولین روز کاری این ماه را به سادگی ثبت کنید.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onAddNewForDate(`${monthPrefix}01`)}
+            className="liquid-pill-btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-bold shadow-md active:scale-95 transition-all mt-1"
+          >
+            <Plus className="h-4 w-4" />
+            <span>ثبت تردد</span>
+          </button>
         </div>
-      )}
-
-      {/* VIEW 2: Desktop Full Table View */}
-      {viewMode === 'table' && (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-white/15 bg-white/[0.02] backdrop-blur-md shadow-xl">
-          <table className="w-full text-right text-xs">
-            <thead className="bg-slate-900/80 text-white border-b border-white/20 backdrop-blur-sm">
-              <tr>
-                <th className="py-3.5 px-3 font-bold text-white">تاریخ</th>
-                <th className="py-3.5 px-3 font-bold text-white">روز</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">وضعیت</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">ورود</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">خروج</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">خروج هدف</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">ناهار</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">کارکرد مفید</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">تاخیر</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">اضافه کاری</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">کسر کار</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">تراز روز</th>
-                <th className="py-3.5 px-4 font-bold text-white">یادداشت</th>
-                <th className="py-3.5 px-3 font-bold text-center text-white">عملیات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.08]">
+      ) : (
+        <>
+          {/* VIEW 1: Cards View */}
+          {activeViewMode === 'cards' && (
+            <div className="mt-4 space-y-3">
               {filteredRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={14} className="py-12 text-center text-slate-300">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Calendar className="h-8 w-8 text-slate-500" />
-                      <span>هیچ ترددی برای این ماه یا فیلتر انتخابی ثبت نشده است.</span>
-                    </div>
-                  </td>
-                </tr>
+                <div className="py-10 text-center text-slate-300 bg-white/[0.03] backdrop-blur-md rounded-2xl border border-white/10">
+                  <Calendar className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                  <span className="text-xs">هیچ ترددی مطابق این فیلتر یافت نشد.</span>
+                </div>
               ) : (
                 filteredRecords.map((r) => {
                   const weekdayName = PERSIAN_WEEKDAY_NAMES[r.dayOfWeek] || '';
@@ -556,228 +459,439 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   const hasOT = r.overtimeMinutes > 0 || r.holidayOvertimeMinutes > 0;
 
                   return (
-                    <tr
+                    <div
                       key={r.id}
-                      className={`transition-colors hover:bg-slate-800/50 ${
-                        r.isHoliday ? 'bg-rose-950/20' : ''
+                      className={`rounded-2xl border p-3.5 transition-all shadow-lg backdrop-blur-md ${
+                        r.isHoliday
+                          ? 'border-rose-400/30 bg-rose-500/10'
+                          : 'border-white/15 bg-white/[0.04] hover:bg-white/[0.07] hover:border-white/25'
                       }`}
                     >
-                      {/* Date */}
-                      <td className="py-3 px-3 font-mono font-medium text-white">
-                        {toPersianDigits(r.date)}
-                      </td>
+                      {/* Top row: Date + Weekday + Status Badge */}
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-xs font-bold ${
+                              r.dayOfWeek === 6
+                                ? 'text-rose-400'
+                                : r.dayOfWeek === 5
+                                ? 'text-cyan-400'
+                                : 'text-slate-200'
+                            }`}
+                          >
+                            {weekdayName}
+                          </span>
+                          <span className="font-mono text-xs font-semibold text-white">
+                            {toPersianDigits(r.date)}
+                          </span>
+                        </div>
 
-                      {/* Weekday */}
-                      <td className="py-3 px-3 text-slate-100 font-medium">
-                        <span
-                          className={
-                            r.dayOfWeek === 6
-                              ? 'text-rose-400 font-bold'
-                              : r.dayOfWeek === 5
-                              ? 'text-cyan-300 font-semibold'
-                              : 'text-slate-100'
-                          }
-                        >
-                          {weekdayName}
-                        </span>
-                      </td>
+                        {/* Status Badge with Text + Icon */}
+                        <div>{renderStatusBadge(r)}</div>
+                      </div>
 
-                      {/* Status Badge */}
-                      <td className="py-3 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1 flex-wrap">
-                          {r.status === 'present' && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300 border border-emerald-400/35">
-                              <CheckCircle2 className="h-3 w-3" />
-                              حاضر
+                      {/* Middle Grid: Check In, Check Out, Net Worked */}
+                      <div className="grid grid-cols-3 gap-2 text-center bg-white/[0.04] p-2.5 rounded-xl border border-white/10 text-xs">
+                        <div>
+                          <span className="text-xs text-slate-300 font-medium block mb-0.5">ورود</span>
+                          <span className="font-mono font-bold text-white text-xs">
+                            {r.checkIn ? toPersianDigits(r.checkIn) : '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-300 font-medium block mb-0.5">خروج</span>
+                          <span className="font-mono font-bold text-white text-xs">
+                            {r.checkOut ? toPersianDigits(r.checkOut) : '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-xs text-slate-300 font-medium block mb-0.5">کارکرد خالص</span>
+                          <span className="font-mono font-black text-emerald-300 text-xs">
+                            {r.workedMinutes > 0
+                              ? toPersianDigits(formatMinutesToTimeString(r.workedMinutes))
+                              : '-'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Badges row: Special labels */}
+                      {(isLate ||
+                        hasOT ||
+                        r.deficitMinutes > 0 ||
+                        r.earlyLeaveMinutes > 0 ||
+                        r.breakMinutes > 0 ||
+                        (r.leaveMinutes !== undefined && r.leaveMinutes > 0)) && (
+                        <div className="flex flex-wrap items-center gap-1.5 mt-2.5 text-xs font-medium">
+                          {r.targetCheckOut && (
+                            <span className="rounded-lg bg-slate-900/80 px-2 py-0.5 text-cyan-300 border border-slate-700 font-mono">
+                              خروج هدف: {toPersianDigits(r.targetCheckOut)}
                             </span>
                           )}
                           {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
                             <span
-                              className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-200 border border-amber-400/35"
-                              title={`مرخصی ساعتی ثبت شده: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
+                              className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-200 font-semibold border border-amber-400/40 inline-flex items-center gap-1"
+                              title={`مرخصی ساعتی: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
                             >
-                              مرخصی {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
+                              <Coffee className="h-3 w-3 shrink-0" />
+                              <span>مرخصی: {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}</span>
                             </span>
                           )}
-                          {r.status === 'in_progress' && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-300 border border-cyan-400/35">
-                              <Clock className="h-3 w-3 animate-pulse" />
-                              در حال کار
+                          {r.breakMinutes > 0 && (
+                            <span className="rounded-lg bg-slate-900/80 px-2 py-0.5 text-slate-200 border border-slate-700">
+                              ناهار: {toPersianDigits(r.breakMinutes)}د
                             </span>
                           )}
-                          {r.status === 'leave' && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-200 border border-amber-400/35">
-                              مرخصی
+                          {isLate && (
+                            <span className="rounded-lg bg-rose-500/20 px-2 py-0.5 text-rose-200 font-bold border border-rose-400/40 inline-flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3 shrink-0" />
+                              <span>تاخیر: {toPersianDigits(r.delayMinutes)}د</span>
                             </span>
                           )}
-                          {r.status === 'absent' && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-xs font-semibold text-rose-300 border border-rose-400/35">
-                              غایب
+                          {r.earlyLeaveMinutes > 0 && (
+                            <span className="rounded-lg bg-amber-500/20 px-2 py-0.5 text-amber-200 font-bold border border-amber-400/40">
+                              تعجیل: {toPersianDigits(r.earlyLeaveMinutes)}د
                             </span>
                           )}
-                          {(r.status === 'holiday' || r.status === 'weekend') && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/80 px-2 py-0.5 text-xs font-medium text-slate-300 border border-slate-700">
-                              {r.holidayTitle || (r.dayOfWeek === 6 ? 'جمعه' : 'تعطیل')}
+                          {hasOT && (
+                            <span className="rounded-lg bg-indigo-500/20 px-2 py-0.5 text-indigo-200 font-bold border border-indigo-400/40 inline-flex items-center gap-1">
+                              <TrendingUp className="h-3 w-3 shrink-0" />
+                              <span>اضافه کار: {toPersianDigits(formatMinutesToTimeString(r.overtimeMinutes + r.holidayOvertimeMinutes))}</span>
                             </span>
+                          )}
+                          {r.deficitMinutes > 0 && (
+                            <span className="rounded-lg bg-rose-500/20 px-2 py-0.5 text-rose-200 font-bold border border-rose-400/40 inline-flex items-center gap-1">
+                              <MinusCircle className="h-3 w-3 shrink-0" />
+                              <span>کسر کار: {toPersianDigits(r.deficitMinutes)}د</span>
+                            </span>
+                          )}
+                          {r.netBalanceMinutes !== 0 && (
+                            <div>{renderBalance(r.netBalanceMinutes)}</div>
                           )}
                         </div>
-                      </td>
+                      )}
 
-                      {/* Check In */}
-                      <td className="py-3 px-3 text-center font-mono font-semibold text-white">
-                        {r.checkIn ? toPersianDigits(r.checkIn) : '-'}
-                      </td>
+                      {/* Note row */}
+                      {r.note && (
+                        <p className="mt-2 text-xs text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700/80 font-medium">
+                          📝 {r.note}
+                        </p>
+                      )}
 
-                      {/* Check Out */}
-                      <td className="py-3 px-3 text-center font-mono font-semibold text-white">
-                        {r.checkOut ? toPersianDigits(r.checkOut) : '-'}
-                      </td>
-
-                      {/* Target Check Out */}
-                      <td className="py-3 px-3 text-center font-mono text-cyan-300 font-semibold">
-                        {r.targetCheckOut ? toPersianDigits(r.targetCheckOut) : '-'}
-                      </td>
-
-                      {/* Break */}
-                      <td className="py-3 px-3 text-center text-slate-200 font-mono font-medium">
-                        {r.breakMinutes > 0 ? `${toPersianDigits(r.breakMinutes)} د` : '-'}
-                      </td>
-
-                      {/* Worked Time */}
-                      <td className="py-3 px-3 text-center font-mono font-bold text-white">
-                        {r.workedMinutes > 0 ? (
-                          <span className="text-emerald-300">
-                            {toPersianDigits(formatMinutesToTimeString(r.workedMinutes))}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-medium">-</span>
-                        )}
-                      </td>
-
-                      {/* Delay */}
-                      <td className="py-3 px-3 text-center font-mono">
-                        {isLate ? (
-                          <span className="rounded-md bg-rose-500/20 px-1.5 py-0.5 text-rose-300 font-bold border border-rose-400/35">
-                            {toPersianDigits(r.delayMinutes)} د
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-medium">-</span>
-                        )}
-                      </td>
-
-                      {/* Overtime */}
-                      <td className="py-3 px-3 text-center font-mono">
-                        {hasOT ? (
-                          <span className="rounded-md bg-indigo-500/20 px-1.5 py-0.5 text-indigo-200 font-bold border border-indigo-400/35">
-                            {toPersianDigits(
-                              formatMinutesToTimeString(r.overtimeMinutes + r.holidayOvertimeMinutes)
-                            )}
-                            {r.holidayOvertimeMinutes > 0 && ' (ت)'}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-medium">-</span>
-                        )}
-                      </td>
-
-                      {/* Deficit */}
-                      <td className="py-3 px-3 text-center font-mono">
-                        {r.deficitMinutes > 0 ? (
-                          <span
-                            className="text-amber-300 font-semibold"
-                            title={formatMinutesToPersianReadable(r.deficitMinutes)}
-                          >
-                            {r.deficitMinutes >= 60
-                              ? `${toPersianDigits(formatMinutesToTimeString(r.deficitMinutes))} س`
-                              : `${toPersianDigits(r.deficitMinutes)} د`}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-medium">-</span>
-                        )}
-                      </td>
-
-                      {/* Net Balance */}
-                      <td className="py-3 px-3 text-center font-mono font-bold">
-                        {r.netBalanceMinutes > 0 ? (
-                          <span className="text-emerald-300">
-                            +{toPersianDigits(formatMinutesToTimeString(r.netBalanceMinutes))}
-                          </span>
-                        ) : r.netBalanceMinutes < 0 ? (
-                          <span className="text-rose-300">
-                            -{toPersianDigits(formatMinutesToTimeString(Math.abs(r.netBalanceMinutes)))}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 font-medium">۰</span>
-                        )}
-                      </td>
-
-                      {/* Note */}
-                      <td className="py-3 px-4 text-slate-200 max-w-xs truncate text-xs font-medium">
-                        {r.note || '-'}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3 px-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
+                      {/* Actions footer */}
+                      <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 mt-2.5">
+                        <span className="text-xs text-slate-400 font-mono font-medium">
+                          #{r.id.slice(-6)}
+                        </span>
+                        <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => onEditRecord(r)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
-                            title="ویرایش تردد"
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-indigo-300 text-xs font-medium border border-slate-800 transition-colors"
                           >
-                            <Edit2 className="h-3.5 w-3.5" />
+                            <Edit2 className="h-3 w-3" />
+                            <span>ویرایش</span>
                           </button>
                           <button
                             onClick={() => onDeleteRecord(r.id)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
-                            title="حذف تردد"
+                            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-rose-950/40 text-rose-400 text-xs font-medium border border-slate-800 hover:border-rose-900/40 transition-colors"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3 w-3" />
+                            <span>حذف</span>
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   );
                 })
               )}
-            </tbody>
-            {/* Table Summary Footer */}
-            {filteredRecords.length > 0 && (
-              <tfoot className="bg-white/[0.08] font-semibold text-white/90 border-t-2 border-white/20 backdrop-blur-md">
-                <tr>
-                  <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white">
-                    مجموع اقلام جدول:
-                  </td>
-                  <td className="py-3.5 px-3 text-center font-mono text-emerald-300 font-bold">
-                    {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} س
-                  </td>
-                  <td className="py-3.5 px-3 text-center font-mono text-rose-300">
-                    {toPersianDigits(visibleTotals.delay)} د
-                  </td>
-                  <td className="py-3.5 px-3 text-center font-mono text-indigo-300 font-bold">
-                    {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
-                  </td>
-                  <td className="py-3.5 px-3 text-center font-mono text-amber-300">
-                    {visibleTotals.deficit >= 60
-                      ? `${toPersianDigits((visibleTotals.deficit / 60).toFixed(1))} س`
-                      : `${toPersianDigits(visibleTotals.deficit)} د`}
-                  </td>
-                  <td className="py-3.5 px-3 text-center font-mono font-black">
-                    <span
-                      className={
-                        visibleTotals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                      }
-                    >
-                      {visibleTotals.balance >= 0 ? '+' : '-'}
-                      {toPersianDigits((Math.abs(visibleTotals.balance) / 60).toFixed(1))} س
+
+              {/* 6. Footer in Mobile Cards View */}
+              {filteredRecords.length > 0 && (
+                <div className="rounded-2xl border border-indigo-400/30 bg-gradient-to-br from-indigo-950/60 via-slate-900/80 to-blue-950/50 backdrop-blur-md p-4 shadow-xl text-xs space-y-2.5 mt-3">
+                  <div className="font-bold text-white flex items-center justify-between border-b border-white/10 pb-2">
+                    <span className="text-xs">جمع کل ماهانه اقلام نمایش‌داده‌شده:</span>
+                    <span className="text-emerald-300 font-mono text-sm font-black">
+                      {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} ساعت کار خالص
                     </span>
-                  </td>
-                  <td colSpan={2}></td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1">
+                    <div>
+                      <span className="text-slate-300 block mb-0.5">اضافه کاری</span>
+                      <span className="font-bold text-indigo-300 font-mono text-xs">
+                        {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-300 block mb-0.5">تاخیر و تعجیل</span>
+                      <span className="font-bold text-rose-300 font-mono text-xs">
+                        {toPersianDigits(visibleTotals.delay + visibleTotals.early)} د
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-300 block mb-0.5">تراز ماهانه</span>
+                      <div className="flex justify-center">{renderBalance(visibleTotals.balance)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* VIEW 2: Desktop Full Table View with Sticky Headers & Sticky Date */}
+          {activeViewMode === 'table' && (
+            <div className="relative mt-4">
+              {/* Left/Right scroll guide shadows */}
+              {canScrollLeft && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950/90 to-transparent z-30 flex items-center justify-start pl-1 text-cyan-300"
+                >
+                  <ChevronLeft className="h-4 w-4 animate-pulse" />
+                </div>
+              )}
+              {canScrollRight && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-24 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-950/90 to-transparent z-30 flex items-center justify-end pr-1 text-cyan-300"
+                >
+                  <ChevronRight className="h-4 w-4 animate-pulse" />
+                </div>
+              )}
+
+              <div
+                ref={tableScrollRef}
+                onScroll={checkTableScroll}
+                className="overflow-x-auto rounded-2xl border border-white/15 bg-white/[0.02] backdrop-blur-md shadow-xl"
+              >
+                <table className="w-full text-right text-xs border-collapse">
+                  <thead className="bg-slate-900/95 text-white border-b border-white/20 backdrop-blur-md sticky top-0 z-20">
+                    <tr>
+                      {/* Sticky Date Column Header */}
+                      <th className="py-3.5 px-3 font-bold text-white sticky right-0 top-0 z-30 bg-slate-900/95 backdrop-blur-md border-l border-white/10 shadow-sm">
+                        تاریخ
+                      </th>
+                      <th className="py-3.5 px-3 font-bold text-white">روز</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">وضعیت</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">ورود</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">خروج</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">خروج هدف</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">ناهار</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">کارکرد مفید</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">تاخیر</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">اضافه کاری</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">کسر کار</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">تراز روز</th>
+                      <th className="py-3.5 px-4 font-bold text-white">یادداشت</th>
+                      <th className="py-3.5 px-3 font-bold text-center text-white">عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.08]">
+                    {filteredRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan={14} className="py-12 text-center text-slate-300">
+                          <div className="flex flex-col items-center justify-center gap-2">
+                            <Calendar className="h-8 w-8 text-slate-500" />
+                            <span>هیچ ترددی مطابق این فیلتر یافت نشد.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRecords.map((r) => {
+                        const weekdayName = PERSIAN_WEEKDAY_NAMES[r.dayOfWeek] || '';
+                        const isLate = r.delayMinutes > 0;
+                        const hasOT = r.overtimeMinutes > 0 || r.holidayOvertimeMinutes > 0;
+
+                        return (
+                          <tr
+                            key={r.id}
+                            className={`transition-colors hover:bg-slate-800/50 ${
+                              r.isHoliday ? 'bg-rose-950/20' : ''
+                            }`}
+                          >
+                            {/* Sticky Date Column Body */}
+                            <td className="py-3 px-3 font-mono font-medium text-white sticky right-0 z-10 bg-slate-950/90 backdrop-blur-md border-l border-white/10 shadow-sm">
+                              {toPersianDigits(r.date)}
+                            </td>
+
+                            {/* Weekday */}
+                            <td className="py-3 px-3 text-slate-100 font-medium">
+                              <span
+                                className={
+                                  r.dayOfWeek === 6
+                                    ? 'text-rose-400 font-bold'
+                                    : r.dayOfWeek === 5
+                                    ? 'text-cyan-300 font-semibold'
+                                    : 'text-slate-100'
+                                }
+                              >
+                                {weekdayName}
+                              </span>
+                            </td>
+
+                            {/* Status Badge */}
+                            <td className="py-3 px-3 text-center">
+                              <div className="flex items-center justify-center gap-1 flex-wrap">
+                                {renderStatusBadge(r)}
+                                {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
+                                  <span
+                                    className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-200 border border-amber-400/35"
+                                    title={`مرخصی ساعتی: ${formatMinutesToPersianReadable(r.leaveMinutes)}`}
+                                  >
+                                    <Coffee className="h-3 w-3 shrink-0" />
+                                    <span>{r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}</span>
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Check In */}
+                            <td className="py-3 px-3 text-center font-mono font-semibold text-white">
+                              {r.checkIn ? toPersianDigits(r.checkIn) : '-'}
+                            </td>
+
+                            {/* Check Out */}
+                            <td className="py-3 px-3 text-center font-mono font-semibold text-white">
+                              {r.checkOut ? toPersianDigits(r.checkOut) : '-'}
+                            </td>
+
+                            {/* Target Check Out */}
+                            <td className="py-3 px-3 text-center font-mono text-cyan-300 font-semibold">
+                              {r.targetCheckOut ? toPersianDigits(r.targetCheckOut) : '-'}
+                            </td>
+
+                            {/* Break */}
+                            <td className="py-3 px-3 text-center text-slate-200 font-mono font-medium">
+                              {r.breakMinutes > 0 ? `${toPersianDigits(r.breakMinutes)} د` : '-'}
+                            </td>
+
+                            {/* Worked Time */}
+                            <td className="py-3 px-3 text-center font-mono font-bold text-white">
+                              {r.workedMinutes > 0 ? (
+                                <span className="text-emerald-300">
+                                  {toPersianDigits(formatMinutesToTimeString(r.workedMinutes))}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-medium">-</span>
+                              )}
+                            </td>
+
+                            {/* Delay */}
+                            <td className="py-3 px-3 text-center font-mono">
+                              {isLate ? (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-rose-500/20 px-1.5 py-0.5 text-rose-300 font-bold border border-rose-400/35">
+                                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                                  <span>{toPersianDigits(r.delayMinutes)} د</span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-medium">-</span>
+                              )}
+                            </td>
+
+                            {/* Overtime */}
+                            <td className="py-3 px-3 text-center font-mono">
+                              {hasOT ? (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-indigo-500/20 px-1.5 py-0.5 text-indigo-200 font-bold border border-indigo-400/35">
+                                  <TrendingUp className="h-3 w-3 shrink-0" />
+                                  <span>
+                                    {toPersianDigits(
+                                      formatMinutesToTimeString(r.overtimeMinutes + r.holidayOvertimeMinutes)
+                                    )}
+                                    {r.holidayOvertimeMinutes > 0 && ' (ت)'}
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-medium">-</span>
+                              )}
+                            </td>
+
+                            {/* Deficit */}
+                            <td className="py-3 px-3 text-center font-mono">
+                              {r.deficitMinutes > 0 ? (
+                                <span
+                                  className="inline-flex items-center gap-1 text-amber-300 font-semibold"
+                                  title={formatMinutesToPersianReadable(r.deficitMinutes)}
+                                >
+                                  <MinusCircle className="h-3 w-3 shrink-0" />
+                                  <span>
+                                    {r.deficitMinutes >= 60
+                                      ? `${toPersianDigits(formatMinutesToTimeString(r.deficitMinutes))} س`
+                                      : `${toPersianDigits(r.deficitMinutes)} د`}
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-medium">-</span>
+                              )}
+                            </td>
+
+                            {/* Net Balance with <bdi dir="ltr"> and icon */}
+                            <td className="py-3 px-3 text-center font-mono font-bold">
+                              {renderBalance(r.netBalanceMinutes)}
+                            </td>
+
+                            {/* Note */}
+                            <td className="py-3 px-4 text-slate-200 max-w-xs truncate text-xs font-medium">
+                              {r.note || '-'}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="py-3 px-3 text-center">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  onClick={() => onEditRecord(r)}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
+                                  title="ویرایش تردد"
+                                  aria-label="ویرایش تردد"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => onDeleteRecord(r.id)}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                                  title="حذف تردد"
+                                  aria-label="حذف تردد"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                  {/* Table Summary Footer */}
+                  {filteredRecords.length > 0 && (
+                    <tfoot className="bg-white/[0.08] font-semibold text-white/90 border-t-2 border-white/20 backdrop-blur-md">
+                      <tr>
+                        <td colSpan={7} className="py-3.5 px-4 text-left font-bold text-white sticky right-0 z-10 bg-slate-950/90 border-l border-white/10">
+                          مجموع اقلام جدول:
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-mono text-emerald-300 font-bold">
+                          {toPersianDigits((visibleTotals.worked / 60).toFixed(1))} س
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-mono text-rose-300">
+                          {toPersianDigits(visibleTotals.delay)} د
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-mono text-indigo-300 font-bold">
+                          {toPersianDigits((visibleTotals.overtime / 60).toFixed(1))} س
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-mono text-amber-300">
+                          {visibleTotals.deficit >= 60
+                            ? `${toPersianDigits((visibleTotals.deficit / 60).toFixed(1))} س`
+                            : `${toPersianDigits(visibleTotals.deficit)} د`}
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-mono font-black">
+                          {renderBalance(visibleTotals.balance)}
+                        </td>
+                        <td colSpan={2}></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </LiquidGlassCard>
   );
 };
-
