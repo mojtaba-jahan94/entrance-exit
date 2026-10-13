@@ -26,6 +26,8 @@ import {
   PERSIAN_MONTH_NAMES,
   toPersianDigits,
   getJalaliWeekdayIndex,
+  parseJalaliDate,
+  checkOfficialHoliday,
 } from './utils/jalali';
 import {
   calculateAttendanceMetrics,
@@ -232,10 +234,46 @@ function DashboardApp() {
 
   const unclosedPreviousRecord = useMemo(() => {
     const unclosed = records
-      .filter((r) => r.date < todayStr && Boolean(r.checkIn) && !r.checkOut)
+      .filter((r) => {
+        // 1. Must be prior to today
+        if (r.date >= todayStr) return false;
+
+        // 2. Must have check-in (روزی که اصلاً ورودی ثبت نشده نباید نمایش داده شود)
+        if (!r.checkIn || !r.checkIn.trim()) return false;
+
+        // 3. Must be missing check-out
+        if (r.checkOut && r.checkOut.trim()) return false;
+
+        // 4. Must NOT be Friday (جمعه)
+        const weekday = getJalaliWeekdayIndex(r.date);
+        if (weekday === 6 || r.dayOfWeek === 6 || r.status === 'weekend') return false;
+
+        // 5. Must NOT be an official holiday (تعطیلات رسمی)
+        const { jy, jm, jd } = parseJalaliDate(r.date);
+        const holidayInfo = checkOfficialHoliday(jy, jm, jd);
+        if (holidayInfo.isHoliday || r.isHoliday || r.status === 'holiday') return false;
+
+        // 6. Must NOT be full day leave (روز مرخصی کامل)
+        const isThursday = weekday === 5;
+        const isThursdayHalfDay = isThursday && config.thursdayStatus === 'half_day';
+        const dayLeaves = leaves.filter((l) => l.date === r.date);
+        const hasFullDayLeave =
+          r.status === 'leave' ||
+          dayLeaves.some(
+            (l) =>
+              l.type === 'daily' ||
+              l.type === 'sick' ||
+              l.type === 'unpaid' ||
+              (isThursdayHalfDay && l.type === 'half_day')
+          );
+        if (hasFullDayLeave) return false;
+
+        return true;
+      })
       .sort((a, b) => b.date.localeCompare(a.date));
+
     return unclosed[0] || null;
-  }, [records, todayStr]);
+  }, [records, todayStr, leaves, config.thursdayStatus]);
 
   const showMissingCheckoutBanner = Boolean(
     unclosedPreviousRecord &&
