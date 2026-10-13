@@ -191,7 +191,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             )}
 
             {isCheckedIn && (
-              <div className="mt-1.5 space-y-1">
+              <div className="mt-2 space-y-2.5">
                 <p className="text-xs sm:text-sm text-emerald-300 font-medium flex items-center justify-center md:justify-start gap-2">
                   <span className="relative flex h-2.5 w-2.5 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -202,18 +202,28 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                   </span>
                 </p>
 
-                {/* Target Departure notification */}
+                {/* Target Departure prominent highlight */}
                 {targetDepartureTime && (
-                  <p className="text-xs text-slate-100 font-medium flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
-                    <Hourglass className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                    <span>ساعت تکمیل موظفی امروز: </span>
-                    <strong className="font-mono text-cyan-300 font-bold text-xs sm:text-sm">
+                  <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-r from-cyan-950/50 to-blue-950/40 backdrop-blur-md p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-lg shadow-cyan-950/20">
+                    <div className="flex items-center gap-2.5 text-right">
+                      <div className="rounded-xl bg-cyan-400/20 p-2 text-cyan-300 border border-cyan-400/30 shrink-0">
+                        <Hourglass className="h-5 w-5 text-cyan-300" />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-cyan-200">
+                          ساعت خروج هدف (تکمیل موظفی)
+                        </div>
+                        <div className="text-[11px] text-slate-200 font-medium">
+                          {isThursday
+                            ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور موظفی پنج‌شنبه`
+                            : '۸.۵ ساعت حضور با ۳۰ دقیقه ناهار'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="font-mono text-2xl sm:text-3xl font-black text-cyan-300 tracking-tight shrink-0 drop-shadow-sm">
                       {toPersianDigits(targetDepartureTime)}
-                    </strong>
-                    <span className="text-slate-200 font-medium">
-                      ({isThursday ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور` : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -300,7 +310,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
             <div className="flex flex-col items-center gap-3 w-full md:w-72">
               <button
                 onClick={handleCheckInClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-emerald-500/90 via-teal-500/90 to-cyan-500/90 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
+                className="group relative flex w-full min-h-[52px] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-emerald-500/90 via-teal-500/90 to-cyan-500/90 px-6 py-4 text-base sm:text-lg font-black text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.96]"
               >
                 <LogIn className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
                 <span>ثبت ورود امروز</span>
@@ -388,16 +398,27 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                 </div>
 
                 {/* Overtime or Remaining Time Notice */}
-                <div className="mt-2 text-xs text-slate-100 font-medium">
+                <div className="mt-3 pt-2.5 border-t border-white/15">
                   {isOvertimeLive ? (
-                    <span className="text-indigo-300 font-bold flex items-center justify-center gap-1">
-                      <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
-                      موظفی کامل شد! اضافه کار: +{formatElapsed(overtimeLiveSecs)}
-                    </span>
+                    <div className="flex items-center justify-between text-indigo-300">
+                      <span className="text-xs sm:text-sm font-bold flex items-center gap-1.5">
+                        <Sparkles className="h-4 w-4 text-indigo-400 shrink-0" />
+                        اضافه کار زنده:
+                      </span>
+                      <span className="font-mono text-base sm:text-lg font-black text-indigo-200">
+                        +{formatElapsed(overtimeLiveSecs)}
+                      </span>
+                    </div>
                   ) : (
-                    <span>
-                      {formatElapsed(remainingLiveSecs)} تا پایان حضور موظفی
-                    </span>
+                    <div className="flex items-center justify-between text-emerald-300">
+                      <span className="text-xs sm:text-sm font-bold flex items-center gap-1.5">
+                        <Hourglass className="h-4 w-4 text-emerald-400 shrink-0" />
+                        باقی‌مانده تا پایان شیفت:
+                      </span>
+                      <span className="font-mono text-base sm:text-xl font-black text-emerald-200">
+                        {formatElapsed(remainingLiveSecs)}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -445,7 +466,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               {/* Check Out Button */}
               <button
                 onClick={handleCheckOutClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-rose-500/90 via-pink-600/90 to-amber-600/90 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-rose-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
+                className="group relative flex w-full min-h-[50px] items-center justify-center gap-3 rounded-full bg-gradient-to-r from-rose-500/90 via-pink-600/90 to-amber-600/90 px-6 py-3.5 text-base font-black text-white shadow-xl shadow-rose-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.96]"
               >
                 <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 <span>ثبت پایان کار و خروج</span>
