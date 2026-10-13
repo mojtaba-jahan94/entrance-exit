@@ -8,7 +8,6 @@ import {
   Edit2,
   Sunrise,
   Sunset,
-  Sparkles,
 } from 'lucide-react';
 import { LeaveRecord, LeaveType, AttendanceRecord, ShiftConfig } from '../types';
 import {
@@ -23,6 +22,7 @@ import {
   getJalaliWeekdayIndex,
 } from '../utils/jalali';
 import { getLeaveDurationMinutes } from '../utils/calculator';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 interface LeaveModalProps {
   isOpen: boolean;
@@ -49,6 +49,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   todayRecord,
   shiftConfig,
 }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   const { jy: curY, jm: curM, jd: curD } = getCurrentJalaliDate();
 
   const [isAdding, setIsAdding] = useState<boolean>(false);
@@ -142,6 +143,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     const totalDurationMins = durationHours * 60 + durationMinutes;
 
     if (totalDurationMins > 0) {
+      // Shift endTime to preserve chosen duration
       const newEndMins = (sMins + totalDurationMins) % 1440;
       setEndTime(formatMinutesToTimeString(newEndMins));
     } else if (endTime) {
@@ -159,7 +161,6 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     if (!val || !startTime) return;
     const sMins = timeStringToMinutes(startTime);
     const eMins = timeStringToMinutes(val);
-
     if (eMins > sMins) {
       const diff = eMins - sMins;
       setDurationHours(Math.floor(diff / 60));
@@ -167,23 +168,26 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     }
   };
 
+  // Direct duration change: updates endTime based on startTime + duration
   const handleDurationChange = (newHours: number, newMinutes: number) => {
-    setDurationHours(newHours);
-    setDurationMinutes(newMinutes);
+    const h = Math.max(0, Math.min(8, newHours));
+    const m = Math.max(0, Math.min(59, newMinutes));
+    setDurationHours(h);
+    setDurationMinutes(m);
 
-    const totalDurationMins = newHours * 60 + newMinutes;
-    if (startTime && totalDurationMins > 0) {
+    const totalMins = h * 60 + m;
+    if (totalMins > 0 && startTime) {
       const sMins = timeStringToMinutes(startTime);
-      const newEndMins = (sMins + totalDurationMins) % 1440;
+      const newEndMins = (sMins + totalMins) % 1440;
       setEndTime(formatMinutesToTimeString(newEndMins));
     }
   };
 
   const handleStartEdit = (leave: LeaveRecord) => {
-    const parsed = parseJalaliDate(leave.date);
-    setYear(parsed.jy);
-    setMonth(parsed.jm);
-    setDay(parsed.jd);
+    const { jy, jm, jd } = parseJalaliDate(leave.date);
+    setYear(jy);
+    setMonth(jm);
+    setDay(jd);
     setType(leave.type);
 
     if (leave.type === 'hourly') {
@@ -191,7 +195,9 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
       setStartTime(s);
       let e = leave.endTime;
       let totalMins = 0;
-      if (leave.minutes) {
+      if (s && e) {
+        totalMins = Math.max(0, timeStringToMinutes(e) - timeStringToMinutes(s));
+      } else if (leave.minutes) {
         totalMins = leave.minutes;
       } else if (leave.hours) {
         totalMins = Math.round(leave.hours * 60);
@@ -245,7 +251,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
       leaveHours = 4;
     } else {
       totalLeaveMinutes = durationHours * 60 + durationMinutes;
-      if (totalLeaveMinutes <= 0) totalLeaveMinutes = 30;
+      if (totalLeaveMinutes <= 0) totalLeaveMinutes = 30; // minimum fallback
       leaveHours = Number((totalLeaveMinutes / 60).toFixed(2));
     }
 
@@ -277,59 +283,70 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-3xl border border-white/10 bg-[#09090d] text-white p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col font-sans">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="leave-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-xl rounded-[32px] border border-white/20 liquid-glass-modal p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#eca8d6]/10 flex items-center justify-center text-[#eca8d6] border border-[#eca8d6]/20">
-              <Coffee className="h-4 w-4" />
+            <div className="rounded-2xl bg-amber-500/20 p-2.5 text-amber-300 border border-amber-400/30 shadow-inner">
+              <Coffee className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white font-mono">
-                مدیریت و ثبت مرخصی
+              <h3 id="leave-modal-title" className="text-sm sm:text-base font-bold text-white/95">
+                مدیریت و کاردکس مرخصی‌ها
               </h3>
-              <p className="text-[11px] text-zinc-400 font-mono">
-                سهمیه قانونی ماهانه: {toPersianDigits(monthlyQuotaDays)} روز ({toPersianDigits(monthlyQuotaHours)} ساعت)
-              </p>
+              <p className="text-[11px] sm:text-xs text-white/60">سهمیه قانونی: ۲.۵ روز (۲۰ ساعت) در هر ماه</p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="بستن پنجره مرخصی‌ها"
+            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Quota Summary Cards */}
-        <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3 text-center shrink-0">
-          <div className="rounded-2xl border border-white/10 bg-[#0c0d14] p-3">
-            <span className="text-[10px] text-zinc-500 font-mono block mb-1">سهمیه مصوب</span>
-            <div className="font-mono text-sm sm:text-base font-bold text-white">
+        {/* Quota Summary Cards (Clock-aware Persian Duration) */}
+        <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-3 text-center shrink-0">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 sm:p-3 backdrop-blur-md shadow-sm">
+            <span className="text-[10px] sm:text-[11px] text-white/60 block mb-0.5 sm:mb-1">سهمیه ماهانه</span>
+            <div className="font-mono text-sm sm:text-base font-bold text-white/95">
               {toPersianDigits(monthlyQuotaDays)} روز
             </div>
-            <div className="text-[10px] text-zinc-400 font-mono mt-0.5">
+            <div className="text-[10px] sm:text-[11px] text-white/50 font-mono mt-0.5">
               ({toPersianDigits(monthlyQuotaHours)} ساعت)
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#0c0d14] p-3">
-            <span className="text-[10px] text-zinc-500 font-mono block mb-1">مصرف شده</span>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 sm:p-3 backdrop-blur-md shadow-sm">
+            <span className="text-[10px] sm:text-[11px] text-white/60 block mb-0.5 sm:mb-1">استفاده شده</span>
             <div className="font-mono text-sm sm:text-base font-bold text-amber-300">
               {toPersianDigits(usedDays)} روز
             </div>
-            <div className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate">
+            <div className="text-[10px] sm:text-[11px] text-amber-300/80 mt-0.5 truncate" title={formatMinutesToPersianReadable(totalUsedMinutes)}>
               ({formatMinutesToPersianReadable(totalUsedMinutes)})
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-[#0c0d14] p-3">
-            <span className="text-[10px] text-zinc-500 font-mono block mb-1">مانده سهمیه</span>
-            <div className="font-mono text-sm sm:text-base font-bold text-emerald-400">
-              {toPersianDaysRemaining(remainingDays)} روز
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-2.5 sm:p-3 backdrop-blur-md shadow-sm">
+            <span className="text-[10px] sm:text-[11px] text-white/60 block mb-0.5 sm:mb-1">مانده باقیمانده</span>
+            <div className="font-mono text-sm sm:text-base font-bold text-emerald-300">
+              {toPersianDigits(remainingDays)} روز
             </div>
-            <div className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate">
+            <div className="text-[10px] sm:text-[11px] text-emerald-300/80 mt-0.5 truncate" title={formatMinutesToPersianReadable(remainingMinutes)}>
               ({formatMinutesToPersianReadable(remainingMinutes)})
             </div>
           </div>
@@ -337,14 +354,14 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
 
         {/* Toggle / Header for Form */}
         {!isAdding ? (
-          <div className="mt-4 flex items-center justify-between shrink-0">
-            <h4 className="text-xs font-mono text-zinc-400">سوابق مرخصی ثبت‌شده در این ماه</h4>
+          <div className="mt-3.5 flex items-center justify-between shrink-0">
+            <h4 className="text-xs font-bold text-white/80">سوابق مرخصی ثبت‌شده در این ماه</h4>
             <button
               onClick={() => {
                 setEditingLeaveId(null);
                 setIsAdding(true);
               }}
-              className="flex items-center gap-1.5 rounded-full bg-[#eca8d6] hover:bg-[#e491cc] text-[#050507] px-4 py-2 text-xs font-bold transition-all shadow-[0_0_15px_rgba(236,168,214,0.3)] active:scale-95"
+              className="liquid-pill-btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-bold shadow-lg"
             >
               <Plus className="h-4 w-4" />
               <span>ثبت درخواست مرخصی</span>
@@ -354,17 +371,17 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
           /* Add / Edit Form */
           <form
             onSubmit={handleSubmit}
-            className="mt-4 rounded-2xl border border-white/10 bg-[#0c0d14] p-4 space-y-3.5 shrink-0 overflow-y-auto max-h-80"
+            className="mt-3 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-xl p-3 sm:p-4 space-y-3 shrink-0 overflow-y-auto max-h-80 shadow-inner"
           >
-            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-              <span className="text-xs font-bold text-[#eca8d6] flex items-center gap-1.5 font-mono">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                 {editingLeaveId ? <Edit2 className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                {editingLeaveId ? 'ویرایش مرخصی انتخابی' : 'فرم ثبت مرخصی جدید'}
+                {editingLeaveId ? 'ویرایش مرخصی انتخاب‌شده' : 'فرم ثبت مرخصی جدید'}
               </span>
               <button
                 type="button"
                 onClick={handleCancelForm}
-                className="text-xs font-mono text-zinc-400 hover:text-white"
+                className="text-xs text-white/60 hover:text-white"
               >
                 انصراف
               </button>
@@ -372,15 +389,15 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
 
             {/* Date */}
             <div>
-              <label className="block text-[11px] font-mono text-zinc-400 mb-1">تاریخ مرخصی</label>
+              <label className="block text-[11px] text-white/70 mb-1">تاریخ مرخصی</label>
               <div className="grid grid-cols-3 gap-2">
                 <select
                   value={day}
                   onChange={(e) => setDay(parseInt(e.target.value, 10))}
-                  className="rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-white focus:border-[#eca8d6] focus:outline-none"
+                  className="liquid-input px-2.5 py-1.5 text-xs text-white/95"
                 >
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={d}>
+                    <option key={d} value={d} className="bg-[#0f121d] text-white">
                       روز {toPersianDigits(d)}
                     </option>
                   ))}
@@ -388,10 +405,10 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                 <select
                   value={month}
                   onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-                  className="rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-white focus:border-[#eca8d6] focus:outline-none"
+                  className="liquid-input px-2.5 py-1.5 text-xs text-white/95"
                 >
                   {PERSIAN_MONTH_NAMES.map((m, idx) => (
-                    <option key={m} value={idx + 1}>
+                    <option key={m} value={idx + 1} className="bg-[#0f121d] text-white">
                       {m}
                     </option>
                   ))}
@@ -399,10 +416,10 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                 <select
                   value={year}
                   onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                  className="rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-white font-mono focus:border-[#eca8d6] focus:outline-none"
+                  className="liquid-input px-2.5 py-1.5 text-xs text-white/95 font-mono"
                 >
                   {[1402, 1403, 1404, 1405, 1406].map((yr) => (
-                    <option key={yr} value={yr}>
+                    <option key={yr} value={yr} className="bg-[#0f121d] text-white">
                       {toPersianDigits(yr)}
                     </option>
                   ))}
@@ -412,135 +429,153 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
 
             {/* Thursday Helper Alert */}
             {isThursdayHalfDay && (
-              <div className="rounded-xl border border-cyan-500/20 bg-cyan-950/30 px-3 py-2 text-xs text-cyan-300 font-mono flex items-center justify-between">
+              <div className="rounded-xl border border-cyan-400/30 bg-cyan-500/15 px-3 py-2 text-xs text-cyan-200 flex items-center justify-between">
                 <span>روز انتخابی: <strong>پنج‌شنبه (شیفت موظفی نیمه‌وقت - ۴ ساعت)</strong></span>
-                <span className="text-[11px] text-cyan-400">پوشش کامل بدون کسری</span>
+                <span className="text-[11px] text-cyan-300 font-mono">پوشش کامل بدون کسری کار</span>
               </div>
             )}
 
             {/* Type & Live Duration Preview */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-mono text-zinc-400 mb-1">نوع مرخصی</label>
+                <label className="block text-[11px] text-white/70 mb-1">نوع مرخصی</label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as LeaveType)}
-                  className="w-full rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-white focus:border-[#eca8d6] focus:outline-none"
+                  className="liquid-input w-full px-2.5 py-1.5 text-xs text-white/95"
                 >
-                  <option value="hourly">مرخصی ساعتی (پاس ساعتی)</option>
-                  <option value="half_day">نیم‌روز (۴ ساعت)</option>
-                  <option value="daily">{isThursdayHalfDay ? 'روزانه پنج‌شنبه (۴ ساعت)' : 'روزانه کامل (۱ روز = ۸ ساعت)'}</option>
-                  <option value="sick">استعلاجی</option>
-                  <option value="unpaid">بدون حقوق</option>
+                  <option value="hourly" className="bg-[#0f121d] text-white">مرخصی ساعتی (پاس ساعتی)</option>
+                  <option value="half_day" className="bg-[#0f121d] text-white">نیم‌روز (۴ ساعت)</option>
+                  <option value="daily" className="bg-[#0f121d] text-white">{isThursdayHalfDay ? 'روزانه پنج‌شنبه (۴ ساعت)' : 'روزانه کامل (۱ روز = ۸ ساعت)'}</option>
+                  <option value="sick" className="bg-[#0f121d] text-white">استعلاجی</option>
+                  <option value="unpaid" className="bg-[#0f121d] text-white">بدون حقوق</option>
                 </select>
               </div>
 
               {type === 'hourly' ? (
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">مدت کسر (منطق ساعت)</label>
-                  <div className="rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-[#eca8d6] font-bold flex items-center justify-between font-mono">
+                  <label className="block text-[11px] text-slate-400 mb-1">مدت زمان (منطق ساعت)</label>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 text-xs text-amber-300 font-bold flex items-center justify-between">
                     <span className="truncate">{formatMinutesToPersianReadable(durationHours * 60 + durationMinutes)}</span>
-                    <span className="text-[11px] text-zinc-400 shrink-0">
+                    <span className="font-mono text-[11px] text-slate-400 shrink-0">
                       ({formatMinutesToTimeString(durationHours * 60 + durationMinutes)})
                     </span>
                   </div>
                 </div>
+              ) : type === 'half_day' ? (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">معادل کسر از سهمیه</label>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-2 py-1.5 text-xs text-amber-300 text-center font-bold">
+                    ۰.۵ روز (۴ ساعت{isThursdayHalfDay ? ' - کل پنج‌شنبه' : ''})
+                  </div>
+                </div>
+              ) : isThursdayHalfDay ? (
+                <div>
+                  <label className="block text-[11px] text-slate-400 mb-1">معادل کسر از سهمیه</label>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-2 py-1.5 text-xs text-amber-300 text-center font-bold">
+                    ۰.۵ روز (۴ ساعت - کل پنج‌شنبه)
+                  </div>
+                </div>
               ) : (
                 <div>
-                  <label className="block text-[11px] font-mono text-zinc-400 mb-1">معادل کسر از سهمیه</label>
-                  <div className="rounded-xl border border-white/10 bg-[#111218] px-2.5 py-1.5 text-xs text-[#eca8d6] text-center font-bold font-mono">
-                    {type === 'half_day' || isThursdayHalfDay ? '۰.۵ روز (۴ ساعت)' : '۱ روز کامل (۸ ساعت)'}
+                  <label className="block text-[11px] text-slate-400 mb-1">معادل کسر از سهمیه</label>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/50 px-2 py-1.5 text-xs text-amber-300 text-center font-bold">
+                    ۱ روز کامل (۸ ساعت)
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Smart Hourly Presets */}
+            {/* Smart Hourly Presets & Time Bounds (Entry & Exit Aware) */}
             {type === 'hourly' && (
-              <div className="rounded-2xl bg-[#111218] p-3 border border-white/10 space-y-2.5">
+              <div className="rounded-2xl bg-white/[0.04] p-3 border border-white/10 space-y-2.5 backdrop-blur-md shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-zinc-300 flex items-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 text-[#eca8d6]" />
-                    پیش‌تنظیم‌های خودکار:
+                  <span className="text-xs font-bold text-white/90 flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-amber-300" />
+                    تنظیم بازه و مدت زمان با منطق ساعت:
                   </span>
-                  <span className="text-[10px] text-[#eca8d6] font-mono">کسر مستقیم از تاخیر/تعجیل</span>
+                  <span className="text-[10px] text-amber-300 font-medium">کسر مستقیم از تاخیر/تعجیل</span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5 font-mono text-xs">
+                {/* Quick Presets based on checkIn / checkOut */}
+                <div className="grid grid-cols-3 gap-1.5">
                   <button
                     type="button"
                     onClick={() => handleApplyPreset('arrival')}
-                    className="flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-zinc-300 hover:text-white hover:border-[#eca8d6]/40 hover:bg-[#eca8d6]/10 transition-all text-center"
+                    className="liquid-pill-btn py-1.5 text-[11px] font-medium flex items-center justify-center gap-1"
+                    title="پوشش تاخیر ورود از اول وقت تا زمان ورود شما"
                   >
-                    <Sunrise className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                    <span>اول وقت</span>
+                    <Sunrise className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+                    <span>اول وقت (تاخیر)</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleApplyPreset('departure')}
-                    className="flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-zinc-300 hover:text-white hover:border-[#eca8d6]/40 hover:bg-[#eca8d6]/10 transition-all text-center"
+                    className="liquid-pill-btn py-1.5 text-[11px] font-medium flex items-center justify-center gap-1 text-rose-300"
+                    title="پوشش تعجیل خروج از زمان خروج شما تا پایان شیفت"
                   >
                     <Sunset className="h-3.5 w-3.5 text-rose-400 shrink-0" />
-                    <span>آخر وقت</span>
+                    <span>آخر وقت (تعجیل)</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleApplyPreset('midday')}
-                    className="flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 text-[11px] text-zinc-300 hover:text-white hover:border-[#eca8d6]/40 hover:bg-[#eca8d6]/10 transition-all text-center"
+                    className="liquid-pill-btn py-1.5 text-[11px] font-medium flex items-center justify-center gap-1 text-cyan-300"
+                    title="مرخصی در طول شیفت کاری"
                   >
                     <Coffee className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                    <span>بین روز</span>
+                    <span>بین روز (پاس)</span>
                   </button>
                 </div>
 
                 {/* Start and End Time Inputs */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[10px] font-mono text-zinc-400 mb-0.5">از ساعت (شروع)</label>
+                    <label className="block text-[10px] text-white/60 mb-0.5">از ساعت (شروع مرخصی)</label>
                     <input
                       type="time"
                       value={startTime}
                       onChange={(e) => handleStartTimeChange(e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-2.5 py-1 text-xs font-mono text-white text-center focus:border-[#eca8d6] focus:outline-none"
+                      className="liquid-input w-full px-2.5 py-1 text-xs font-mono text-white/95 text-center"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono text-zinc-400 mb-0.5">تا ساعت (پایان)</label>
+                    <label className="block text-[10px] text-white/60 mb-0.5">تا ساعت (پایان مرخصی)</label>
                     <input
                       type="time"
                       value={endTime}
                       onChange={(e) => handleEndTimeChange(e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-[#0c0d14] px-2.5 py-1 text-xs font-mono text-white text-center focus:border-[#eca8d6] focus:outline-none"
+                      className="liquid-input w-full px-2.5 py-1 text-xs font-mono text-white/95 text-center"
                     />
                   </div>
                 </div>
 
                 {/* Exact Clock Duration: Hours and Minutes Pickers */}
-                <div className="rounded-xl bg-[#0c0d14] border border-white/10 p-2.5 space-y-1.5 font-mono">
-                  <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                    <span>مدت زمان دقیق:</span>
-                    <span className="text-[#eca8d6] font-bold text-xs">
+                <div className="rounded-xl bg-white/[0.03] border border-white/10 p-2 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-white/60">
+                    <span>مدت زمان دقیق (ساعت و دقیقه):</span>
+                    <span className="font-mono text-amber-300 font-bold text-xs">
                       {formatMinutesToPersianReadable(durationHours * 60 + durationMinutes)}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] text-zinc-500 mb-0.5">ساعت (۰ تا ۸)</label>
+                      <label className="block text-[10px] text-white/60 mb-0.5">ساعت (۰ تا ۸)</label>
                       <input
                         type="number"
                         min="0"
                         max="8"
                         value={durationHours}
                         onChange={(e) => handleDurationChange(parseInt(e.target.value, 10) || 0, durationMinutes)}
-                        className="w-full rounded-lg border border-white/10 bg-[#111218] px-2 py-1 text-xs text-white text-center font-mono focus:border-[#eca8d6] focus:outline-none font-bold"
+                        className="liquid-input w-full px-2 py-1 text-xs text-white/95 text-center font-mono font-bold"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] text-zinc-500 mb-0.5">دقیقه (۰ تا ۵۹)</label>
+                      <label className="block text-[10px] text-white/60 mb-0.5">دقیقه (۰ تا ۵۹)</label>
                       <input
                         type="number"
                         min="0"
@@ -548,7 +583,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                         step="5"
                         value={durationMinutes}
                         onChange={(e) => handleDurationChange(durationHours, parseInt(e.target.value, 10) || 0)}
-                        className="w-full rounded-lg border border-white/10 bg-[#111218] px-2 py-1 text-xs text-white text-center font-mono focus:border-[#eca8d6] focus:outline-none font-bold"
+                        className="liquid-input w-full px-2 py-1 text-xs text-white/95 text-center font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -558,38 +593,38 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
 
             {/* Reason */}
             <div>
-              <label className="block text-[11px] font-mono text-zinc-400 mb-1">علت مرخصی</label>
+              <label className="block text-[11px] text-white/70 mb-1">علت مرخصی</label>
               <input
                 type="text"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="علت درخواست یا امور اداری/شخصی..."
-                className="w-full rounded-xl border border-white/10 bg-[#111218] px-3 py-2 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-[#eca8d6] font-mono"
+                className="liquid-input w-full px-3 py-1.5 text-xs text-white/95 placeholder:text-white/40"
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2 pt-1">
               <button
                 type="button"
                 onClick={handleCancelForm}
-                className="flex-1 rounded-full border border-white/10 px-4 py-2 text-xs font-mono text-zinc-400 hover:text-white hover:bg-white/5 transition-colors"
+                className="liquid-pill-btn flex-1 py-2 text-xs font-semibold"
               >
                 انصراف
               </button>
               <button
                 type="submit"
-                className="flex-1 rounded-full bg-[#eca8d6] hover:bg-[#e491cc] px-4 py-2 text-xs font-bold text-[#050507] shadow-[0_0_15px_rgba(236,168,214,0.3)] transition-colors"
+                className="liquid-pill-btn-primary flex-1 py-2 text-xs font-bold"
               >
-                {editingLeaveId ? 'ذخیره تغییرات' : 'ثبت قطعی مرخصی'}
+                {editingLeaveId ? 'ذخیره تغییرات مرخصی' : 'ثبت قطعی مرخصی'}
               </button>
             </div>
           </form>
         )}
 
         {/* Leaves List */}
-        <div className="mt-4 overflow-y-auto space-y-2 flex-1 pr-1">
+        <div className="mt-3 overflow-y-auto space-y-2 flex-1 pr-1">
           {leaves.length === 0 ? (
-            <div className="py-10 text-center text-xs text-zinc-500 font-mono">
+            <div className="py-8 text-center text-xs text-white/40">
               هنوز مرخصی‌ای برای این دوره ثبت نشده است.
             </div>
           ) : (
@@ -598,16 +633,16 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
               return (
                 <div
                   key={l.id}
-                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#0c0d14] p-3 text-xs hover:border-[#eca8d6]/30 transition-all group"
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md p-2.5 sm:p-3 text-xs hover:bg-white/[0.07] hover:border-white/20 transition-all shadow-sm"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#eca8d6] shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="rounded-xl bg-amber-500/20 p-2 text-amber-300 shrink-0 border border-amber-400/30">
                       <Coffee className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 font-mono text-white">
-                        <span className="font-bold">{toPersianDigits(l.date)}</span>
-                        <span className="rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] text-zinc-400 shrink-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 font-medium text-white/90">
+                        <span className="font-mono text-xs">{toPersianDigits(l.date)}</span>
+                        <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[10px] text-white/60 shrink-0">
                           {l.type === 'hourly'
                             ? `ساعتی (${formatMinutesToPersianReadable(durMinutes)})`
                             : l.type === 'half_day'
@@ -619,10 +654,10 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                             : 'روزانه کامل (۱ روز)'}
                         </span>
                       </div>
-                      <div className="text-[11px] text-zinc-400 mt-0.5 flex items-center gap-2 truncate">
+                      <div className="text-[11px] text-white/50 mt-0.5 flex items-center gap-2 truncate">
                         {l.startTime && l.endTime && (
-                          <span className="font-mono text-[#eca8d6] text-[10px]">
-                            {toPersianDigits(l.startTime)} تا {toPersianDigits(l.endTime)}
+                          <span className="font-mono text-amber-300 font-semibold text-[10px] bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-400/30">
+                            از {toPersianDigits(l.startTime)} تا {toPersianDigits(l.endTime)}
                           </span>
                         )}
                         <span className="truncate">{l.reason}</span>
@@ -630,21 +665,25 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-mono text-[#eca8d6] font-bold text-xs sm:text-sm">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <span className="font-mono text-amber-300 font-bold text-xs sm:text-sm">
                       {formatMinutesToTimeString(durMinutes)}
                     </span>
+                    {/* Edit button */}
                     <button
                       onClick={() => handleStartEdit(l)}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+                      className="p-1.5 rounded-xl text-white/60 hover:text-indigo-300 hover:bg-white/10 transition-colors"
                       title="ویرایش مرخصی"
+                      aria-label="ویرایش مرخصی"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
+                    {/* Delete button */}
                     <button
                       onClick={() => onDeleteLeave(l.id)}
-                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-1.5 rounded-xl text-white/60 hover:text-rose-400 hover:bg-white/10 transition-colors"
                       title="حذف مرخصی"
+                      aria-label="حذف مرخصی"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -658,7 +697,3 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     </div>
   );
 };
-
-function toPersianDaysRemaining(days: string): string {
-  return toPersianDigits(days);
-}

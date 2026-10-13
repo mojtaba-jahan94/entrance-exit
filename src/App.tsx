@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  Clock,
   PlusCircle,
   Coffee,
   Calendar,
-  Settings,
   LayoutDashboard,
   Table as TableIcon,
   TrendingUp,
@@ -100,7 +98,7 @@ function DashboardApp() {
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
-  const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
+  const [_editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
@@ -968,10 +966,16 @@ function DashboardApp() {
       )}
 
       {/* Mobile Sticky Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border">
+      <nav
+        aria-label="ناوبری سریع موبایل"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border"
+      >
         <button
+          type="button"
           onClick={() => setActiveTab('dashboard')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+          aria-label="پیشخوان و تقویم"
+          aria-current={activeTab === 'dashboard' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'dashboard'
               ? 'text-indigo-400 font-bold scale-105'
               : 'text-slate-400 hover:text-white'
@@ -982,8 +986,11 @@ function DashboardApp() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('timesheet')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+          aria-label="کارنامه تردد"
+          aria-current={activeTab === 'timesheet' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'timesheet'
               ? 'text-indigo-400 font-bold scale-105'
               : 'text-slate-400 hover:text-white'
@@ -995,11 +1002,13 @@ function DashboardApp() {
 
         {/* Center Quick Add Punch */}
         <button
+          type="button"
           onClick={() => {
             setEditingRecord(null);
             setIsManualModalOpen(true);
           }}
-          className="flex flex-col items-center gap-1 py-0.5 px-2 text-indigo-400 font-bold active:scale-95 transition-all"
+          aria-label="ثبت دستی تردد جدید"
+          className="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-0.5 px-2 text-indigo-400 font-bold active:scale-95 transition-all"
         >
           <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-600 to-cyan-500 shadow-md shadow-indigo-500/30 flex items-center justify-center text-white">
             <PlusCircle className="h-5 w-5" />
@@ -1008,8 +1017,11 @@ function DashboardApp() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('leaves')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+          aria-label="مرخصی‌ها"
+          aria-current={activeTab === 'leaves' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'leaves'
               ? 'text-amber-400 font-bold scale-105'
               : 'text-slate-400 hover:text-white'
@@ -1020,8 +1032,11 @@ function DashboardApp() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('reports')}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 transition-all ${
+          aria-label="گزارشات آماری"
+          aria-current={activeTab === 'reports' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'reports'
               ? 'text-indigo-400 font-bold scale-105'
               : 'text-slate-400 hover:text-white'
@@ -1030,7 +1045,7 @@ function DashboardApp() {
           <TrendingUp className="h-4 w-4" />
           <span>گزارشات</span>
         </button>
-      </div>
+      </nav>
 
       {/* 8-Second Accessible Undo Toast Snackbar */}
       {undoState && (

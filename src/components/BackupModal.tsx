@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { X, Database, Download, Upload, AlertTriangle, Check, RefreshCw } from 'lucide-react';
+import { X, Database, Download, Upload, AlertTriangle, Check } from 'lucide-react';
 import { exportAllDataBackup, importDataBackup } from '../utils/storage';
 import { useAuth } from '../context/AuthContext';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 interface BackupModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   onDataRestored,
   onResetAllData,
 }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -28,7 +30,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
       exportAllDataBackup(user?.id);
       setSuccessMessage('فایل پشتیبان با موفقیت دانلود شد.');
       setTimeout(() => setSuccessMessage(''), 4000);
-    } catch (e) {
+    } catch {
       setErrorMessage('خطا در دانلود فایل پشتیبان');
     }
   };
@@ -73,24 +75,31 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200 font-sans">
-      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-[#09090d] p-6 shadow-2xl max-h-[92vh] overflow-y-auto text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="backup-modal-title"
+        className="relative w-full max-w-md rounded-[32px] border border-white/20 liquid-glass-modal p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#eca8d6]/10 text-[#eca8d6] border border-[#eca8d6]/20 flex items-center justify-center">
-              <Database className="h-4 w-4" />
+            <div className="rounded-2xl bg-cyan-500/20 p-2.5 text-cyan-300 border border-cyan-400/30 shadow-inner">
+              <Database className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white font-mono">پشتیبان‌گیری و داده‌ها</h3>
-              <p className="text-[11px] text-zinc-400 font-mono">
-                دانلود و بازیابی سوابق {user ? `(${user.displayName})` : ''}
+              <h3 id="backup-modal-title" className="text-sm sm:text-base font-bold text-white/95">پشتیبان‌گیری و مدیریت داده‌ها</h3>
+              <p className="text-[11px] sm:text-xs text-white/60">
+                انتقال، دانلود و بازیابی اطلاعات تردد {user ? `(حساب ${user.displayName})` : ''}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="بستن پنجره"
+            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -98,33 +107,33 @@ export const BackupModal: React.FC<BackupModalProps> = ({
 
         {/* Alerts */}
         {successMessage && (
-          <div className="mt-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-300 font-mono flex items-center gap-2">
+          <div className="mt-4 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 p-3 text-xs text-emerald-300 flex items-center gap-2 backdrop-blur-md">
             <Check className="h-4 w-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
         {errorMessage && (
-          <div className="mt-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-300 font-mono flex items-center gap-2">
+          <div className="mt-4 rounded-2xl bg-rose-500/20 border border-rose-400/30 p-3 text-xs text-rose-300 flex items-center gap-2 backdrop-blur-md">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {/* Content */}
-        <div className="mt-5 space-y-3 font-mono">
+        <div className="mt-5 space-y-3">
           {/* Download Backup */}
           <button
             onClick={handleExport}
-            className="w-full flex items-center justify-between rounded-2xl border border-white/10 bg-[#0c0d14] p-4 hover:border-[#eca8d6]/40 hover:bg-[#111218] transition-all text-right group"
+            className="w-full flex items-center justify-between rounded-2xl border border-white/15 bg-white/[0.04] p-4 hover:border-white/25 hover:bg-white/[0.08] transition-all text-right group backdrop-blur-md shadow-md"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#eca8d6]">
-                <Download className="h-4 w-4" />
+              <div className="rounded-xl bg-indigo-500/20 p-2.5 text-indigo-300 border border-indigo-400/30">
+                <Download className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs font-bold text-white block">دانلود نسخه پشتیبان (JSON)</span>
-                <span className="text-[11px] text-zinc-400 block mt-0.5">
-                  ذخیره کلیه ترددها، مرخصی‌ها و تنظیمات
+                <span className="text-xs font-bold text-white/95 block">دانلود نسخه پشتیبان کامل</span>
+                <span className="text-[11px] text-white/60 block mt-0.5">
+                  ذخیره کلیه ترددها، مرخصی‌ها و تنظیمات در قالب فایل JSON
                 </span>
               </div>
             </div>
@@ -140,16 +149,16 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-between rounded-2xl border border-white/10 bg-[#0c0d14] p-4 hover:border-[#eca8d6]/40 hover:bg-[#111218] transition-all text-right group"
+            className="w-full flex items-center justify-between rounded-2xl border border-white/15 bg-white/[0.04] p-4 hover:border-white/25 hover:bg-white/[0.08] transition-all text-right group backdrop-blur-md shadow-md"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#eca8d6]">
-                <Upload className="h-4 w-4" />
+              <div className="rounded-xl bg-cyan-500/20 p-2.5 text-cyan-300 border border-cyan-400/30">
+                <Upload className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs font-bold text-white block">بازیابی از فایل پشتیبان</span>
-                <span className="text-[11px] text-zinc-400 block mt-0.5">
-                  بارگذاری اطلاعات از نسخه پشتیبان
+                <span className="text-xs font-bold text-white/95 block">بازیابی از فایل پشتیبان</span>
+                <span className="text-[11px] text-white/60 block mt-0.5">
+                  بارگذاری اطلاعات از فایل پشتیبان ذخیره‌شده
                 </span>
               </div>
             </div>
@@ -159,7 +168,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           <div className="pt-3 border-t border-white/10">
             <button
               onClick={handleReset}
-              className="w-full flex items-center justify-between rounded-2xl border border-rose-500/20 bg-rose-500/10 p-3 hover:bg-rose-500/20 transition-all text-right text-rose-300"
+              className="w-full flex items-center justify-between rounded-2xl border border-rose-400/30 bg-rose-500/15 p-3.5 hover:bg-rose-500/25 transition-all text-right text-rose-300 backdrop-blur-md shadow-sm"
             >
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="h-4 w-4 text-rose-400" />

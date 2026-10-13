@@ -386,7 +386,14 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                 </div>
 
                 {/* Live Progress Bar */}
-                <div className="mt-2.5 h-2 w-full rounded-full bg-white/15 overflow-hidden p-0.5 border border-white/15">
+                <div
+                  role="progressbar"
+                  aria-valuenow={shiftProgressPercent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="درصد تکمیل شیفت کاری امروز"
+                  className="mt-2.5 h-2 w-full rounded-full bg-white/15 overflow-hidden p-0.5 border border-white/15"
+                >
                   <div
                     className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
                       isOvertimeLive
@@ -406,7 +413,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                         اضافه کار زنده:
                       </span>
                       <span className="font-mono text-base sm:text-lg font-black text-indigo-200">
-                        +{formatElapsed(overtimeLiveSecs)}
+                        <bdi dir="ltr">+{formatElapsed(overtimeLiveSecs)}</bdi>
                       </span>
                     </div>
                   ) : (
@@ -490,9 +497,11 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                   ویرایش اطلاعات
                 </button>
                 <button
+                  type="button"
                   onClick={onResetToday}
                   className="liquid-pill-btn-danger px-3.5 py-2 text-xs"
                   title="بازنشانی ثبت امروز"
+                  aria-label="بازنشانی ثبت امروز"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                 </button>

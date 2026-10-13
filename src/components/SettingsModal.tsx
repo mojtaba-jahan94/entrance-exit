@@ -20,6 +20,7 @@ import {
   resolveEffectiveEffects,
   UISettings,
 } from '../utils/uiSettings';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   config,
   onSaveConfig,
 }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   const [formData, setFormData] = useState<ShiftConfig>(config);
   const [overtimeMultiplierStr, setOvertimeMultiplierStr] = useState<string>(
     config.overtimeMultiplier !== undefined ? String(config.overtimeMultiplier) : '1.4'
@@ -102,7 +104,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-[32px] border border-white/20 liquid-glass-modal p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
+        className="relative w-full max-w-xl rounded-[32px] border border-white/20 liquid-glass-modal p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -110,12 +118,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <Settings className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white/95">تنظیمات و شخصی‌سازی قوانین کار</h3>
+              <h3 id="settings-modal-title" className="text-sm sm:text-base font-bold text-white/95">تنظیمات و شخصی‌سازی قوانین کار</h3>
               <p className="text-[11px] sm:text-xs text-white/60">سفارشی‌سازی شیفت شناور، ناهار، پنج‌شنبه و مرخصی</p>
             </div>
           </div>
           <button
             onClick={onClose}
+            aria-label="بستن پنجره"
             className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
@@ -123,9 +132,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex items-center gap-2 border-b border-white/10 pt-3 pb-2.5 text-xs overflow-x-auto whitespace-nowrap shrink-0 no-scrollbar">
+        <div
+          role="tablist"
+          aria-label="بخش‌های تنظیمات"
+          className="flex items-center gap-2 border-b border-white/10 pt-3 pb-2.5 text-xs overflow-x-auto whitespace-nowrap shrink-0 no-scrollbar"
+        >
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'shift'}
             onClick={() => setActiveTab('shift')}
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'shift'
@@ -137,6 +152,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'thursday'}
             onClick={() => setActiveTab('thursday')}
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'thursday'
@@ -148,6 +165,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'leave'}
             onClick={() => setActiveTab('leave')}
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'leave'
@@ -159,6 +178,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'finance'}
             onClick={() => setActiveTab('finance')}
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'finance'
@@ -170,6 +191,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'effects'}
             onClick={() => setActiveTab('effects')}
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
               activeTab === 'effects'

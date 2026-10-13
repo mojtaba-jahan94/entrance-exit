@@ -5,7 +5,7 @@ import {
   Table as TableIcon,
   Coffee,
   TrendingUp,
-  Plus,
+  PlusCircle,
   Settings,
   Database,
   Search,
@@ -17,10 +17,7 @@ import {
   HardDrive,
   Lock,
   X,
-  Menu,
   Sparkles,
-  Cloud,
-  Check,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -31,8 +28,8 @@ import {
 import { AppTheme } from '../utils/theme';
 import { ThemeSelector } from './ThemeSelector';
 import { useAuth } from '../context/AuthContext';
-import { ActiveTab } from '../types';
-export type { ActiveTab };
+
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -63,10 +60,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchQuery = '',
   onSearchChange,
 }) => {
-  const { user, logout, storageMode } = useAuth();
+  const { user, logout, dbStatus, storageMode } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showNotificationToast, setShowNotificationToast] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const todayStr = getTodayJalaliString();
@@ -79,6 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => clearInterval(timer);
   }, []);
 
+  // Close user dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -89,188 +87,167 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const displayName = user?.displayName || user?.username || 'کاربر سیستم';
+  // Compute friendly greeting based on time of day (just like "Morning, Alex!" in screenshot)
+  const greeting = React.useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'صبح بخیر';
+    if (hour >= 12 && hour < 17) return 'ظهر بخیر';
+    if (hour >= 17 && hour < 21) return 'عصر بخیر';
+    return 'شب بخیر';
+  }, []);
+
+  const displayName = user?.displayName || user?.username || 'همکار گرامی';
 
   const navItems = [
     {
       id: 'dashboard' as ActiveTab,
-      label: 'پیشخوان',
-      tag: '01',
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      label: 'پیشخوان و تقویم',
+      icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
       id: 'timesheet' as ActiveTab,
-      label: 'کارنامه',
-      tag: '02',
-      icon: <TableIcon className="h-4 w-4" />,
+      label: 'کارنامه تردد',
+      icon: <TableIcon className="h-5 w-5" />,
     },
     {
       id: 'leaves' as ActiveTab,
-      label: 'مرخصی',
-      tag: '03',
-      icon: <Coffee className="h-4 w-4" />,
+      label: 'مرخصی‌ها',
+      icon: <Coffee className="h-5 w-5" />,
     },
     {
       id: 'reports' as ActiveTab,
-      label: 'گزارشات',
-      tag: '04',
-      icon: <TrendingUp className="h-4 w-4" />,
-    },
-    {
-      id: 'settings' as ActiveTab,
-      label: 'تنظیمات',
-      tag: '05',
-      icon: <Settings className="h-4 w-4" />,
+      label: 'گزارشات آماری',
+      icon: <TrendingUp className="h-5 w-5" />,
     },
   ];
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 transition-all select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-        {/* 1. Brand Logo (COMPUTE 11 style) */}
-        <div className="flex items-center gap-4">
+    <>
+      {/* 1. DESKTOP FLOATING SIDEBAR DOCK (Next-Gen Apple visionOS / iOS 27 Liquid Glass Dock) */}
+      <aside className="hidden md:flex fixed top-4 bottom-4 right-4 z-50 w-20 flex-col items-center justify-between py-6 px-3 liquid-glass rounded-[32px] border border-white/25 shadow-2xl backdrop-blur-[28px]">
+        {/* Top Logo Brand Glyph */}
+        <div className="flex flex-col items-center gap-2">
           <button
+            type="button"
             onClick={() => onTabChange('dashboard')}
-            className="flex items-center gap-2.5 group focus:outline-none text-right"
-            title="COMPUTE 11 - سامانه هوشمند حضور و تردد"
+            className="group cursor-pointer flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#2f68fd] to-[#00d2ff] shadow-lg shadow-blue-500/35 border border-white/35 transition-all hover:scale-105 active:scale-95"
+            title="سامانه مدیریت و تقویم تردد"
+            aria-label="سامانه مدیریت و تقویم تردد"
           >
-            <div className="flex items-baseline gap-2">
-              <span className="font-display tracking-tight text-xl sm:text-2xl font-bold text-white group-hover:text-[#eca8d6] transition-colors">
-                COMPUTE<span className="text-[#eca8d6]">.11</span>
-              </span>
-              <span className="font-mono text-[9px] text-[#eca8d6] border border-[#eca8d6]/30 px-1.5 py-0.5 rounded uppercase">
-                ATTENDANCE
-              </span>
-            </div>
+            <CalendarClock className="h-6 w-6 text-white transition-transform group-hover:rotate-12" />
           </button>
-
-          {/* Live Pulse Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/10 text-[11px] font-mono text-white/70">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isWorkingNow
-                  ? 'bg-[#eca8d6] animate-pulse shadow-[0_0_8px_#eca8d6]'
-                  : 'bg-emerald-500 shadow-[0_0_8px_#4ade80]'
-              }`}
-            />
-            <span className="text-[#eca8d6] font-semibold">{isWorkingNow ? 'LIVE PUNCH' : 'STANDBY'}</span>
-            <span className="text-white/30">/</span>
-            <span>{toPersianDigits(liveTime)}</span>
-          </div>
         </div>
 
-        {/* 2. Middle Navigation Links with active highlight */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+        {/* Middle Navigation Capsule (Liquid Glass Pill Capsule) */}
+        <nav aria-label="بخش‌های اصلی سامانه" className="flex flex-col items-center gap-2.5 rounded-[30px] border border-white/20 bg-white/[0.08] p-2 shadow-inner backdrop-blur-xl">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => onTabChange(item.id)}
-                className={`relative px-3.5 py-2 rounded-full text-xs font-mono transition-all duration-300 flex items-center gap-2 group ${
+                title={item.label}
+                aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                className={`relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all duration-200 group ${
                   isActive
-                    ? 'text-white font-semibold bg-white/[0.08] border border-white/15'
-                    : 'text-white/60 hover:text-white hover:bg-white/[0.03]'
+                    ? 'liquid-pill-btn-primary shadow-lg shadow-blue-500/40 ring-2 ring-blue-400/40 scale-105'
+                    : 'text-white/60 hover:text-white hover:bg-white/[0.12]'
                 }`}
               >
-                <span className={`text-[10px] ${isActive ? 'text-[#eca8d6]' : 'text-white/30'}`}>
-                  {item.tag}
+                {item.icon}
+
+                {/* Tooltip on hover */}
+                <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl liquid-glass px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/25 transition-opacity group-hover:opacity-100 z-50">
+                  {item.label}
                 </span>
-                <span>{item.label}</span>
-                {isActive && (
-                  <span className="absolute -bottom-1 left-3 right-3 h-0.5 bg-[#eca8d6] rounded-full shadow-[0_0_8px_#eca8d6]" />
-                )}
               </button>
             );
           })}
+
+          {/* Center Quick Add Entry (+) */}
+          <div className="my-1 h-px w-6 bg-white/20" />
+          <button
+            type="button"
+            onClick={onOpenManualEntry}
+            title="ثبت سریع تردد"
+            aria-label="ثبت سریع تردد"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/35 border border-white/30 transition-all hover:scale-105 active:scale-95 group relative"
+          >
+            <PlusCircle className="h-5 w-5" />
+            <span className="pointer-events-none absolute left-14 whitespace-nowrap rounded-xl liquid-glass px-3 py-1.5 text-xs font-semibold text-white opacity-0 shadow-xl border border-white/25 transition-opacity group-hover:opacity-100 z-50">
+              ثبت تردد جدید
+            </span>
+          </button>
         </nav>
 
-        {/* 3. Action Buttons & Profile */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Quick Search */}
-          {onSearchChange && (
-            <div className="relative hidden xl:block w-40">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="جستجو در روزها..."
-                className="w-full bg-black/60 border border-white/10 rounded-full px-3 py-1.5 text-xs font-mono text-white placeholder:text-white/30 focus:outline-none focus:border-[#eca8d6] text-right"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => onSearchChange('')}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Quick Punch Button (Deploy Agent Style CTA) */}
+        {/* Bottom Utility Controls & Profile Avatar */}
+        <div className="flex flex-col items-center gap-3">
+          {/* Settings */}
           <button
-            onClick={onOpenManualEntry}
-            className="flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full bg-white hover:bg-white/90 text-black text-xs font-mono font-semibold shadow-lg shadow-white/10 transition-all active:scale-95"
-            title="ثبت سریع تردد جدید"
-          >
-            <Plus className="h-3.5 w-3.5 text-black" />
-            <span>ثبت تردد</span>
-          </button>
-
-          {/* Dedicated Settings Button */}
-          <button
-            onClick={() => onTabChange('settings')}
-            className={`hidden sm:flex h-9 w-9 items-center justify-center rounded-full border transition-all ${
-              activeTab === 'settings'
-                ? 'border-[#eca8d6] bg-[#eca8d6]/10 text-[#eca8d6]'
-                : 'border-white/10 text-white/70 hover:text-white hover:border-white/30 hover:bg-white/[0.04]'
-            }`}
-            title="تنظیمات سیستم"
+            type="button"
+            onClick={onOpenSettings}
+            title="تنظیمات شیفت و سامانه"
+            aria-label="تنظیمات شیفت و سامانه"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.08] text-white/70 hover:text-white hover:bg-white/15 transition-all shadow-sm"
           >
             <Settings className="h-4 w-4" />
           </button>
 
           {/* Theme Selector */}
-          <div className="hidden sm:block">
-            <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
-          </div>
+          <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
 
-          {/* User Profile Dropdown */}
+          {/* User Profile Avatar with Menu */}
           {user && (
             <div className="relative" ref={userMenuRef}>
               <button
+                type="button"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-white font-mono text-xs font-bold hover:border-[#eca8d6] transition-all"
-                title={`حساب: ${displayName}`}
+                title={`حساب کاربری: ${displayName}`}
+                aria-label={`حساب کاربری: ${displayName}`}
+                aria-expanded={isUserMenuOpen}
+                className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-600 text-white font-bold text-sm shadow-lg ring-2 ring-white/20 hover:ring-blue-400 transition-all"
               >
                 {displayName.charAt(0).toUpperCase()}
+                <span
+                  className={`absolute -bottom-0.5 -left-0.5 h-3 w-3 rounded-full border-2 border-[#07080f] ${
+                    isWorkingNow
+                      ? 'bg-emerald-400 animate-pulse'
+                      : dbStatus === 'connected'
+                      ? 'bg-cyan-400'
+                      : 'bg-amber-400'
+                  }`}
+                />
               </button>
 
+              {/* User Dropdown */}
               {isUserMenuOpen && (
-                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-[#09090d] border border-white/15 shadow-2xl p-2.5 z-50 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-2 border-b border-white/10 mb-1">
-                    <p className="font-bold text-white truncate">{displayName}</p>
-                    <p className="text-white/40 font-mono text-[10px] truncate dir-ltr text-right">
+                <div className="absolute left-14 bottom-0 w-64 rounded-[26px] liquid-glass-modal p-2.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
+                  <div className="px-3 py-2 border-b border-white/15">
+                    <p className="font-bold text-white truncate text-sm">{displayName}</p>
+                    <p className="text-white/60 font-mono text-[11px] truncate dir-ltr text-right">
                       @{user.username}
                     </p>
-                    <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>{storageMode === 'cloud_encrypted' ? 'فضای ابری فعال' : 'ذخیره‌سازی محلی'}</span>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-400">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>اتصال امن به سامانه</span>
                     </div>
                   </div>
 
-                  <div className="space-y-0.5">
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onTabChange('settings');
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors text-right"
-                    >
-                      <Settings className="h-3.5 w-3.5 text-[#eca8d6]" />
-                      <span>تنظیمات سیستم و قوانین کار</span>
-                    </button>
+                  <div className="py-1 space-y-0.5">
+                    {onOpenStorageMode && (
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          onOpenStorageMode();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors text-right"
+                      >
+                        <ShieldCheck className="h-4 w-4 text-cyan-400" />
+                        <span>فضای ابری و امنیت</span>
+                      </button>
+                    )}
 
                     {onOpenChangePassword && (
                       <button
@@ -278,10 +255,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setIsUserMenuOpen(false);
                           onOpenChangePassword();
                         }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors text-right"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors text-right"
                       >
-                        <KeyRound className="h-3.5 w-3.5 text-[#eca8d6]" />
-                        <span>تغییر کلمه عبور</span>
+                        <KeyRound className="h-4 w-4 text-blue-400" />
+                        <span>تغییر رمز عبور</span>
                       </button>
                     )}
 
@@ -290,69 +267,185 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsUserMenuOpen(false);
                         onOpenBackup();
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors text-right"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors text-right"
                     >
-                      <Database className="h-3.5 w-3.5 text-[#eca8d6]" />
-                      <span>پشتیبان‌گیری و بازیابی داده‌ها</span>
+                      <Database className="h-4 w-4 text-cyan-400" />
+                      <span>پشتیبان‌گیری داده‌ها</span>
                     </button>
+                  </div>
 
-                    <div className="pt-1 mt-1 border-t border-white/10">
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          logout();
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-colors text-right"
-                      >
-                        <LogOut className="h-3.5 w-3.5" />
-                        <span>خروج از حساب</span>
-                      </button>
-                    </div>
+                  <div className="pt-1 border-t border-white/15">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-300 hover:text-rose-200 hover:bg-rose-500/20 transition-colors text-right font-semibold"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>خروج از حساب</span>
+                    </button>
                   </div>
                 </div>
               )}
             </div>
           )}
-
-          {/* Mobile Hamburger Menu Toggle */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-full border border-white/10 text-white/70 hover:text-white"
-            aria-label="Toggle Navigation"
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-black/95 px-4 py-4 space-y-2 animate-in fade-in duration-200">
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            return (
+      {/* 2. TOP HEADER BAR: Liquid Glass with Prismatic Top Rim */}
+      <header className="sticky top-0 z-40 w-full border-b border-white/15 bg-white/[0.04] backdrop-blur-[28px] saturate-[210%] shadow-lg shadow-black/20">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6">
+          {/* Right Header Area: Greeting + Subtitle */}
+          <div className="flex items-center gap-3">
+            {/* Mobile-only logo */}
+            <div className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 shadow-md shadow-blue-500/25 border border-white/30">
+              <CalendarClock className="h-5 w-5 text-white" />
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-xl font-black tracking-tight text-white flex items-center gap-1.5">
+                  <span>{greeting}، {displayName}!</span>
+                </h1>
+                {isWorkingNow && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-400/35 backdrop-blur-md">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    حضور فعال
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] sm:text-xs text-white/60 mt-0.5 flex items-center gap-2">
+                <span>برنامه کاری و تقویم تردد شما در ماه جاری</span>
+                <span className="hidden sm:inline-block h-1 w-1 rounded-full bg-white/40" />
+                <span className="hidden sm:inline font-mono text-cyan-300">
+                  {weekdayName}، {toPersianDigits(todayStr)}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          {/* Left Header Area: Search pill, Notification Bell, Live Time & Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Search Pill Input with Liquid Glass */}
+            <div className="relative hidden sm:block w-52 md:w-64">
+              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/50">
+                <Search className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                placeholder="جستجو در ترددها و روزها..."
+                className="liquid-input w-full rounded-full pr-10 pl-8 py-2 text-xs text-white placeholder-white/40 shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => onSearchChange?.('')}
+                  aria-label="پاک کردن جستجو"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Notification Bell Circle */}
+            <div className="relative">
               <button
-                key={item.id}
-                onClick={() => {
-                  onTabChange(item.id);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-mono ${
-                  isActive
-                    ? 'bg-white text-black font-semibold'
-                    : 'text-white/70 hover:bg-white/[0.05]'
-                }`}
+                type="button"
+                onClick={() => setShowNotificationToast(!showNotificationToast)}
+                title="اعلان‌ها"
+                aria-label="اعلان‌های سامانه"
+                aria-expanded={showNotificationToast}
+                className="liquid-pill-btn relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center"
               >
-                <div className="flex items-center gap-2.5">
-                  {item.icon}
-                  <span>{item.label}</span>
-                </div>
-                <span className="text-[10px] text-white/40">{item.tag}</span>
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-400 ring-2 ring-[#07080f]" />
               </button>
-            );
-          })}
+
+              {/* Notification Popover */}
+              {showNotificationToast && (
+                <div
+                  role="region"
+                  aria-label="پنجره اعلان‌ها"
+                  className="absolute left-0 mt-2 w-72 sm:w-80 rounded-[24px] liquid-glass-modal p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <div className="flex items-center justify-between border-b border-white/15 pb-2 mb-2">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                      اعلان‌های سامانه
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowNotificationToast(false)}
+                      aria-label="بستن اعلان‌ها"
+                      className="text-white/60 hover:text-white"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="rounded-2xl liquid-glass-subtle p-3 border border-white/15">
+                      <span className="font-semibold text-cyan-300 block text-xs">
+                        تقویم شمسی هوشمند فعال است
+                      </span>
+                      <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
+                        کلیه تعطیلات رسمی ایران به همراه جزئیات حضور و مرخصی‌ها در تقویم پیشخوان لحاظ شده‌اند.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Live Clock Pill */}
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-md px-3.5 py-1.5 font-mono text-xs shadow-inner">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400" />
+              <span className="font-bold text-cyan-300 tracking-wider">
+                {toPersianDigits(liveTime)}
+              </span>
+            </div>
+
+            {/* Storage Mode Icon Button */}
+            {onOpenStorageMode && (
+              <button
+                type="button"
+                onClick={onOpenStorageMode}
+                className={`liquid-pill-btn flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center ${
+                  storageMode === 'cloud_encrypted'
+                    ? 'border-cyan-400/40 bg-cyan-500/20 text-cyan-300'
+                    : 'text-white/70'
+                }`}
+                title={storageMode === 'cloud_encrypted' ? 'فضای ابری رمزنگاری‌شده فعال است' : 'ذخیره در مرورگر'}
+                aria-label={storageMode === 'cloud_encrypted' ? 'تنظیمات فضای ابری رمزنگاری‌شده' : 'تنظیمات حالت ذخیره‌سازی'}
+              >
+                {storageMode === 'cloud_encrypted' ? (
+                  <Lock className="h-4 w-4 text-cyan-300" />
+                ) : (
+                  <HardDrive className="h-4 w-4 text-white/70" />
+                )}
+              </button>
+            )}
+
+            {/* Mobile User Profile Button */}
+            {user && (
+              <div className="md:hidden relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  aria-label={`منوی حساب کاربری: ${displayName}`}
+                  aria-expanded={isUserMenuOpen}
+                  className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-600 text-white font-bold text-xs ring-1 ring-white/30"
+                >
+                  {displayName.charAt(0).toUpperCase()}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </header>
+      </header>
+    </>
   );
 };

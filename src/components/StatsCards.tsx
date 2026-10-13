@@ -115,7 +115,9 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
                 isNetPositive ? 'text-emerald-300' : isNetZero ? 'text-white' : 'text-rose-300'
               }`}
             >
-              {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}{toPersianDigits(netBalanceHours)}
+              <bdi dir="ltr">
+                {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}{toPersianDigits(netBalanceHours)}
+              </bdi>
             </span>
             <span className="text-[11px] sm:text-xs text-slate-200 font-medium truncate">
               {isNetPositive ? 'ساعت مازاد' : isNetZero ? 'ساعت (سر‌به‌سر)' : 'ساعت کسری'}

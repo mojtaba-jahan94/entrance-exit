@@ -272,10 +272,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           {/* Month & Year Selectors */}
           <div className="flex items-center rounded-full bg-white/[0.08] border border-white/20 backdrop-blur-md p-1 shadow-inner">
             <button
-              onClick={handleNextMonth}
+              onClick={handlePrevMonth}
               className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
-              title="ماه بعد"
-              aria-label="ماه بعد"
+              title="ماه قبل"
+              aria-label="ماه قبل"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -309,10 +309,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </select>
 
             <button
-              onClick={handlePrevMonth}
+              onClick={handleNextMonth}
               className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
-              title="ماه قبل"
-              aria-label="ماه قبل"
+              title="ماه بعد"
+              aria-label="ماه بعد"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>

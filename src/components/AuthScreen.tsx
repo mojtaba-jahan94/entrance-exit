@@ -15,6 +15,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { LiquidMeshBackground } from './LiquidMeshBackground';
+import { LiquidGlassCard } from './LiquidGlassCard';
 
 export const AuthScreen: React.FC = () => {
   const { login, register, dbStatus, isLoading } = useAuth();
@@ -59,7 +61,7 @@ export const AuthScreen: React.FC = () => {
           displayName: displayName.trim(),
           password,
         });
-        setSuccessMsg('ثبت‌نام با موفقیت انجام شد! در حال ورود به سامانه...');
+        setSuccessMsg('ثبت‌نام با موفقیت انجام شد! در حال انتقال...');
       } catch (err: any) {
         setErrorMsg(err.message || 'خطا در ثبت نام کاربر.');
       }
@@ -76,63 +78,63 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#050507] text-white font-sans bg-grid-compute relative overflow-hidden">
-      {/* Background radial glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#eca8d6]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-20 right-10 w-96 h-96 bg-[#c597eb]/5 rounded-full blur-[120px] pointer-events-none" />
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 text-slate-100 overflow-hidden font-sans">
+      {/* 1. Dynamic Fluid Mesh Background Engine */}
+      <LiquidMeshBackground />
 
-      <div className="w-full max-w-md mx-auto z-10 py-8">
-        {/* Brand Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] font-mono tracking-widest text-[#eca8d6] bg-[#eca8d6]/10 border border-[#eca8d6]/20 uppercase mb-4 shadow-[0_0_15px_rgba(236,168,214,0.15)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
-            <span>COMPUTE.11 // AUTH PROTOCOL</span>
+      <div className="relative w-full max-w-md mx-auto z-10">
+        {/* Brand / Logo Section */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-[24px] bg-gradient-to-tr from-indigo-500 via-indigo-600 to-cyan-400 shadow-2xl shadow-indigo-500/40 border border-white/30 mb-4 animate-in zoom-in-95 duration-500">
+            <CalendarClock className="h-8 w-8 text-white" />
           </div>
-
-          <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-white mb-2">
-            ورود به سامانه <span className="text-[#eca8d6] font-medium">تردد و کارکرد</span>
+          <h1 className="text-2xl font-bold tracking-tight text-white mb-1.5">
+            سامانه یکپارچه مدیریت کارکرد و تردد
           </h1>
-          <p className="text-xs text-zinc-400 font-mono">
-            محاسبه دقیق شیفت‌های کاری، شناوری اداری و کاردکس مرخصی
+          <p className="text-xs sm:text-sm text-white/60">
+            احراز هویت امن با استانداردهای نوین حفاظت از اطلاعات
           </p>
         </div>
 
         {/* Server Status Ribbon */}
-        <div className="mb-6 flex items-center justify-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-zinc-400">
-            <Server className="h-3.5 w-3.5 text-zinc-500" />
-            <span>پایگاه داده محلی:</span>
-            <span
-              className={`flex items-center gap-1 font-bold ${
-                dbStatus === 'connected'
-                  ? 'text-emerald-400'
-                  : dbStatus === 'checking'
-                  ? 'text-amber-400'
-                  : 'text-zinc-400'
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  dbStatus === 'connected'
-                    ? 'bg-emerald-400'
-                    : dbStatus === 'checking'
-                    ? 'bg-amber-400 animate-pulse'
-                    : 'bg-zinc-500'
-                }`}
-              />
-              {dbStatus === 'connected'
-                ? 'فعال و آماده'
-                : dbStatus === 'checking'
-                ? 'در حال برقراری'
-                : 'آفلاین محلی'}
-            </span>
+        <div className="mb-4 flex items-center justify-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-[11px] font-medium backdrop-blur-md shadow-sm">
+            <Server className="h-3.5 w-3.5 text-cyan-300" />
+            <span className="text-white/60">وضعیت سامانه:</span>
+            {dbStatus === 'connected' && (
+              <span className="flex items-center gap-1.5 text-emerald-300 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                سرور مرکزی فعال و متصل
+              </span>
+            )}
+            {dbStatus === 'not_configured' && (
+              <span className="flex items-center gap-1.5 text-amber-300 font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                در انتظار راه‌اندازی سرور مرکزی
+              </span>
+            )}
+            {dbStatus === 'error' && (
+              <span className="flex items-center gap-1.5 text-rose-300 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-rose-400" />
+                عدم اتصال به سرور مرکزی
+              </span>
+            )}
+            {dbStatus === 'checking' && (
+              <span className="flex items-center gap-1.5 text-white/60">
+                <span className="h-2 w-2 rounded-full bg-white/40 animate-ping" />
+                بررسی وضعیت اتصال...
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Main Card */}
-        <div className="relative rounded-3xl border border-white/10 bg-[#09090d]/90 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
-          {/* Tabs Switcher */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/5 border border-white/10 mb-6 font-mono text-xs">
+        {/* Auth Card */}
+        <LiquidGlassCard
+          className="rounded-[34px] p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+          sheenColor="rgba(99, 102, 241, 0.18)"
+        >
+          {/* Tabs */}
+          <div className="grid grid-cols-2 p-1 rounded-full bg-white/[0.06] border border-white/15 mb-6 backdrop-blur-md">
             <button
               type="button"
               onClick={() => {
@@ -140,13 +142,13 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'login'
-                  ? 'bg-[#eca8d6] text-[#050507] font-bold shadow-[0_0_15px_rgba(236,168,214,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'liquid-pill-btn-primary shadow-lg'
+                  : 'text-white/70 hover:text-white'
               }`}
             >
-              <LogIn className="h-3.5 w-3.5" />
+              <LogIn className="h-4 w-4" />
               <span>ورود به حساب</span>
             </button>
             <button
@@ -156,28 +158,28 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all ${
+              className={`flex items-center justify-center gap-2 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'register'
-                  ? 'bg-[#eca8d6] text-[#050507] font-bold shadow-[0_0_15px_rgba(236,168,214,0.3)]'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'liquid-pill-btn-primary shadow-lg'
+                  : 'text-white/70 hover:text-white'
               }`}
             >
-              <UserPlus className="h-3.5 w-3.5" />
-              <span>ایجاد حساب جدید</span>
+              <UserPlus className="h-4 w-4" />
+              <span>ثبت‌نام جدید</span>
             </button>
           </div>
 
-          {/* Feedback Messages */}
+          {/* Alerts */}
           {errorMsg && (
-            <div className="mb-4 flex items-center gap-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-300 font-mono animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-4 flex items-center gap-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-300 font-mono animate-in fade-in">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md">
+              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -186,57 +188,66 @@ export const AuthScreen: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
+                <label className="block text-xs font-semibold text-white/80 mb-1.5">
                   نام و نام خانوادگی
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="مثال: مجتبی جهان‌بخش"
-                    className="w-full rounded-2xl border border-white/10 bg-[#0c0d14] pr-10 pl-4 py-3 text-sm text-white placeholder-zinc-600 focus:border-[#eca8d6] focus:outline-none transition-colors"
+                    placeholder="مثال: علی احمدی"
+                    required
+                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
-                نام کاربری (لاتین)
+              <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                نام کاربری
               </label>
               <div className="relative">
-                <KeyRound className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                  <UserIcon className="h-4 w-4" />
+                </div>
                 <input
                   type="text"
-                  dir="ltr"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin or user"
-                  className="w-full rounded-2xl border border-white/10 bg-[#0c0d14] pr-10 pl-4 py-3 text-sm font-mono text-white placeholder-zinc-600 focus:border-[#eca8d6] focus:outline-none transition-colors text-right"
+                  placeholder="مثال: user_admin"
+                  dir="ltr"
+                  required
+                  className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1.5">
+              <label className="block text-xs font-semibold text-white/80 mb-1.5">
                 رمز عبور
               </label>
               <div className="relative">
-                <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                  <Lock className="h-4 w-4" />
+                </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  dir="ltr"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-2xl border border-white/10 bg-[#0c0d14] pr-10 pl-11 py-3 text-sm font-mono text-white placeholder-zinc-600 focus:border-[#eca8d6] focus:outline-none transition-colors text-right"
+                  placeholder="حداقل ۶ کاراکتر"
+                  dir="ltr"
+                  required
+                  className="liquid-input w-full pr-10 pl-10 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/40 hover:text-white/70 transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -245,18 +256,21 @@ export const AuthScreen: React.FC = () => {
 
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1.5">
+                <label className="block text-xs font-semibold text-white/80 mb-1.5">
                   تکرار رمز عبور
                 </label>
                 <div className="relative">
-                  <Lock className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                    <KeyRound className="h-4 w-4" />
+                  </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    dir="ltr"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full rounded-2xl border border-white/10 bg-[#0c0d14] pr-10 pl-4 py-3 text-sm font-mono text-white placeholder-zinc-600 focus:border-[#eca8d6] focus:outline-none transition-colors text-right"
+                    placeholder="تکرار همان رمز عبور"
+                    dir="ltr"
+                    required
+                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
                   />
                 </div>
               </div>
@@ -265,40 +279,35 @@ export const AuthScreen: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-4 flex items-center justify-center gap-2 rounded-2xl bg-[#eca8d6] hover:bg-[#e491cc] text-[#050507] py-3.5 text-xs font-bold tracking-wide transition-all shadow-[0_0_25px_rgba(236,168,214,0.3)] active:scale-98 disabled:opacity-50"
+              className="liquid-pill-btn-primary w-full mt-2 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold shadow-xl disabled:opacity-50 disabled:pointer-events-none"
             >
               {isLoading ? (
-                <>
-                  <span className="w-4 h-4 rounded-full border-2 border-[#050507] border-t-transparent animate-spin" />
-                  <span>در حال پردازش...</span>
-                </>
+                <div className="flex items-center gap-2">
+                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span>در حال اعتبارسنجی و اتصال به سرور...</span>
+                </div>
               ) : mode === 'login' ? (
                 <>
                   <LogIn className="h-4 w-4" />
-                  <span>ورود به سیستم</span>
+                  <span>ورود امن به سامانه</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  <span>ثبت‌نام و ورود مستقیم</span>
+                  <span>ثبت‌نام و ایجاد حساب کاربری</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-5 border-t border-white/5 text-center">
-            <span className="text-[11px] font-mono text-zinc-500 block">
-              حساب کاربری پیش‌فرض: نام کاربری <code className="text-[#eca8d6]">admin</code> / رمز <code className="text-[#eca8d6]">admin123</code>
+          {/* Security details footnote */}
+          <div className="mt-6 pt-5 border-t border-white/10 flex items-start gap-2.5 text-[11px] text-white/50 leading-relaxed">
+            <ShieldCheck className="h-4 w-4 text-emerald-300 shrink-0 mt-0.5" />
+            <span>
+              امنیت کامل اطلاعات: کلمات عبور با الگوریتم‌های استاندارد چندمرحله‌ای رمزنگاری شده و نشست‌های کاربری به صورت امن محافظت می‌شوند. در این سامانه می‌توانید اطلاعات تردد خود را به صورت محرمانه روی مرورگر ذخیره کنید یا همگام‌سازی ابری رمزنگاری‌شده (AES-256) را فعال نمایید.
             </span>
           </div>
-        </div>
-
-        {/* Security badge footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-[11px] font-mono text-zinc-500">
-          <ShieldCheck className="h-4 w-4 text-emerald-400" />
-          <span>رمزنگاری بومی داده‌ها با کلید اختصاصی کاربر</span>
-        </div>
+        </LiquidGlassCard>
       </div>
     </div>
   );

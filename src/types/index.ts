@@ -97,7 +97,7 @@ export interface MonthlyStats {
   estimatedOvertimePay?: number; // برآورد ریالی اضافه کار (در صورت تعیین دستمزد)
 }
 
-export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports';
 
 export interface User {
   id: string;
@@ -122,6 +122,5 @@ export interface SyncState {
   isSyncing: boolean;
   syncError: string | null;
 }
-
 
 

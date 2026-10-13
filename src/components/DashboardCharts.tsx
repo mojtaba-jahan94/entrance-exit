@@ -23,6 +23,7 @@ import {
   getTodayJalaliString,
   timeStringToMinutes,
 } from '../utils/jalali';
+import { LiquidGlassCard } from './LiquidGlassCard';
 
 interface DashboardChartsProps {
   records: AttendanceRecord[];
@@ -40,6 +41,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   selectedMonth,
 }) => {
   const [hoveredRecord, setHoveredRecord] = useState<AttendanceRecord | null>(null);
+
+  // Live timer tick every second for smooth live clock and real-time progress
   const [liveNow, setLiveNow] = useState<Date>(() => new Date());
 
   useEffect(() => {
@@ -51,7 +54,6 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
   const todayStr = getTodayJalaliString();
   const monthPrefix = `${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`;
-
   const monthRecords = records
     .filter((r) => r.date.startsWith(monthPrefix))
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -59,50 +61,78 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
   const standardDailyNet = Math.max(
     60,
     (config.requiredDailyMinutes || 510) - (config.defaultBreakMinutes || 30)
-  );
+  ); // 480 mins (8 hours)
 
+  // Compute daily credited work metrics with live real-time calculation for today
   const chartItems = monthRecords.map((r) => {
     const isToday = r.date === todayStr;
-    const isCurrentlyWorking = isToday && r.checkIn && !r.checkOut;
+    const isCurrentlyWorking = isToday && Boolean(r.checkIn && !r.checkOut);
+    const isLeave = r.status === 'leave';
     const isThu = r.dayOfWeek === 5;
     const isFri = r.dayOfWeek === 6;
-    const isHol = Boolean(r.isHoliday || isFri);
-    const isLeave = r.status === 'leave';
+    const isHol = isFri || Boolean(r.isHoliday);
 
     const requiredNet = isHol
       ? 0
       : isThu
-      ? config.thursdayStatus === 'half_day'
-        ? config.thursdayMinutes || 240
-        : config.thursdayStatus === 'off'
-        ? 0
-        : standardDailyNet
+      ? (config.thursdayStatus === 'half_day'
+          ? (config.thursdayMinutes || 240)
+          : (config.thursdayStatus === 'off' ? 0 : standardDailyNet))
       : standardDailyNet;
 
     let physicalWorked = 0;
+    let liveOvertime = 0;
+    let liveDeficit = 0;
+    let remainingMinutesToTarget = 0;
+    let targetExitTimeStr = '';
+
     if (isCurrentlyWorking && r.checkIn) {
+      // Dynamic live presence calculation for today
       const inMins = timeStringToMinutes(r.checkIn);
       const curMins = liveNow.getHours() * 60 + liveNow.getMinutes();
       const rawPresenceLive = Math.max(0, curMins - inMins);
+
+      // Auto lunch deduction if shift is over 4 hours and not Thursday/Holiday
       const breakMins = isThu || isHol ? 0 : (r.breakMinutes !== undefined ? r.breakMinutes : (config.defaultBreakMinutes ?? 30));
-      physicalWorked = Math.max(0, rawPresenceLive - breakMins);
+      const effectiveBreak = rawPresenceLive > 240 ? breakMins : 0;
+      physicalWorked = Math.max(0, rawPresenceLive - effectiveBreak);
+
+      const effectiveTotal = physicalWorked + (r.leaveMinutes || 0);
+      if (effectiveTotal > requiredNet) {
+        liveOvertime = effectiveTotal - requiredNet;
+      } else if (effectiveTotal < requiredNet) {
+        liveDeficit = requiredNet - effectiveTotal;
+      }
+
+      remainingMinutesToTarget = Math.max(0, requiredNet - effectiveTotal);
+      const totalPlannedBreak = requiredNet > 240 ? breakMins : 0;
+      const targetExitMinutes = inMins + requiredNet + totalPlannedBreak - (r.leaveMinutes || 0);
+      targetExitTimeStr = r.targetCheckOut || formatMinutesToTimeString(targetExitMinutes);
     } else {
       physicalWorked = isLeave ? 0 : r.workedMinutes;
     }
 
+    const leaveMinutes = r.leaveMinutes || (isLeave ? requiredNet : 0);
     const totalCreditMinutes = isLeave ? requiredNet : (physicalWorked + (r.leaveMinutes || 0));
 
-    let barColor = 'bg-white/80';
+    // Determine bar color and style
+    let barColor = 'from-indigo-600 to-cyan-400';
     if (isCurrentlyWorking) {
-      barColor = 'bg-[#eca8d6] animate-pulse';
+      barColor = 'from-cyan-500 via-teal-400 to-emerald-400';
     } else if (isLeave) {
-      barColor = 'bg-amber-400';
+      barColor = 'from-amber-600 to-amber-400';
     } else if (isHol) {
-      barColor = r.workedMinutes > 0 ? 'bg-[#c597eb]' : 'bg-white/10';
+      if (r.workedMinutes > 0) {
+        barColor = 'from-purple-600 to-indigo-400';
+      } else {
+        barColor = 'from-slate-800 to-slate-700';
+      }
     } else if (r.overtimeMinutes > 0) {
-      barColor = 'bg-[#eca8d6]';
+      barColor = 'from-emerald-600 to-teal-400';
     } else if (r.deficitMinutes > 0) {
-      barColor = 'bg-rose-500';
+      barColor = 'from-rose-600 to-rose-400';
+    } else if (isThu && totalCreditMinutes >= requiredNet) {
+      barColor = 'from-cyan-600 to-teal-400';
     }
 
     return {
@@ -115,19 +145,32 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       isHol,
       requiredNet,
       physicalWorked,
+      leaveMinutes,
       totalCreditMinutes,
       barColor,
+      liveOvertime,
+      liveDeficit,
+      remainingMinutesToTarget,
+      targetExitTimeStr,
     };
   });
 
+  const isAnyWorkingToday = chartItems.some((i) => i.isCurrentlyWorking);
+
+  // Maximum scale for daily chart (in minutes, min 10 hours = 600m or highest credit)
   const maxCreditMinutes = Math.max(
     600,
     ...chartItems.map((item) => item.totalCreditMinutes)
   );
 
+  // Target lines relative to maxCreditMinutes
   const standardTargetPercent = (standardDailyNet / maxCreditMinutes) * 100;
+  const thursdayTargetPercent = (240 / maxCreditMinutes) * 100;
+
+  // Donut completion percentage
   const completionPercent = Math.min(100, Math.max(0, stats.completionRate));
 
+  // Punctuality rate: days present with 0 delay
   const workingRecords = monthRecords.filter(
     (r) => r.status === 'present' || (r.status === 'in_progress' && r.checkIn)
   );
@@ -136,61 +179,126 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     workingRecords.length > 0 ? Math.round((onTimeDays / workingRecords.length) * 100) : 100;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      {/* 1. Bar Chart */}
-      <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 flex flex-col justify-between">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/10 pb-3 mb-3 gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center text-[#eca8d6]">
-              <BarChart3 className="h-4 w-4" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* 1. Daily Work Hours Bar Chart (Span 2 cols on lg) */}
+      <LiquidGlassCard
+        className="lg:col-span-2 rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl flex flex-col justify-between"
+        sheenColor="rgba(6, 182, 212, 0.15)"
+      >
+        {/* Header with Clean Status & Minimal Legend */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/15 pb-3 mb-3 gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-2xl bg-indigo-500/20 p-2.5 text-indigo-300 border border-indigo-400/30 shadow-inner">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">روند کارکرد روزانه</h3>
-              <p className="text-[11px] text-white/40 font-mono">
-                DAILY WORK DURATION & CAPACITY
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-bold text-white/95">روند کارکرد روزانه این ماه</h3>
+                {isAnyWorkingToday && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 px-2.5 py-0.5 text-[10px] font-bold text-cyan-300 shadow-sm">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+                    </span>
+                    <span>شیفت زنده امروز</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] sm:text-xs text-white/60 mt-0.5">
+                ساعات کارکرد خالص و موثر روزانه در مقایسه با سقف موظفی
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] font-mono text-white/50">
+          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-white" />
-              عادی
+              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+              تکمیل موظفی
             </span>
-            <span className="flex items-center gap-1 text-[#eca8d6]">
-              <span className="w-2 h-2 rounded-full bg-[#eca8d6]" />
+            <span className="flex items-center gap-1 text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
               اضافه کار
             </span>
             <span className="flex items-center gap-1 text-rose-400">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <span className="h-2 w-2 rounded-full bg-rose-400" />
               کسر کار
             </span>
-            <span className="flex items-center gap-1 text-amber-300">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="flex items-center gap-1 text-amber-400">
+              <span className="h-2 w-2 rounded-full bg-amber-400" />
               مرخصی
             </span>
           </div>
         </div>
 
-        {/* Bar Chart Canvas */}
+        {/* The Bar Chart Canvas */}
         <div className="pt-2 pb-1 overflow-x-auto no-scrollbar">
           {chartItems.length === 0 ? (
-            <div className="w-full flex flex-col items-center justify-center text-xs text-white/40 h-48 gap-2 font-mono">
-              <Calendar className="h-6 w-6 text-white/20" />
-              <span>داده‌ای برای این ماه ثبت نشده است.</span>
+            <div className="w-full flex flex-col items-center justify-center text-xs text-slate-500 h-48 gap-2">
+              <Calendar className="h-6 w-6 text-slate-600" />
+              <span>هنوز ترددی در این ماه ثبت نشده است.</span>
             </div>
           ) : (
-            <div className="min-w-[420px] pt-4">
+            <div className="min-w-[420px] pt-4" role="region" aria-label="نمودار میله‌ای کارکرد روزانه ماه">
+              {/* Screen Reader Accessible Table Summary */}
+              <table className="sr-only">
+                <caption>خلاصه آماری کارکرد و حضور روزانه ماه</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">تاریخ</th>
+                    <th scope="col">روز</th>
+                    <th scope="col">وضعیت</th>
+                    <th scope="col">کارکرد خالص</th>
+                    <th scope="col">اضافه کار</th>
+                    <th scope="col">کسر کار</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chartItems.map((item) => (
+                    <tr key={`sr_${item.record.id || item.record.date}`}>
+                      <td>{toPersianDigits(item.record.date)}</td>
+                      <td>{getJalaliWeekdayName(item.record.date)}</td>
+                      <td>
+                        {item.isCurrentlyWorking
+                          ? 'در حال کار'
+                          : item.isLeave
+                          ? 'مرخصی'
+                          : item.isHol
+                          ? (item.isFri ? 'جمعه' : 'تعطیل')
+                          : item.record.status === 'present'
+                          ? 'حاضر'
+                          : 'بدون ثبت'}
+                      </td>
+                      <td>{formatMinutesToPersianReadable(item.physicalWorked)}</td>
+                      <td>{toPersianDigits(item.record.overtimeMinutes)} دقیقه</td>
+                      <td>{toPersianDigits(item.record.deficitMinutes)} دقیقه</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Bars Canvas Area */}
               <div className="relative h-44 sm:h-52 w-full">
-                {/* Standard Target Line */}
+                {/* Standard Target Line (8 hours) */}
                 <div
-                  className="absolute left-0 right-0 border-b border-dashed border-white/20 z-10 pointer-events-none flex items-center justify-end px-1"
+                  className="absolute left-0 right-0 border-b border-dashed border-cyan-500/25 z-10 pointer-events-none flex items-center justify-end px-1"
                   style={{ bottom: `${standardTargetPercent}%` }}
                 >
-                  <span className="text-[9px] font-mono text-white/40 select-none">
-                    موظفی: {toPersianDigits((standardDailyNet / 60).toFixed(0))}س
+                  <span className="text-[9px] font-mono text-cyan-400/70 select-none">
+                    موظفی عادی: {toPersianDigits((standardDailyNet / 60).toFixed(0))}س
                   </span>
                 </div>
+
+                {/* Thursday Target Line (4 hours) */}
+                {config.thursdayStatus === 'half_day' && (
+                  <div
+                    className="absolute left-0 right-0 border-b border-dotted border-amber-500/25 z-10 pointer-events-none flex items-center justify-start px-1"
+                    style={{ bottom: `${thursdayTargetPercent}%` }}
+                  >
+                    <span className="text-[9px] font-mono text-amber-400/70 select-none">
+                      پنج‌شنبه: {toPersianDigits(((config.thursdayMinutes || 240) / 60).toFixed(0))}س
+                    </span>
+                  </div>
+                )}
 
                 {/* Bars Row */}
                 <div className="absolute inset-0 flex items-end justify-between gap-1 sm:gap-2 px-1">
@@ -199,7 +307,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                     const { jd } = parseJalaliDate(r.date);
                     const weekdayName = getJalaliWeekdayName(r.date);
                     const heightPercent = item.isHol && item.totalCreditMinutes === 0
-                      ? 4
+                      ? 3
                       : Math.min(100, Math.max(6, (item.totalCreditMinutes / maxCreditMinutes) * 100));
 
                     return (
@@ -209,37 +317,149 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                         onMouseEnter={() => setHoveredRecord(r)}
                         onMouseLeave={() => setHoveredRecord(null)}
                       >
-                        {/* Tooltip on hover */}
+                        {/* Unified & Structured Floating Tooltip on Hover */}
                         {hoveredRecord?.date === r.date && (
-                          <div className="absolute -top-32 left-1/2 -translate-x-1/2 z-40 w-48 rounded-xl border border-white/15 bg-black/95 p-2.5 text-xs shadow-2xl backdrop-blur-md pointer-events-none space-y-1 text-white">
-                            <div className="flex items-center justify-between border-b border-white/10 pb-1 text-[11px] font-mono">
-                              <span className="font-semibold text-white">
-                                روز {toPersianDigits(jd)} ({weekdayName})
+                          <div className="absolute -top-36 sm:-top-40 left-1/2 -translate-x-1/2 z-40 w-56 rounded-2xl liquid-glass-modal p-3 text-xs shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 pointer-events-none space-y-1.5">
+                            {/* Card Header: Date & Status Badge */}
+                            <div className="flex items-center justify-between border-b border-white/15 pb-1.5 text-[11px]">
+                              <span className="font-bold text-white font-mono flex items-center gap-1">
+                                {item.isCurrentlyWorking && (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                )}
+                                روز {toPersianDigits(jd)} <span className="text-slate-400 font-normal">({weekdayName})</span>
                               </span>
-                              <span className="text-[#eca8d6]">{r.status}</span>
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                  item.isCurrentlyWorking
+                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+                                    : item.isLeave
+                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                                    : item.isHol
+                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                                    : r.status === 'present'
+                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                                    : 'bg-slate-800 text-slate-400'
+                                }`}
+                              >
+                                {item.isCurrentlyWorking
+                                  ? 'در حال کار'
+                                  : item.isLeave
+                                  ? 'مرخصی'
+                                  : item.isHol
+                                  ? (item.isFri ? 'جمعه' : 'تعطیل')
+                                  : r.status === 'present'
+                                  ? 'حاضر'
+                                  : 'ثبت‌شده'}
+                              </span>
                             </div>
-                            <div className="text-[11px] font-mono space-y-0.5 text-white/70">
-                              <div>
-                                کارکرد:{' '}
-                                <strong className="text-white">
-                                  {formatMinutesToPersianReadable(item.totalCreditMinutes)}
-                                </strong>
+
+                            {/* Key-Value Details */}
+                            <div className="space-y-1 text-[11px]">
+                              {/* 1. Time In & Time Out */}
+                              <div className="flex items-center justify-between text-slate-300">
+                                <span className="text-slate-400">ورود / خروج:</span>
+                                <span className="font-mono text-white font-medium">
+                                  {r.checkIn ? toPersianDigits(r.checkIn) : '—'}
+                                  {' تا '}
+                                  {item.isCurrentlyWorking
+                                    ? (item.targetExitTimeStr ? `${toPersianDigits(item.targetExitTimeStr)} (هدف)` : 'اکنون')
+                                    : (r.checkOut ? toPersianDigits(r.checkOut) : '—')}
+                                </span>
                               </div>
-                              {r.checkIn && (
-                                <div>
-                                  ورود: {toPersianDigits(r.checkIn)} | خروج:{' '}
-                                  {r.checkOut ? toPersianDigits(r.checkOut) : 'در حال کار'}
+
+                              {/* 2. Effective / Worked Time */}
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">
+                                  {item.isCurrentlyWorking ? 'کارکرد تا اکنون:' : 'کارکرد موثر:'}
+                                </span>
+                                <span className="font-mono font-bold text-cyan-300">
+                                  {item.isLeave
+                                    ? formatMinutesToPersianReadable(item.totalCreditMinutes)
+                                    : item.physicalWorked > 0
+                                    ? formatMinutesToPersianReadable(item.physicalWorked)
+                                    : '۰ دقیقه'}
+                                </span>
+                              </div>
+
+                              {/* 3. Hourly Leave if any */}
+                              {!item.isLeave && item.leaveMinutes > 0 && (
+                                <div className="flex items-center justify-between text-[10px]">
+                                  <span className="text-slate-400">مرخصی ساعتی:</span>
+                                  <span className="font-mono font-bold text-amber-300">
+                                    {formatMinutesToPersianReadable(item.leaveMinutes)}
+                                  </span>
                                 </div>
                               )}
+
+                              {/* 4. Delay or Early Departure if any */}
+                              {(r.delayMinutes > 0 || r.earlyLeaveMinutes > 0) && !item.isCurrentlyWorking && (
+                                <div className="flex items-center justify-between text-[10px] text-rose-300/90">
+                                  <span className="text-slate-400">کسورات زمانی:</span>
+                                  <span className="font-mono">
+                                    {r.delayMinutes > 0 && `تاخیر: ${toPersianDigits(r.delayMinutes)}د`}
+                                    {r.delayMinutes > 0 && r.earlyLeaveMinutes > 0 && ' | '}
+                                    {r.earlyLeaveMinutes > 0 && `تعجیل: ${toPersianDigits(r.earlyLeaveMinutes)}د`}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* 5. Balance / Result Row */}
+                              <div className="border-t border-slate-800/80 pt-1 flex items-center justify-between font-bold">
+                                <span className="text-slate-400 text-[10px]">وضعیت تراز:</span>
+                                {item.isCurrentlyWorking ? (
+                                  item.remainingMinutesToTarget > 0 ? (
+                                    <span className="text-amber-300 font-mono text-[10px]">
+                                      {formatMinutesToPersianReadable(item.remainingMinutesToTarget)} تا موظفی
+                                    </span>
+                                  ) : (
+                                    <span className="text-emerald-400 font-mono text-[10px]">
+                                      <bdi dir="ltr">+{formatMinutesToPersianReadable(item.liveOvertime)}</bdi> اضافه کار
+                                    </span>
+                                  )
+                                ) : r.overtimeMinutes > 0 ? (
+                                  <span className="text-emerald-400 font-mono text-[10px]">
+                                    <bdi dir="ltr">+{formatMinutesToPersianReadable(r.overtimeMinutes)}</bdi> اضافه کار
+                                  </span>
+                                ) : r.deficitMinutes > 0 ? (
+                                  <span className="text-rose-400 font-mono text-[10px]">
+                                    <bdi dir="ltr">-{formatMinutesToPersianReadable(r.deficitMinutes)}</bdi> کسر کار
+                                  </span>
+                                ) : item.isLeave ? (
+                                  <span className="text-amber-400 font-mono text-[10px]">
+                                    مرخصی کامل
+                                  </span>
+                                ) : item.isHol ? (
+                                  <span className="text-purple-300 font-mono text-[10px]">
+                                    روز تعطیل
+                                  </span>
+                                ) : (
+                                  <span className="text-cyan-400 font-mono text-[10px]">
+                                    تکمیل موظفی
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )}
 
-                        {/* Pillar */}
+                        {/* Bar Pillar with Dynamic Live Glow */}
                         <div
-                          className={`w-full max-w-[18px] rounded-t-md ${item.barColor} transition-all duration-200 group-hover:opacity-80`}
-                          style={{ height: `${heightPercent}%` }}
-                        />
+                          className={`w-full max-w-[20px] rounded-t-md bg-gradient-to-t ${item.barColor} transition-all duration-300 group-hover:brightness-125 shadow-sm ${
+                            item.isCurrentlyWorking
+                              ? 'ring-2 ring-cyan-400 shadow-md shadow-cyan-500/30 relative overflow-hidden min-h-[6px]'
+                              : ''
+                          }`}
+                          style={{ height: `${item.isCurrentlyWorking ? Math.max(4, heightPercent) : heightPercent}%` }}
+                        >
+                          {/* Top neon cap for live bar */}
+                          {item.isCurrentlyWorking && (
+                            <div className="absolute top-0 inset-x-0 h-0.5 bg-white/90 rounded-t-md shadow-[0_0_6px_#22d3ee]" />
+                          )}
+                          {/* Live shimmer reflection effect */}
+                          {item.isCurrentlyWorking && (
+                            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-cyan-300/20 to-transparent animate-pulse" />
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -247,23 +467,31 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               </div>
 
               {/* Day Labels Row */}
-              <div className="flex items-center justify-between gap-1 sm:gap-2 px-1 mt-2 pt-1.5 border-t border-white/10">
+              <div className="flex items-center justify-between gap-1 sm:gap-2 px-1 mt-2 pt-1.5 border-t border-slate-800/60">
                 {chartItems.map((item) => {
                   const { jd } = parseJalaliDate(item.record.date);
                   return (
                     <div
                       key={`lbl_${item.record.id || item.record.date}`}
-                      className="flex-1 text-center font-mono text-[9px]"
+                      className="flex-1 text-center font-mono text-[9px] sm:text-[10px]"
                     >
-                      <span
-                        className={
-                          item.isToday
-                            ? 'bg-white text-black px-1 py-0.5 rounded text-[8px] font-bold'
-                            : 'text-white/40'
-                        }
-                      >
-                        {toPersianDigits(jd)}
-                      </span>
+                      {item.isToday ? (
+                        <span className="inline-flex items-center justify-center px-1 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/40 shadow-sm text-[8px] sm:text-[9px]">
+                          {toPersianDigits(jd)}
+                        </span>
+                      ) : (
+                        <span
+                          className={
+                            item.isFri
+                              ? 'text-rose-400 font-bold'
+                              : item.isThu
+                              ? 'text-cyan-400 font-medium'
+                              : 'text-slate-400'
+                          }
+                        >
+                          {toPersianDigits(jd)}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
@@ -271,34 +499,45 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </LiquidGlassCard>
 
-      {/* 2. Donut & Performance Ratio */}
-      <div className="rounded-2xl border border-white/10 bg-[#09090d] p-5 sm:p-6 flex flex-col justify-between">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center text-[#eca8d6]">
-              <PieChartIcon className="h-4 w-4" />
+      {/* 2. Donut & Performance Ratio Column */}
+      <LiquidGlassCard
+        className="rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl flex flex-col justify-between"
+        sheenColor="rgba(99, 102, 241, 0.15)"
+      >
+        <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-2xl bg-cyan-500/20 p-2.5 text-cyan-300 border border-cyan-400/30 shadow-inner">
+              <PieChartIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">شاخص‌های تحقق</h3>
-              <p className="text-[10px] text-white/40 font-mono">COMPLETION METRICS</p>
+              <h3 className="text-xs sm:text-sm font-bold text-white/95">توزیع وضعیت روزها</h3>
+              <p className="text-[10px] text-white/60">تحلیل نرخ حضور و انضباط ماه</p>
             </div>
           </div>
+          {isAnyWorkingToday && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 animate-pulse shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              شیفت فعال
+            </span>
+          )}
         </div>
 
-        {/* Donut Chart */}
-        <div className="flex items-center justify-center my-4 relative">
-          <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+        {/* Visual Donut Ring synchronized with Completion Rate */}
+        <div className="flex items-center justify-center my-3 relative">
+          <svg className="w-32 h-32 transform -rotate-90 drop-shadow-[0_0_12px_rgba(6,182,212,0.3)]" viewBox="0 0 36 36">
+            {/* Background Track */}
             <path
-              className="text-white/[0.06]"
+              className="text-white/10"
               strokeWidth="3.6"
               stroke="currentColor"
               fill="none"
               d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             />
+            {/* Completion Ring */}
             <path
-              className="text-[#eca8d6] transition-all duration-1000 ease-out"
+              className="text-cyan-400 transition-all duration-1000 ease-out"
               strokeDasharray={`${completionPercent}, 100`}
               strokeWidth="3.8"
               strokeLinecap="round"
@@ -308,36 +547,48 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             />
           </svg>
 
+          {/* Center Info in Donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-2xl font-light text-white font-mono">
+            <span className="text-xl sm:text-2xl font-black text-white/95 font-mono">
               {toPersianDigits(completionPercent)}%
             </span>
-            <span className="text-[10px] text-white/40 font-mono uppercase">تحقق موظفی</span>
+            <span className="text-[10px] text-white/60">تکمیل موظفی</span>
           </div>
         </div>
 
-        {/* Breakdown */}
-        <div className="space-y-2.5 pt-3 border-t border-white/10 text-xs font-mono">
+        {/* Stats breakdown list */}
+        <div className="space-y-2.5 pt-2 border-t border-white/10 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-white/60">روزهای حضور موثر:</span>
-            <span className="font-bold text-white">
+            <span className="flex items-center gap-1.5 text-white/70">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              روزهای حضور موثر:
+            </span>
+            <span className="font-mono font-bold text-emerald-300">
               {toPersianDigits(stats.presentDaysCount)} روز
             </span>
           </div>
+
           <div className="flex items-center justify-between">
-            <span className="text-white/60">مرخصی مصرف‌شده:</span>
-            <span className="font-bold text-white">
-              {toPersianDigits(stats.totalLeaveHours.toFixed(1))} ساعت
+            <span className="flex items-center gap-1.5 text-white/70">
+              <span className="h-2 w-2 rounded-full bg-amber-400" />
+              مرخصی استفاده‌شده:
+            </span>
+            <span className="font-mono font-bold text-amber-300">
+              {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز ({toPersianDigits(stats.totalLeaveHours.toFixed(1))}س)
             </span>
           </div>
+
           <div className="flex items-center justify-between">
-            <span className="text-white/60">نرخ ورود سروقت:</span>
-            <span className="font-bold text-emerald-400">
+            <span className="flex items-center gap-1.5 text-white/70">
+              <Award className="h-3.5 w-3.5 text-indigo-300" />
+              شاخص خوش‌قولی ورود:
+            </span>
+            <span className="font-mono font-bold text-indigo-300">
               {toPersianDigits(punctualityPct)}%
             </span>
           </div>
         </div>
-      </div>
+      </LiquidGlassCard>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-export type AppTheme = 'compute' | 'agentic' | 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
+export type AppTheme = 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -13,29 +13,9 @@ export interface ThemeConfig {
 
 export const APP_THEMES: ThemeConfig[] = [
   {
-    id: 'compute',
-    name: 'Compute 11 (Flagship)',
-    persianName: 'کامپیوتر ۱۱ (الگوی مرجع v0-compute-11)',
-    description: 'تم فوق مدرن الهام‌گرفته از v0-compute-11 با زمینه کربنی ژرف، هاله صورتی ارکید (#eca8d6)، مش‌بندی شبکه و متریک‌های زنده',
-    previewBg: '#050507',
-    previewCard: '#0c0d12',
-    previewAccent: '#eca8d6',
-    isDark: true,
-  },
-  {
-    id: 'agentic',
-    name: 'Agentic Minimal',
-    persianName: 'ایجنتیک مونوکروم (کرم عاجی)',
-    description: 'طراحی مینیمال Agentic با زمینه کرم عاجی و تایپوگرافی سوئیسی',
-    previewBg: '#F5F4F0',
-    previewCard: '#ffffff',
-    previewAccent: '#111111',
-    isDark: false,
-  },
-  {
     id: 'obsidian',
     name: 'Obsidian Aurora',
-    persianName: 'شفق نوکتورن تیره',
+    persianName: 'شفق نوکتورن (پیش‌فرض)',
     description: 'تم لوکس تیره با هاله‌های سرمه‌ای و اکسنت‌های فیروزه‌ای و نیلی',
     previewBg: '#090b14',
     previewCard: '#121526',
@@ -95,7 +75,7 @@ export function getStoredTheme(): AppTheme {
   } catch {
     // Ignore storage errors
   }
-  return 'compute';
+  return 'obsidian';
 }
 
 export function saveStoredTheme(theme: AppTheme): void {
@@ -117,7 +97,7 @@ export function applyThemeToDOM(theme: AppTheme): void {
   if (rootEl) {
     rootEl.setAttribute('data-theme', theme);
   }
-  if (theme === 'agentic' || theme === 'light') {
+  if (theme === 'light') {
     root.classList.remove('dark');
     root.classList.add('light');
     if (document.body) {

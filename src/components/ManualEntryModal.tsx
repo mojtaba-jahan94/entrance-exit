@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Info,
   Clock,
-  Coffee,
   AlertCircle,
   TrendingUp,
   TrendingDown,
@@ -27,6 +26,7 @@ import {
   formatMinutesToTimeString,
 } from '../utils/jalali';
 import { calculateAttendanceMetrics, DEFAULT_SHIFT_CONFIG } from '../utils/calculator';
+import { useFocusTrap } from '../utils/useFocusTrap';
 
 export interface ManualEntryModalProps {
   isOpen: boolean;
@@ -185,18 +185,8 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
     }
   }, [isDirty, onClose]);
 
-  // Close on Escape key with dirty check
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        handleAttemptClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleAttemptClose]);
+  // Accessible focus trap and Escape handler
+  const modalRef = useFocusTrap(isOpen, handleAttemptClose);
 
   // 5. Holiday & Full-Day Leave Soft Warning Detection
   const holidayInfo = useMemo(() => checkOfficialHoliday(year, month, day), [year, month, day]);
@@ -430,7 +420,10 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
         }
       }}
     >
-      <div className="relative w-full max-w-lg rounded-[32px] liquid-glass-modal p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col border border-white/20">
+      <div
+        ref={modalRef}
+        className="relative w-full max-w-lg rounded-[32px] liquid-glass-modal p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col border border-white/20"
+      >
         {/* 7. Confirmation Modal on Unsaved Changes */}
         {showUnsavedConfirm && (
           <div

@@ -1,23 +1,17 @@
 import React from 'react';
 import {
   Clock,
-  ArrowRight,
   CheckCircle2,
-  AlertTriangle,
   Coffee,
-  Calendar,
   ChevronLeft,
-  Activity,
-  Terminal,
-  Edit2,
 } from 'lucide-react';
 import { AttendanceRecord } from '../types';
 import {
   toPersianDigits,
   getJalaliWeekdayName,
-  formatMinutesToPersianReadable,
   formatMinutesToTimeString,
 } from '../utils/jalali';
+import { LiquidGlassCard } from './LiquidGlassCard';
 
 interface RecentActivityCardProps {
   records: AttendanceRecord[];
@@ -33,144 +27,105 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
   // Sort descending by date and take the top 5
   const recentRecords = [...records]
     .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 6);
+    .slice(0, 5);
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#09090d] overflow-hidden transition-all duration-300 hover:border-white/20">
-      {/* Top Header */}
-      <div className="flex flex-wrap items-center justify-between p-5 sm:p-6 border-b border-white/10 bg-white/[0.01]">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center text-[#eca8d6]">
-            <Terminal className="h-4 w-4" />
+    <LiquidGlassCard
+      className="rounded-[28px] sm:rounded-[32px] p-4 sm:p-5 shadow-xl"
+      sheenColor="rgba(99, 102, 241, 0.14)"
+    >
+      <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-2xl bg-indigo-500/20 p-2.5 text-indigo-300 border border-indigo-400/30 shadow-inner">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-[#eca8d6] uppercase tracking-wider">
-                03 // REAL-TIME AUDIT TRAIL
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#eca8d6] animate-pulse" />
-            </div>
-            <h3 className="text-sm font-semibold text-white mt-0.5">
-              فید آخرین ترددهای ثبت‌شده در سامانه
-            </h3>
+            <h3 className="text-xs sm:text-sm font-bold text-white/95">آخرین وضعیت ترددهای ثبت‌شده</h3>
+            <p className="text-[10px] sm:text-xs text-white/60">مرور سریع روزهای کاری اخیر</p>
           </div>
         </div>
 
         <button
           onClick={onNavigateToTimesheet}
-          className="inline-flex items-center gap-1.5 text-xs font-mono text-white/60 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-white/25 transition-all"
+          className="liquid-pill-btn px-3 py-1.5 text-xs text-indigo-200 hover:text-white group"
         >
-          <span>مشاهده کارنامه کامل ماه</span>
-          <ChevronLeft className="h-3.5 w-3.5" />
+          <span>مشاهده کل ترددها</span>
+          <ChevronLeft className="h-3.5 w-3.5 mr-1 group-hover:-translate-x-0.5 transition-transform" />
         </button>
       </div>
 
-      {/* Audit List */}
-      {recentRecords.length === 0 ? (
-        <div className="p-12 text-center text-white/40 font-mono text-xs">
-          هیچ ثبتی در پایگاه داده یافت نشد.
-        </div>
-      ) : (
-        <div className="divide-y divide-white/5">
-          {recentRecords.map((rec) => {
-            const weekday = getJalaliWeekdayName(rec.date);
-            const isCompleted = Boolean(rec.checkIn && rec.checkOut);
-            const isInProgress = Boolean(rec.checkIn && !rec.checkOut);
-            const isLeave = rec.status === 'leave';
-            const isAbsent = rec.status === 'absent';
-            const hasOvertime = rec.overtimeMinutes > 0 || rec.holidayOvertimeMinutes > 0;
-            const hasDeficit = rec.deficitMinutes > 0;
-
+      <div className="divide-y divide-white/[0.08]">
+        {recentRecords.length === 0 ? (
+          <div className="py-8 text-center text-xs text-white/40">
+            هنوز رکوردی برای نمایش وجود ندارد.
+          </div>
+        ) : (
+          recentRecords.map((r) => {
+            const weekday = getJalaliWeekdayName(r.date);
             return (
               <div
-                key={rec.id || rec.date}
-                className="flex flex-wrap items-center justify-between p-4 sm:px-6 hover:bg-white/[0.02] transition-colors gap-3"
+                key={r.id || r.date}
+                onClick={() => onEditRecord(r)}
+                className="py-2.5 sm:py-3 flex items-center justify-between gap-2 hover:bg-white/[0.06] px-2.5 rounded-2xl transition-all cursor-pointer group"
               >
                 {/* Date & Weekday */}
-                <div className="flex items-center gap-3 min-w-[140px]">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      isInProgress
-                        ? 'bg-[#eca8d6] animate-pulse'
-                        : isCompleted
-                        ? 'bg-emerald-400'
-                        : isLeave
-                        ? 'bg-amber-400'
-                        : 'bg-rose-400'
-                    }`}
-                  />
-                  <div>
-                    <div className="font-mono text-xs font-semibold text-white">
-                      {toPersianDigits(rec.date)}
-                    </div>
-                    <div className="text-[11px] text-white/40">{weekday}</div>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex flex-col">
+                    <span className="font-mono text-xs sm:text-sm font-bold text-white/95 group-hover:text-indigo-300 transition-colors">
+                      {toPersianDigits(r.date)}
+                    </span>
+                    <span className="text-[10px] text-white/60">{weekday}</span>
                   </div>
                 </div>
 
-                {/* Clock In / Out */}
-                <div className="flex items-center gap-6 text-xs font-mono">
-                  <div>
-                    <span className="text-white/40 text-[10px] block">ورود:</span>
-                    <span className="text-white font-medium">
-                      {rec.checkIn ? toPersianDigits(rec.checkIn) : '—'}
-                    </span>
+                {/* Times (Check In / Check Out) */}
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <div className="bg-white/[0.05] border border-white/15 px-2.5 py-1 rounded-xl text-emerald-300 text-center shadow-inner">
+                    <span className="text-[9px] text-white/50 block">ورود</span>
+                    <span>{r.checkIn ? toPersianDigits(r.checkIn) : '--:--'}</span>
                   </div>
-                  <div>
-                    <span className="text-white/40 text-[10px] block">خروج:</span>
-                    <span className="text-white font-medium">
-                      {rec.checkOut ? toPersianDigits(rec.checkOut) : isInProgress ? 'حاضر' : '—'}
-                    </span>
+                  <span className="text-white/30">-</span>
+                  <div className="bg-white/[0.05] border border-white/15 px-2.5 py-1 rounded-xl text-rose-300 text-center shadow-inner">
+                    <span className="text-[9px] text-white/50 block">خروج</span>
+                    <span>{r.checkOut ? toPersianDigits(r.checkOut) : '--:--'}</span>
                   </div>
                 </div>
 
-                {/* Worked Time & Balance */}
-                <div className="flex items-center gap-4 text-xs font-mono">
-                  <div className="text-right">
-                    <span className="text-white/40 text-[10px] block">کارکرد مفید:</span>
-                    <span className="text-white font-medium">
-                      {rec.workedMinutes > 0 ? toPersianDigits(formatMinutesToTimeString(rec.workedMinutes)) : '—'}
+                {/* Status Badges */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {r.status === 'present' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300 border border-emerald-400/30">
+                      <CheckCircle2 className="h-3 w-3" />
+                      <span className="hidden xs:inline">حاضر</span>
                     </span>
-                  </div>
-
-                  {/* Status Tag */}
-                  <div>
-                    {hasOvertime && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-[#eca8d6]/10 text-[#eca8d6] border border-[#eca8d6]/30">
-                        +{toPersianDigits(rec.overtimeMinutes + rec.holidayOvertimeMinutes)}د اضافه‌کار
-                      </span>
-                    )}
-                    {hasDeficit && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/10 text-rose-400 border border-rose-500/30">
-                        -{toPersianDigits(rec.deficitMinutes)}د کسرکار
-                      </span>
-                    )}
-                    {!hasOvertime && !hasDeficit && isCompleted && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-white/[0.04] text-white/60 border border-white/10">
-                        تراز دقیق
-                      </span>
-                    )}
-                    {isLeave && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                        مرخصی
-                      </span>
-                    )}
-                  </div>
+                  )}
+                  {r.status === 'leave' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-400/30">
+                      <Coffee className="h-3 w-3" />
+                      مرخصی
+                    </span>
+                  )}
+                  {r.delayMinutes > 0 && (
+                    <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-300 border border-rose-400/30">
+                      تاخیر: {toPersianDigits(r.delayMinutes)}د
+                    </span>
+                  )}
+                  {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
+                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-300 border border-amber-400/30">
+                      مرخصی: {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
+                    </span>
+                  )}
+                  {r.overtimeMinutes > 0 && (
+                    <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[10px] font-semibold text-indigo-300 border border-indigo-400/30">
+                      + اضافه کار
+                    </span>
+                  )}
                 </div>
-
-                {/* Edit Button */}
-                <button
-                  type="button"
-                  onClick={() => onEditRecord(rec)}
-                  className="p-1.5 rounded-lg border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-all"
-                  title="ویرایش تردد"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
               </div>
             );
-          })}
-        </div>
-      )}
-    </div>
+          })
+        )}
+      </div>
+    </LiquidGlassCard>
   );
 };
