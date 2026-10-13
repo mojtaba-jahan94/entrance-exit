@@ -413,7 +413,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="manual-entry-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           handleAttemptClose();
@@ -431,7 +431,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
             aria-modal="true"
             aria-labelledby="unsaved-title"
             aria-describedby="unsaved-desc"
-            className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 p-5 rounded-[32px] backdrop-blur-md animate-in fade-in duration-150"
+            className="absolute inset-0 z-[70] flex items-center justify-center bg-black/80 p-5 rounded-[32px] backdrop-blur-md animate-in fade-in duration-150"
           >
             <div className="bg-[var(--surface)] border border-[var(--border-strong)] rounded-2xl p-5 max-w-sm w-full text-center shadow-2xl space-y-3.5">
               <div className="mx-auto w-11 h-11 rounded-full bg-[var(--semantic-warning)]/15 text-[var(--semantic-warning)] border border-[var(--semantic-warning)]/30 flex items-center justify-center">

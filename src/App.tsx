@@ -1,10 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
-  PlusCircle,
-  Coffee,
   Calendar,
-  LayoutDashboard,
-  Table as TableIcon,
   TrendingUp,
   CalendarClock,
   LogIn,
@@ -55,6 +51,7 @@ import { StorageModeModal } from './components/StorageModeModal';
 import { LiquidMeshBackground } from './components/LiquidMeshBackground';
 
 import { Navbar, ActiveTab } from './components/Navbar';
+import { BottomCapsuleDock } from './components/BottomCapsuleDock';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
 import { ClockCardSkeleton, StatsCardsSkeleton } from './components/DashboardSkeletons';
@@ -102,6 +99,7 @@ function DashboardApp() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
+  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Initialize UI settings on mount
   useEffect(() => {
@@ -601,7 +599,7 @@ function DashboardApp() {
   };
 
   return (
-    <div data-theme={effectiveTheme} className="relative min-h-screen flex flex-col font-sans pb-36 md:pb-16 transition-colors duration-300">
+    <div data-theme={effectiveTheme} className="relative min-h-screen flex flex-col font-sans transition-colors duration-300">
       {/* Dynamic Fluid Mesh Background Engine */}
       <LiquidMeshBackground />
 
@@ -613,7 +611,6 @@ function DashboardApp() {
           setEditingRecord(null);
           setIsManualModalOpen(true);
         }}
-        onOpenSettings={() => setIsSettingsModalOpen(true)}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
         onOpenStorageMode={() => setIsStorageModalOpen(true)}
@@ -622,8 +619,8 @@ function DashboardApp() {
         onSearchChange={setSearchQuery}
       />
 
-      {/* Main Content Area: md:mr-20 accounts for the fixed vertical dock on desktop */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pr-20">
+      {/* Main Content Area: padded at bottom for the bottom floating dock */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 pb-28 sm:pb-24">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
@@ -892,11 +889,11 @@ function DashboardApp() {
         )}
       </main>
 
-      {/* Mobile Floating Thumb-Zone Punch Bar (< 768px, above bottom nav) */}
+      {/* Mobile Floating Thumb-Zone Punch Bar (< 768px, positioned with fixed gap above bottom dock) */}
       {activeTab === 'dashboard' && (
         <aside
           aria-label="ثبت سریع تردد"
-          className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-30 px-3 py-1.5 pointer-events-none"
+          className="md:hidden fixed bottom-[4.75rem] inset-x-0 z-30 px-3 py-1.5 pointer-events-none print:hidden"
         >
           <div className="mx-auto max-w-sm pointer-events-auto">
             {!todayRecord?.checkIn ? (
@@ -957,94 +954,20 @@ function DashboardApp() {
         </aside>
       )}
 
-      {/* Mobile Sticky Bottom Navigation Bar */}
-      <nav
-        aria-label="ناوبری سریع موبایل"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)]/95 backdrop-blur-xl border-t border-[var(--border-strong)] px-2 py-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border"
-      >
-        <button
-          type="button"
-          onClick={() => setActiveTab('dashboard')}
-          aria-label="پیشخوان و تقویم"
-          aria-current={activeTab === 'dashboard' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
-            activeTab === 'dashboard'
-              ? 'text-[var(--accent)] font-bold scale-105'
-              : 'text-muted hover:text-text'
-          }`}
-        >
-          <LayoutDashboard className="h-4 w-4" />
-          <span>پیشخوان</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('timesheet')}
-          aria-label="کارنامه تردد"
-          aria-current={activeTab === 'timesheet' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
-            activeTab === 'timesheet'
-              ? 'text-[var(--accent)] font-bold scale-105'
-              : 'text-muted hover:text-text'
-          }`}
-        >
-          <TableIcon className="h-4 w-4" />
-          <span>کارنامه</span>
-        </button>
-
-        {/* Center Quick Add Punch */}
-        <button
-          type="button"
-          onClick={() => {
-            setEditingRecord(null);
-            setIsManualModalOpen(true);
-          }}
-          aria-label="ثبت دستی تردد جدید"
-          className="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-0.5 px-2 text-[var(--accent)] font-bold active:scale-95 transition-all"
-        >
-          <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-contrast)] shadow-md flex items-center justify-center">
-            <PlusCircle className="h-5 w-5" />
-          </div>
-          <span className="text-[9px]">ثبت تردد</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('leaves')}
-          aria-label="مرخصی‌ها"
-          aria-current={activeTab === 'leaves' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
-            activeTab === 'leaves'
-              ? 'text-[var(--accent)] font-bold scale-105'
-              : 'text-muted hover:text-text'
-          }`}
-        >
-          <Coffee className="h-4 w-4" />
-          <span>مرخصی</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('reports')}
-          aria-label="گزارشات آماری"
-          aria-current={activeTab === 'reports' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
-            activeTab === 'reports'
-              ? 'text-[var(--accent)] font-bold scale-105'
-              : 'text-muted hover:text-text'
-          }`}
-        >
-          <TrendingUp className="h-4 w-4" />
-          <span>گزارشات</span>
-        </button>
-      </nav>
+      {/* Floating Capsule Bottom Dock (Unified desktop & mobile navigation) */}
+      <BottomCapsuleDock
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
+        settingsButtonRef={settingsButtonRef}
+      />
 
       {/* 8-Second Accessible Undo Toast Snackbar */}
       {undoState && (
         <aside
           role="status"
           aria-live="polite"
-          className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto"
+          className="fixed bottom-36 md:bottom-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto print:hidden"
         >
           <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-2)]/95 border border-[var(--border-strong)] p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-text">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -1120,7 +1043,10 @@ function DashboardApp() {
 
       <SettingsModal
         isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
+        onClose={() => {
+          setIsSettingsModalOpen(false);
+          setTimeout(() => settingsButtonRef.current?.focus(), 50);
+        }}
         config={config}
         onSaveConfig={handleSaveConfig}
       />

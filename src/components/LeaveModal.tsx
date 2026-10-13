@@ -287,7 +287,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="leave-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xl animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
