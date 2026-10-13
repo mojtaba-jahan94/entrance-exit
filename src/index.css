@@ -65,6 +65,19 @@
   }
 }
 
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-shrink-8s {
+  animation: shrinkWidth 8s linear forwards;
+}
+
 /* ======================================================== */
 /* 💎 iOS 27 LIQUID GLASS DESIGN SYSTEM CLASSES             */
 /* ======================================================== */

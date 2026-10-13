@@ -13,6 +13,7 @@ import {
   LogOut,
   CheckCircle,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
@@ -232,8 +233,33 @@ function DashboardApp() {
     return currentRecords;
   };
 
+  // Undo State & Handler
+  const [undoState, setUndoState] = useState<{
+    message: string;
+    previousRecords: AttendanceRecord[];
+    id: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!undoState) return;
+    const timer = setTimeout(() => {
+      setUndoState(null);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [undoState]);
+
+  const handleUndoLastPunch = () => {
+    if (!undoState) return;
+    const restored = undoState.previousRecords;
+    setRecords(restored);
+    saveAttendanceRecords(restored, userId);
+    triggerAutoSync(restored, leaves, config);
+    setUndoState(null);
+  };
+
   // 1. Clock in today
   const handleCheckIn = (time: string) => {
+    const prevSnapshot = [...records];
     let existing = records.find((r) => r.date === todayStr);
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
@@ -255,6 +281,12 @@ function DashboardApp() {
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
     triggerAutoSync(updatedList, leaves, config);
+
+    setUndoState({
+      message: `ورود ساعت ${toPersianDigits(time)} ثبت شد`,
+      previousRecords: prevSnapshot,
+      id: Date.now(),
+    });
   };
 
   // 2. Clock out today
@@ -262,6 +294,7 @@ function DashboardApp() {
     let existing = records.find((r) => r.date === todayStr);
     if (!existing) return;
 
+    const prevSnapshot = [...records];
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
@@ -278,6 +311,12 @@ function DashboardApp() {
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
     triggerAutoSync(updatedList, leaves, config);
+
+    setUndoState({
+      message: `خروج ساعت ${toPersianDigits(time)} ثبت شد`,
+      previousRecords: prevSnapshot,
+      id: Date.now(),
+    });
   };
 
   // Mobile Thumb-Zone Punch Handler with Confirmation Guard for Checkout
@@ -757,6 +796,53 @@ function DashboardApp() {
           <span>گزارشات</span>
         </button>
       </div>
+
+      {/* 8-Second Accessible Undo Toast Snackbar */}
+      {undoState && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-slate-900/95 border border-cyan-400/40 p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-white">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="rounded-xl bg-emerald-500/20 p-1.5 text-emerald-300 border border-emerald-400/30 shrink-0">
+                <CheckCircle className="h-4 w-4 text-emerald-400" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold truncate text-white">
+                {undoState.message}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleUndoLastPunch}
+                className="rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold px-3.5 py-1.5 text-xs transition-all shadow-md active:scale-95 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>بازگردانی</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUndoState(null)}
+                className="text-slate-300 hover:text-white p-1 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                aria-label="بستن اعلان"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Visual 8-second progress line */}
+            <div className="absolute bottom-0 inset-x-0 h-1 bg-white/10 overflow-hidden">
+              <div
+                key={undoState.id}
+                className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 animate-shrink-8s"
+              />
+            </div>
+          </div>
+        </aside>
+      )}
 
       {/* Modals */}
       <ManualEntryModal
