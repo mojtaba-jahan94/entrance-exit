@@ -14,6 +14,7 @@ import {
   CheckCircle,
   X,
   RotateCcw,
+  AlertTriangle,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
@@ -181,6 +182,21 @@ function DashboardApp() {
   const todayRecord = useMemo(() => {
     return records.find((r) => r.date === todayStr) || null;
   }, [records, todayStr]);
+
+  // Detection for missing previous day check-out
+  const [dismissedMissingCheckoutDate, setDismissedMissingCheckoutDate] = useState<string | null>(null);
+
+  const unclosedPreviousRecord = useMemo(() => {
+    const unclosed = records
+      .filter((r) => r.date < todayStr && Boolean(r.checkIn) && !r.checkOut)
+      .sort((a, b) => b.date.localeCompare(a.date));
+    return unclosed[0] || null;
+  }, [records, todayStr]);
+
+  const showMissingCheckoutBanner = Boolean(
+    unclosedPreviousRecord &&
+    dismissedMissingCheckoutDate !== unclosedPreviousRecord.date
+  );
 
   const isWorkingNow = Boolean(todayRecord && todayRecord.checkIn && !todayRecord.checkOut);
 
@@ -499,6 +515,51 @@ function DashboardApp() {
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            {/* Warning Banner: Missing Previous Day Check-Out */}
+            {showMissingCheckoutBanner && unclosedPreviousRecord && (
+              <aside
+                role="alert"
+                aria-label="هشدار خروج ثبت نشده روز گذشته"
+                className="rounded-[24px] border border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 backdrop-blur-xl p-3.5 sm:p-4 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-3 duration-300"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="rounded-xl bg-amber-500/20 p-2 text-amber-300 border border-amber-400/40 shrink-0 shadow-sm shadow-amber-500/20">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-amber-200">
+                      خروج روز {toPersianDigits(unclosedPreviousRecord.date)} ثبت نشده است
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-slate-200 font-medium mt-0.5">
+                      ورود در ساعت <strong className="font-mono text-white">{toPersianDigits(unclosedPreviousRecord.checkIn || '')}</strong> ثبت شده اما خروج آن ثبت نشده است.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingRecord(unclosedPreviousRecord);
+                      setIsManualModalOpen(true);
+                    }}
+                    className="rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-black px-4 py-2 text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  >
+                    <span>تکمیل دستی</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedMissingCheckoutDate(unclosedPreviousRecord.date)}
+                    className="text-slate-300 hover:text-white p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                    title="بستن موقت"
+                    aria-label="بستن موقت هشدار"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </aside>
+            )}
+
             {/* Live Clock Card */}
             <section aria-label="ثبت زنده تردد">
               <ClockCard
