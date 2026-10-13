@@ -15,6 +15,8 @@ import {
   X,
   RotateCcw,
   AlertTriangle,
+  CloudOff,
+  RefreshCw,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
@@ -56,6 +58,7 @@ import { LiquidMeshBackground } from './components/LiquidMeshBackground';
 import { Navbar, ActiveTab } from './components/Navbar';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
+import { ClockCardSkeleton, StatsCardsSkeleton } from './components/DashboardSkeletons';
 import { AttendanceTable } from './components/AttendanceTable';
 import { PersianCalendar } from './components/PersianCalendar';
 import { DashboardCharts } from './components/DashboardCharts';
@@ -111,6 +114,11 @@ function DashboardApp() {
     saveStoredTheme(theme);
   };
 
+  // Dashboard & Sync States
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+  const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+  const [isRetryingSync, setIsRetryingSync] = useState<boolean>(false);
+
   // Auto-sync helper to cloud if user opted into cloud_encrypted
   const triggerAutoSync = useCallback(
     (updatedRecords: AttendanceRecord[], updatedLeaves: LeaveRecord[], updatedConfig: ShiftConfig) => {
@@ -119,7 +127,14 @@ function DashboardApp() {
           records: updatedRecords,
           leaves: updatedLeaves,
           config: updatedConfig,
-        }).catch((e) => console.warn('Auto cloud sync notice:', e));
+        })
+          .then(() => {
+            setCloudSyncError(null);
+          })
+          .catch((e) => {
+            console.warn('Auto cloud sync notice:', e);
+            setCloudSyncError('خطا در همگام‌سازی ابری. تغییرات شما به صورت امن در حافظه محلی ذخیره شده است.');
+          });
       }
     },
     [storageMode, syncDataToCloud]
@@ -137,22 +152,47 @@ function DashboardApp() {
 
     // If user has cloud sync enabled, attempt to load cloud data if local was default or empty
     if (storageMode === 'cloud_encrypted') {
-      loadDataFromCloud().then((cloudData) => {
-        if (cloudData && cloudData.records && cloudData.records.length > 0) {
-          setRecords(cloudData.records);
-          saveAttendanceRecords(cloudData.records, userId);
-          if (cloudData.leaves) {
-            setLeaves(cloudData.leaves);
-            saveLeaveRecords(cloudData.leaves, userId);
+      loadDataFromCloud()
+        .then((cloudData) => {
+          if (cloudData && cloudData.records && cloudData.records.length > 0) {
+            setRecords(cloudData.records);
+            saveAttendanceRecords(cloudData.records, userId);
+            if (cloudData.leaves) {
+              setLeaves(cloudData.leaves);
+              saveLeaveRecords(cloudData.leaves, userId);
+            }
+            if (cloudData.config) {
+              setConfig(cloudData.config);
+              saveShiftConfig(cloudData.config, userId);
+            }
           }
-          if (cloudData.config) {
-            setConfig(cloudData.config);
-            saveShiftConfig(cloudData.config, userId);
-          }
-        }
-      }).catch((e) => console.warn('Cloud initial load notice:', e));
+          setCloudSyncError(null);
+        })
+        .catch((e) => {
+          console.warn('Cloud initial load notice:', e);
+          setCloudSyncError('خطا در دریافت اطلاعات از سرور ابری. داده‌های محلی بارگذاری شدند.');
+        })
+        .finally(() => {
+          setIsDataLoading(false);
+        });
+    } else {
+      setIsDataLoading(false);
     }
   }, [userId, storageMode]);
+
+  // Non-blocking retry handler for cloud sync
+  const handleRetryCloudSync = async () => {
+    setIsRetryingSync(true);
+    try {
+      await syncDataToCloud({ records, leaves, config });
+      setCloudSyncError(null);
+    } catch (err) {
+      console.warn('Retry sync failed:', err);
+      setCloudSyncError('تلاش مجدد ناموفق بود. اتصال به اینترنت را بررسی کنید؛ تغییرات محلی ایمن هستند.');
+    } finally {
+      setIsRetryingSync(false);
+    }
+  };
 
   // Manual trigger to push local data to encrypted cloud
   const handleTriggerSync = async () => {
@@ -560,28 +600,80 @@ function DashboardApp() {
               </aside>
             )}
 
+            {/* Cloud Sync Error Banner with Non-Blocking Retry */}
+            {cloudSyncError && (
+              <aside
+                role="status"
+                aria-live="polite"
+                className="rounded-[24px] border border-rose-400/35 bg-gradient-to-r from-rose-950/50 via-slate-900/60 to-rose-950/40 backdrop-blur-xl p-3.5 sm:p-4 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="rounded-xl bg-rose-500/20 p-2 text-rose-300 border border-rose-400/35 shrink-0 shadow-sm shadow-rose-500/20">
+                    <CloudOff className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-rose-200">
+                      عدم همگام‌سازی با فضای ابری
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-slate-200 font-medium mt-0.5">
+                      {cloudSyncError}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRetryCloudSync}
+                    disabled={isRetryingSync}
+                    className="rounded-full bg-rose-500/25 hover:bg-rose-500/35 text-rose-200 border border-rose-400/40 font-bold px-4 py-2 text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-rose-400 disabled:opacity-60"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isRetryingSync ? 'animate-spin' : ''}`} />
+                    <span>{isRetryingSync ? 'در حال ارسال...' : 'تلاش مجدد'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCloudSyncError(null)}
+                    className="text-slate-300 hover:text-white p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                    title="بستن پیام خطا"
+                    aria-label="بستن پیام خطا"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </aside>
+            )}
+
             {/* Live Clock Card */}
             <section aria-label="ثبت زنده تردد">
-              <ClockCard
-                todayRecord={todayRecord}
-                config={config}
-                onCheckIn={handleCheckIn}
-                onCheckOut={handleCheckOut}
-                onResetToday={handleResetToday}
-                onOpenEdit={() => {
-                  setEditingRecord(todayRecord || ({ date: todayStr } as any));
-                  setIsManualModalOpen(true);
-                }}
-              />
+              {isDataLoading ? (
+                <ClockCardSkeleton />
+              ) : (
+                <ClockCard
+                  todayRecord={todayRecord}
+                  config={config}
+                  onCheckIn={handleCheckIn}
+                  onCheckOut={handleCheckOut}
+                  onResetToday={handleResetToday}
+                  onOpenEdit={() => {
+                    setEditingRecord(todayRecord || ({ date: todayStr } as any));
+                    setIsManualModalOpen(true);
+                  }}
+                />
+              )}
             </section>
 
             {/* Quick KPI Stats Summary */}
             <section aria-label="خلاصه آماری ماه جاری">
-              <StatsCards
-                stats={monthlyStats}
-                monthName={selectedMonthName}
-                year={selectedYear}
-              />
+              {isDataLoading ? (
+                <StatsCardsSkeleton />
+              ) : (
+                <StatsCards
+                  stats={monthlyStats}
+                  monthName={selectedMonthName}
+                  year={selectedYear}
+                />
+              )}
             </section>
 
             {/* Smart Solar Hijri Calendar (Prominent Centerpiece replacing charts) */}
