@@ -9,11 +9,16 @@ import {
   Table as TableIcon,
   TrendingUp,
   CalendarClock,
+  LogIn,
+  LogOut,
+  CheckCircle,
+  X,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
   getCurrentJalaliDate,
   getTodayJalaliString,
+  getCurrentTimeString,
   PERSIAN_MONTH_NAMES,
   toPersianDigits,
   getJalaliWeekdayIndex,
@@ -275,6 +280,32 @@ function DashboardApp() {
     triggerAutoSync(updatedList, leaves, config);
   };
 
+  // Mobile Thumb-Zone Punch Handler with Confirmation Guard for Checkout
+  const [checkoutConfirmActive, setCheckoutConfirmActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!checkoutConfirmActive) return;
+    const timer = setTimeout(() => {
+      setCheckoutConfirmActive(false);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [checkoutConfirmActive]);
+
+  const handleMobilePunch = () => {
+    const curTime = getCurrentTimeString(false);
+    if (!todayRecord?.checkIn) {
+      handleCheckIn(curTime);
+    } else if (todayRecord.checkIn && !todayRecord.checkOut) {
+      if (!checkoutConfirmActive) {
+        setCheckoutConfirmActive(true);
+      } else {
+        setCheckoutConfirmActive(false);
+        const defaultBreak = todayRecord.dayOfWeek === 5 ? 0 : (config.defaultBreakMinutes ?? 30);
+        handleCheckOut(curTime, defaultBreak);
+      }
+    }
+  };
+
   // 3. Reset today
   const handleResetToday = () => {
     if (window.confirm('آیا از بازنشانی ثبت ورود/خروج امروز مطمئن هستید؟')) {
@@ -401,7 +432,7 @@ function DashboardApp() {
   };
 
   return (
-    <div data-theme={currentTheme} className="relative min-h-screen flex flex-col font-sans pb-24 md:pb-16 transition-colors duration-300">
+    <div data-theme={currentTheme} className="relative min-h-screen flex flex-col font-sans pb-36 md:pb-16 transition-colors duration-300">
       {/* Dynamic Fluid Mesh Background Engine */}
       <LiquidMeshBackground />
 
@@ -596,6 +627,71 @@ function DashboardApp() {
           </div>
         )}
       </main>
+
+      {/* Mobile Floating Thumb-Zone Punch Bar (< 768px, above bottom nav) */}
+      {activeTab === 'dashboard' && (
+        <aside
+          aria-label="ثبت سریع تردد"
+          className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] inset-x-0 z-30 px-3 py-1.5 pointer-events-none"
+        >
+          <div className="mx-auto max-w-sm pointer-events-auto">
+            {!todayRecord?.checkIn ? (
+              /* State A: Ready to Check In (Single-tap immediate punch) */
+              <button
+                type="button"
+                onClick={handleMobilePunch}
+                className="w-full min-h-[48px] h-12 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 text-sm font-black text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
+              >
+                <LogIn className="h-5 w-5 shrink-0" />
+                <span>ثبت ورود</span>
+                <span className="text-xs font-mono font-medium opacity-90">
+                  ({toPersianDigits(getCurrentTimeString(false))})
+                </span>
+              </button>
+            ) : !todayRecord.checkOut ? (
+              /* State B: Checked In (Checkout flow with confirmation guard) */
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleMobilePunch}
+                  className={`flex-1 min-h-[48px] h-12 rounded-full px-4 text-xs sm:text-sm font-black text-white shadow-xl border backdrop-blur-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
+                    checkoutConfirmActive
+                      ? 'bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 border-amber-300/80 shadow-rose-600/40 animate-pulse'
+                      : 'bg-gradient-to-r from-rose-500 via-pink-600 to-amber-600 border-white/40 shadow-rose-500/30'
+                  }`}
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  <span>
+                    {checkoutConfirmActive ? 'تأیید ثبت خروج؟ لمس مجدد' : 'ثبت خروج'}
+                  </span>
+                </button>
+
+                {checkoutConfirmActive && (
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutConfirmActive(false)}
+                    className="min-h-[48px] h-12 min-w-[48px] px-3.5 rounded-full bg-slate-900/90 text-slate-200 border border-white/25 backdrop-blur-xl text-xs font-bold active:scale-95 transition-all flex items-center justify-center"
+                    aria-label="انصراف از خروج"
+                    title="انصراف"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* State C: Both punches completed (Disabled state) */
+              <button
+                type="button"
+                disabled
+                className="w-full min-h-[48px] h-12 rounded-full bg-slate-900/85 text-emerald-300 border border-emerald-500/35 backdrop-blur-xl px-5 text-xs font-bold flex items-center justify-center gap-2 opacity-80 cursor-not-allowed shadow-md"
+              >
+                <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>حضور امروز کامل شد</span>
+              </button>
+            )}
+          </div>
+        </aside>
+      )}
 
       {/* Mobile Sticky Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border">
