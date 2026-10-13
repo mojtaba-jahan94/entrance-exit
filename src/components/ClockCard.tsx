@@ -14,11 +14,10 @@ import {
   Hourglass,
   Sliders,
   ChevronDown,
-  Activity,
-  Zap,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AttendanceRecord, ShiftConfig } from '../types';
+import { LiquidGlassCard } from './LiquidGlassCard';
 import {
   getCurrentTimeString,
   toPersianDigits,
@@ -60,313 +59,422 @@ export const ClockCard: React.FC<ClockCardProps> = ({
     if (todayRecord?.breakMinutes !== undefined && todayRecord.breakMinutes > 0) {
       setBreakMinutesInput(todayRecord.breakMinutes);
     } else {
-      setBreakMinutesInput(defaultBreak);
+      setBreakMinutesInput(isThursday ? 0 : config.defaultBreakMinutes ?? 30);
     }
-  }, [todayRecord, defaultBreak]);
+  }, [todayRecord?.breakMinutes, isThursday, config.defaultBreakMinutes]);
 
-  // Live timer tick when checked in
+  // Live timer tick if checked in
   useEffect(() => {
-    let interval: any = null;
-    if (isCheckedIn && todayRecord?.checkIn) {
-      const calcElapsed = () => {
-        const checkInMins = timeStringToMinutes(todayRecord.checkIn!);
-        const now = new Date();
-        const currentMins = now.getHours() * 60 + now.getMinutes();
-        const currentSecs = now.getSeconds();
-        const totalNowSecs = currentMins * 60 + currentSecs;
-        const inSecs = checkInMins * 60;
-        setElapsedSeconds(Math.max(0, totalNowSecs - inSecs));
-      };
-
-      calcElapsed();
-      interval = setInterval(calcElapsed, 1000);
-    } else {
+    if (!isCheckedIn || !todayRecord?.checkIn) {
       setElapsedSeconds(0);
+      return;
     }
-    return () => {
-      if (interval) clearInterval(interval);
+
+    const checkInMins = timeStringToMinutes(todayRecord.checkIn);
+    const updateElapsed = () => {
+      const now = new Date();
+      const curMins = now.getHours() * 60 + now.getMinutes();
+      const curSecs = now.getSeconds();
+      const totalSecs = Math.max(0, (curMins - checkInMins) * 60 + curSecs);
+      setElapsedSeconds(totalSecs);
     };
+
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
   }, [isCheckedIn, todayRecord?.checkIn]);
 
-  const handlePunchInNow = () => {
-    const time = getCurrentTimeString(false);
-    onCheckIn(time);
+  const formatElapsed = (totalSecs: number) => {
+    const hours = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+    const hStr = hours < 10 ? `0${hours}` : `${hours}`;
+    const mStr = mins < 10 ? `0${mins}` : `${mins}`;
+    const sStr = secs < 10 ? `0${secs}` : `${secs}`;
+    return `${toPersianDigits(hStr)}:${toPersianDigits(mStr)}:${toPersianDigits(sStr)}`;
   };
 
-  const handleCustomPunchIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (customInTime) {
-      onCheckIn(customInTime);
-      setShowCustomTime(false);
-      setCustomInTime('');
+  // Target checkout calculation
+  const requiredPresenceMins = isThursday
+    ? (config.thursdayMinutes || 240)
+    : (config.requiredDailyMinutes || 510);
+
+  const targetDepartureTime = React.useMemo(() => {
+    if (!todayRecord?.checkIn) return null;
+    const inMins = timeStringToMinutes(todayRecord.checkIn);
+    return formatMinutesToTimeString(inMins + requiredPresenceMins);
+  }, [todayRecord?.checkIn, requiredPresenceMins]);
+
+  // Shift progress (0 - 100%) and overtime tracking
+  const targetTotalSecs = requiredPresenceMins * 60;
+  const shiftProgressPercent = Math.min(
+    100,
+    targetTotalSecs > 0 ? Math.round((elapsedSeconds / targetTotalSecs) * 100) : 0
+  );
+  const isOvertimeLive = elapsedSeconds > targetTotalSecs;
+  const remainingLiveSecs = Math.max(0, targetTotalSecs - elapsedSeconds);
+  const overtimeLiveSecs = Math.max(0, elapsedSeconds - targetTotalSecs);
+
+  const handleCheckInClick = () => {
+    const curTime = showCustomTime && customInTime ? customInTime : getCurrentTimeString(false);
+    onCheckIn(curTime);
+    setShowCustomTime(false);
+  };
+
+  const handleCheckOutClick = () => {
+    const curTime = getCurrentTimeString(false);
+    onCheckOut(curTime, breakMinutesInput);
+
+    // Fire micro celebration confetti
+    try {
+      confetti({
+        particleCount: 90,
+        spread: 75,
+        origin: { y: 0.6 },
+      });
+    } catch (e) {
+      // ignore
     }
   };
 
-  const handlePunchOutNow = () => {
-    const time = getCurrentTimeString(false);
-    onCheckOut(time, breakMinutesInput);
-    try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
-    } catch {}
-  };
-
-  // Required presence
-  const requiredPresence =
-    isThursday && config.thursdayStatus === 'half_day'
-      ? config.thursdayMinutes || 240
-      : config.requiredDailyMinutes || 510;
-
-  const currentWorkedMinutes = isCheckedIn
-    ? Math.max(0, Math.floor(elapsedSeconds / 60) - breakMinutesInput)
-    : isCheckedOut
-    ? todayRecord?.workedMinutes || 0
-    : 0;
-
-  const progressPercent = Math.min(
-    100,
-    Math.round((currentWorkedMinutes / Math.max(1, requiredPresence - breakMinutesInput)) * 100)
-  );
-
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-[#09090d] p-6 sm:p-8 overflow-hidden transition-all duration-300 hover:border-white/20">
-      {/* Background Matrix Lines */}
-      <div className="absolute inset-0 bg-grid-compute pointer-events-none opacity-40" />
+    <LiquidGlassCard className="rounded-[32px] p-5 sm:p-7 shadow-2xl">
+      <div className="relative flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
+        {/* Left Side: Status & Timer Information */}
+        <div className="w-full md:w-auto flex-1 space-y-3 sm:space-y-4 text-center md:text-right">
+          {/* Shift Policy Badge */}
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.1] px-3.5 py-1 text-[11px] sm:text-xs font-medium text-white/90 border border-white/20 backdrop-blur-md shadow-sm">
+              <Clock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+              {isThursday ? (
+                <span>
+                  شیفت پنج‌شنبه: <strong>{toPersianDigits('۴:۰۰')} ساعت حضور</strong> (بدون کسر ناهار)
+                </span>
+              ) : (
+                <span>
+                  ورود شناور: {toPersianDigits(config.flexStartTimeMin || '08:30')} الی {toPersianDigits(config.flexStartTimeMax || '09:30')} | خروج: {toPersianDigits(config.flexDepartureMin || '17:00')} الی {toPersianDigits(config.flexDepartureMax || '18:00')}
+                </span>
+              )}
+            </div>
 
-      {/* Header Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-white/10 pb-4">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-[#eca8d6] uppercase tracking-wider">01 // REAL-TIME ATTENDANCE NODE</span>
-          <div className="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] font-mono text-white/70">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                isCheckedIn
-                  ? 'bg-[#eca8d6] animate-pulse shadow-[0_0_8px_#eca8d6]'
-                  : isCheckedOut
-                  ? 'bg-emerald-400'
-                  : 'bg-white/40'
-              }`}
-            />
-            <span>
-              {isCheckedIn
-                ? 'حاضر در شیفت کاری'
-                : isCheckedOut
-                ? 'شیفت امروز پایان یافت'
-                : 'در انتظار ثبت ورود'}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-mono text-white/50">
-          <Clock className="w-3.5 h-3.5 text-[#eca8d6]" />
-          <span>شیفت: {config.startTime} الی {config.endTime}</span>
-        </div>
-      </div>
-
-      {/* Main Grid: Clock Readout & Action Controls */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Column: Big Tabular Clock Readout */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="text-[11px] font-mono text-white/40 uppercase tracking-widest">
-            {isCheckedIn ? 'زمان سپری‌شده از ورود:' : 'ساعت رسمی تردد:'}
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3.5 py-1 text-[11px] sm:text-xs font-semibold text-blue-200 border border-blue-400/30 backdrop-blur-md">
+              <Coffee className="h-3 w-3 text-amber-400 shrink-0" />
+              <span>
+                {isThursday
+                  ? 'موظفی ۴ ساعت'
+                  : `حضور موظفی ۸.۵ ساعت (با کسر ${toPersianDigits(config.defaultBreakMinutes || 30)} د ناهار)`}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-baseline gap-3">
-            {isCheckedIn ? (
-              <div className="font-display text-5xl sm:text-6xl md:text-7xl font-light text-white tracking-tight font-mono tabular-nums">
-                {toPersianDigits(
-                  `${String(Math.floor(elapsedSeconds / 3600)).padStart(2, '0')}:${String(
-                    Math.floor((elapsedSeconds % 3600) / 60)
-                  ).padStart(2, '0')}:${String(elapsedSeconds % 60).padStart(2, '0')}`
+          <div>
+            <h2 className="text-xl sm:text-3xl font-black tracking-tight text-white/95 flex items-center justify-center md:justify-start gap-2.5">
+              <span>میز کار و تردد امروز شما</span>
+              {todayRecord?.isHoliday && (
+                <span className="text-[11px] sm:text-xs font-semibold px-3 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-400/40 backdrop-blur-md">
+                  {todayRecord.holidayTitle || 'تعطیل'}
+                </span>
+              )}
+            </h2>
+
+            {/* Subtext description based on state */}
+            {!isCheckedIn && !isCheckedOut && (
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-100 font-medium leading-relaxed">
+                هنوز ورود امروز را ثبت نکرده‌اید. ساعت مجاز ورود شما از <strong className="text-white">{toPersianDigits(config.flexStartTimeMin || '08:30')}</strong> تا <strong className="text-white">{toPersianDigits(config.flexStartTimeMax || '09:30')}</strong> بدون تاخیر است.
+              </p>
+            )}
+
+            {isCheckedIn && (
+              <div className="mt-1.5 space-y-1">
+                <p className="text-xs sm:text-sm text-emerald-300 font-medium flex items-center justify-center md:justify-start gap-2">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-sm shadow-emerald-400"></span>
+                  </span>
+                  <span>
+                    در حال کار — ورود در ساعت <strong className="font-mono text-white text-sm sm:text-base">{toPersianDigits(todayRecord?.checkIn || '')}</strong> ثبت شده است.
+                  </span>
+                </p>
+
+                {/* Target Departure notification */}
+                {targetDepartureTime && (
+                  <p className="text-xs text-slate-100 font-medium flex items-center justify-center md:justify-start gap-1.5 flex-wrap">
+                    <Hourglass className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                    <span>ساعت تکمیل موظفی امروز: </span>
+                    <strong className="font-mono text-cyan-300 font-bold text-xs sm:text-sm">
+                      {toPersianDigits(targetDepartureTime)}
+                    </strong>
+                    <span className="text-slate-200 font-medium">
+                      ({isThursday ? `${toPersianDigits(formatMinutesToTimeString(requiredPresenceMins))} ساعت حضور` : '۸.۵ ساعت حضور با نیم ساعت ناهار'})
+                    </span>
+                  </p>
                 )}
               </div>
-            ) : isCheckedOut ? (
-              <div className="font-display text-5xl sm:text-6xl md:text-7xl font-light text-white tracking-tight font-mono tabular-nums">
-                {toPersianDigits(formatMinutesToTimeString(todayRecord?.workedMinutes || 0))}
-                <span className="text-xl sm:text-2xl text-white/40 font-sans mr-2">کارکرد خالص</span>
-              </div>
-            ) : (
-              <div className="font-display text-5xl sm:text-6xl md:text-7xl font-light text-white tracking-tight font-mono tabular-nums">
-                {toPersianDigits(getCurrentTimeString(false))}
-              </div>
+            )}
+
+            {isCheckedOut && (
+              <p className="mt-1.5 text-xs sm:text-sm text-cyan-300 font-medium flex items-center justify-center md:justify-start gap-1.5">
+                <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>شیفت کاری امروز با موفقیت به پایان رسید و محاسبه شد. خسته نباشید!</span>
+              </p>
             )}
           </div>
 
-          {/* Progress Bar & Sub-indicators */}
-          <div className="space-y-2 pt-2">
-            <div className="flex items-center justify-between text-xs font-mono text-white/50">
-              <span>درصد تکمیل ساعات موظف امروز:</span>
-              <span className="text-[#eca8d6] font-semibold">{toPersianDigits(progressPercent)}%</span>
-            </div>
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#eca8d6] to-[#c597eb] rounded-full transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Quick Metrics Badges */}
-          <div className="flex flex-wrap gap-3 pt-2 text-xs font-mono">
+          {/* Today Metrics Badges */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-center sm:text-right">
             {todayRecord?.checkIn && (
-              <div className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] text-white/80">
-                <span className="text-white/40">ورود: </span>
-                <span className="text-white font-medium">{toPersianDigits(todayRecord.checkIn)}</span>
+              <div className="rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-md px-3 py-1.5 text-xs text-white">
+                <span className="text-slate-200 font-medium">ورود: </span>
+                <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkIn)}</span>
               </div>
             )}
-            {todayRecord?.targetCheckOut && (
-              <div className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] text-white/80">
-                <span className="text-white/40">خروج موظف پیشنهادی: </span>
-                <span className="text-[#eca8d6] font-medium">{toPersianDigits(todayRecord.targetCheckOut)}</span>
-              </div>
-            )}
+
             {todayRecord?.checkOut && (
-              <div className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] text-white/80">
-                <span className="text-white/40">خروج ثبت‌شده: </span>
-                <span className="text-emerald-400 font-medium">{toPersianDigits(todayRecord.checkOut)}</span>
+              <div className="rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-md px-3 py-1.5 text-xs text-white">
+                <span className="text-slate-200 font-medium">خروج: </span>
+                <span className="font-mono font-bold text-white">{toPersianDigits(todayRecord.checkOut)}</span>
               </div>
             )}
-            <div className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] text-white/80">
-              <span className="text-white/40">استراحت/ناهار: </span>
-              <span className="text-white font-medium">{toPersianDigits(breakMinutesInput)} دقیقه</span>
-            </div>
+
+            {todayRecord && todayRecord.workedMinutes > 0 && (
+              <div className="rounded-full border border-emerald-400/30 bg-emerald-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-emerald-300 col-span-2 sm:col-span-1">
+                <span>کارکرد خالص: </span>
+                <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.workedMinutes)}</strong>
+              </div>
+            )}
+
+            {todayRecord && todayRecord.delayMinutes > 0 && (
+              <div className="rounded-full border border-rose-400/30 bg-rose-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-rose-300 flex items-center justify-center gap-1">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>تاخیر: </span>
+                <strong className="font-bold">{toPersianDigits(todayRecord.delayMinutes)} د</strong>
+              </div>
+            )}
+
+            {todayRecord && todayRecord.earlyLeaveMinutes > 0 && (
+              <div className="rounded-full border border-amber-400/30 bg-amber-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-amber-300">
+                <span>تعجیل: </span>
+                <strong className="font-bold">{toPersianDigits(todayRecord.earlyLeaveMinutes)} د</strong>
+              </div>
+            )}
+
+            {todayRecord && todayRecord.leaveMinutes !== undefined && todayRecord.leaveMinutes > 0 && (
+              <div className="rounded-full border border-amber-400/30 bg-amber-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-amber-300 flex items-center justify-center gap-1">
+                <Coffee className="h-3.5 w-3.5 shrink-0" />
+                <span>مرخصی: </span>
+                <strong className="font-bold">{formatMinutesToPersianReadable(todayRecord.leaveMinutes)}</strong>
+              </div>
+            )}
+
+            {todayRecord && (todayRecord.overtimeMinutes > 0 || todayRecord.holidayOvertimeMinutes > 0) && (
+              <div className="rounded-full border border-indigo-400/30 bg-indigo-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-indigo-300 flex items-center justify-center gap-1 col-span-2 sm:col-span-1">
+                <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+                <span>اضافه کار: </span>
+                <strong className="font-bold">
+                  {formatMinutesToPersianReadable(
+                    todayRecord.overtimeMinutes + todayRecord.holidayOvertimeMinutes
+                  )}
+                </strong>
+              </div>
+            )}
+
+            {todayRecord && todayRecord.deficitMinutes > 0 && (
+              <div className="rounded-full border border-rose-400/30 bg-rose-500/15 backdrop-blur-md px-3 py-1.5 text-xs text-rose-300">
+                <span>کسر کار: </span>
+                <strong className="font-bold">{toPersianDigits(todayRecord.deficitMinutes)} د</strong>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Column: High-Impact Action Controls */}
-        <div className="lg:col-span-5 space-y-4 lg:border-r lg:border-white/10 lg:pr-8">
-          {/* State 1: Not Checked In */}
+        {/* Right Side: Primary Action Buttons & Live Timer */}
+        <div className="flex flex-col items-center justify-center gap-3 w-full md:w-auto">
+          {/* State 1: Ready to Check In */}
           {!isCheckedIn && !isCheckedOut && (
-            <div className="space-y-3">
+            <div className="flex flex-col items-center gap-3 w-full md:w-72">
               <button
-                type="button"
-                onClick={handlePunchInNow}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-white hover:bg-white/90 text-black font-mono font-semibold text-sm shadow-xl shadow-white/10 transition-all active:scale-95"
+                onClick={handleCheckInClick}
+                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-emerald-500/90 via-teal-500/90 to-cyan-500/90 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
               >
-                <LogIn className="w-4 h-4 text-black" />
-                <span>ثبت ورود زنده (ساعت جاری)</span>
+                <LogIn className="h-6 w-6 transition-transform group-hover:-translate-x-1" />
+                <span>ثبت ورود امروز</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setShowCustomTime(!showCustomTime)}
-                className="w-full py-2.5 text-xs font-mono text-white/60 hover:text-white transition-colors"
-              >
-                {showCustomTime ? 'انصراف' : 'ورود با ساعت دستی...'}
-              </button>
-
-              {showCustomTime && (
-                <form onSubmit={handleCustomPunchIn} className="flex gap-2 animate-in fade-in pt-2">
-                  <input
-                    type="time"
-                    value={customInTime}
-                    onChange={(e) => setCustomInTime(e.target.value)}
-                    className="flex-1 rounded-xl border border-white/15 bg-black/60 px-3 py-2 text-xs font-mono text-white text-center focus:border-[#eca8d6] focus:outline-none"
-                    required
-                  />
+              {/* Custom In Time Toggle */}
+              <div className="w-full text-center">
+                {!showCustomTime ? (
                   <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl text-xs font-mono bg-[#eca8d6] text-black font-semibold hover:bg-[#f3c2e4]"
+                    type="button"
+                    onClick={() => {
+                      setShowCustomTime(true);
+                      setCustomInTime(getCurrentTimeString(false));
+                    }}
+                    className="text-xs text-slate-200 hover:text-white transition-colors flex items-center justify-center gap-1 mx-auto font-medium"
                   >
-                    ثبت
+                    <Clock className="h-3.5 w-3.5 text-cyan-400" />
+                    <span>ثبت با ساعتی به جز زمان اکنون</span>
                   </button>
-                </form>
-              )}
+                ) : (
+                  <div className="flex items-center gap-2 rounded-2xl liquid-glass-subtle p-2 border border-white/20 text-xs">
+                    <span className="text-slate-200 font-medium">ساعت ورود:</span>
+                    <input
+                      type="time"
+                      value={customInTime}
+                      onChange={(e) => setCustomInTime(e.target.value)}
+                      className="rounded-xl liquid-input px-2.5 py-1 font-mono text-white text-xs border border-white/25 text-center"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomTime(false)}
+                      className="text-slate-300 hover:text-white px-1.5 font-medium"
+                    >
+                      لغو
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* State 2: Checked In (In Progress) */}
+          {/* State 2: Currently Checked In (Live Working Timer & Progress) */}
           {isCheckedIn && (
-            <div className="space-y-4">
-              {/* Lunch Break Chips */}
-              <div className="space-y-2">
-                <label className="block text-xs font-mono text-white/60">مدت ناهار و استراحت (کسر از کارکرد):</label>
-                <div className="flex gap-2">
-                  {[0, 15, 30, 45, 60].map((mins) => (
+            <div className="flex flex-col items-center gap-3 w-full md:w-80">
+              {/* Working Stopwatch Box */}
+              <div
+                className={`w-full rounded-[24px] border p-4 text-center transition-all liquid-glass-subtle ${
+                  isOvertimeLive
+                    ? 'border-indigo-400/40 bg-indigo-950/40 shadow-lg shadow-indigo-500/20'
+                    : 'border-emerald-400/40 bg-emerald-950/30 shadow-lg shadow-emerald-500/20'
+                }`}
+              >
+                <div className="flex items-center justify-between text-xs font-semibold mb-1">
+                  <span
+                    className={`flex items-center gap-1.5 ${
+                      isOvertimeLive ? 'text-indigo-300 font-bold' : 'text-emerald-300 font-bold'
+                    }`}
+                  >
+                    <Timer className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: '6s' }} />
+                    {isOvertimeLive ? 'زمان اضافه کاری زنده' : 'مدت حضور زنده'}
+                  </span>
+                  <span className="font-mono text-xs text-slate-200 font-semibold">
+                    {toPersianDigits(shiftProgressPercent)}٪ شیفت
+                  </span>
+                </div>
+
+                <div
+                  className={`font-mono text-3xl sm:text-4xl font-black tracking-wider dir-ltr text-center py-0.5 ${
+                    isOvertimeLive ? 'text-indigo-200' : 'text-emerald-200'
+                  }`}
+                >
+                  {formatElapsed(elapsedSeconds)}
+                </div>
+
+                {/* Live Progress Bar */}
+                <div className="mt-2.5 h-2 w-full rounded-full bg-white/15 overflow-hidden p-0.5 border border-white/15">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 shadow-sm ${
+                      isOvertimeLive
+                        ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400'
+                        : 'bg-gradient-to-r from-teal-400 to-emerald-400'
+                    }`}
+                    style={{ width: `${shiftProgressPercent}%` }}
+                  />
+                </div>
+
+                {/* Overtime or Remaining Time Notice */}
+                <div className="mt-2 text-xs text-slate-100 font-medium">
+                  {isOvertimeLive ? (
+                    <span className="text-indigo-300 font-bold flex items-center justify-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                      موظفی کامل شد! اضافه کار: +{formatElapsed(overtimeLiveSecs)}
+                    </span>
+                  ) : (
+                    <span>
+                      {formatElapsed(remainingLiveSecs)} تا پایان حضور موظفی
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Break / Lunch Selector */}
+              <div className="w-full rounded-[22px] liquid-glass-subtle p-3 border border-white/20 space-y-2">
+                <div className="flex items-center justify-between text-xs text-white">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <Coffee className="h-3.5 w-3.5 text-amber-400" />
+                    استراحت و ناهار:
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="180"
+                      value={breakMinutesInput}
+                      onChange={(e) => setBreakMinutesInput(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-14 rounded-xl liquid-input px-2 py-0.5 text-center font-mono text-white text-xs border border-white/25 focus:outline-none focus:border-cyan-400 font-bold"
+                    />
+                    <span className="text-slate-200 font-medium">دقیقه</span>
+                  </div>
+                </div>
+
+                {/* Quick Preset Buttons for Lunch */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[0, 15, 30, 45].map((preset) => (
                     <button
-                      key={mins}
+                      key={preset}
                       type="button"
-                      onClick={() => setBreakMinutesInput(mins)}
-                      className={`flex-1 py-1.5 rounded-xl text-xs font-mono border transition-all ${
-                        breakMinutesInput === mins
-                          ? 'border-[#eca8d6] bg-[#eca8d6]/15 text-[#eca8d6] font-bold'
-                          : 'border-white/10 bg-black/40 text-white/50 hover:text-white'
+                      onClick={() => setBreakMinutesInput(preset)}
+                      className={`rounded-xl py-1 text-xs transition-all ${
+                        breakMinutesInput === preset
+                          ? 'bg-amber-400/25 text-amber-200 border border-amber-400/40 font-bold shadow-sm'
+                          : 'bg-white/[0.08] text-slate-200 hover:text-white border border-white/15 font-medium'
                       }`}
                     >
-                      {toPersianDigits(mins)}
+                      {preset === 0 ? 'بدون ناهار' : `${toPersianDigits(preset)} د`}
+                      {preset === 30 && ' (پیش‌فرض)'}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Punch Out Action */}
+              {/* Check Out Button */}
               <button
-                type="button"
-                onClick={handlePunchOutNow}
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-white hover:bg-white/90 text-black font-mono font-semibold text-sm shadow-xl shadow-white/10 transition-all active:scale-95"
+                onClick={handleCheckOutClick}
+                className="group relative flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-rose-500/90 via-pink-600/90 to-amber-600/90 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-rose-500/30 border border-white/40 backdrop-blur-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.96]"
               >
-                <LogOut className="w-4 h-4 text-black" />
-                <span>ثبت خروج و اتمام شیفت کاری</span>
+                <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <span>ثبت پایان کار و خروج</span>
               </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={onResetToday}
-                  className="text-[11px] font-mono text-white/40 hover:text-rose-400 transition-colors"
-                >
-                  بازنشانی تردد امروز
-                </button>
-              </div>
             </div>
           )}
 
-          {/* State 3: Checked Out (Finished) */}
+          {/* State 3: Already Completed Today */}
           {isCheckedOut && (
-            <div className="space-y-3 p-4 rounded-xl border border-white/10 bg-white/[0.02]">
-              <div className="flex items-center gap-2 text-emerald-400 text-xs font-mono font-medium">
-                <CheckCircle className="w-4 h-4" />
-                <span>تردد امروز شما با موفقیت ثبت و محاسبه شد.</span>
+            <div className="flex flex-col items-center gap-3 w-full md:w-64">
+              <div className="flex items-center gap-2 text-emerald-300 font-semibold text-sm">
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <span>شیفت امروز ثبت و نهایی شد</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
-                <div className="p-2 rounded-lg bg-black/40 border border-white/5">
-                  <div className="text-white/40 text-[10px]">اضافه‌کاری:</div>
-                  <div className="text-emerald-400 font-bold mt-0.5">
-                    {toPersianDigits(formatMinutesToTimeString(todayRecord?.overtimeMinutes || 0))}
-                  </div>
-                </div>
-                <div className="p-2 rounded-lg bg-black/40 border border-white/5">
-                  <div className="text-white/40 text-[10px]">کسرکار:</div>
-                  <div className="text-rose-400 font-bold mt-0.5">
-                    {toPersianDigits(formatMinutesToTimeString(todayRecord?.deficitMinutes || 0))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
+              <div className="flex items-center gap-2 w-full">
                 <button
-                  type="button"
                   onClick={onOpenEdit}
-                  className="flex-1 py-2 rounded-xl text-xs font-mono border border-white/15 text-white/80 hover:text-white hover:bg-white/[0.04]"
+                  className="liquid-pill-btn flex-1 px-4 py-2 text-xs font-semibold"
                 >
-                  ویرایش دستی
+                  ویرایش اطلاعات
                 </button>
                 <button
-                  type="button"
                   onClick={onResetToday}
-                  className="px-3 py-2 rounded-xl text-xs font-mono border border-rose-500/20 text-rose-400 hover:bg-rose-500/10"
+                  className="liquid-pill-btn-danger px-3.5 py-2 text-xs"
+                  title="بازنشانی ثبت امروز"
                 >
-                  بازنشانی
+                  <RotateCcw className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </LiquidGlassCard>
   );
 };
+
