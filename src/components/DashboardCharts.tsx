@@ -115,24 +115,24 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
     const leaveMinutes = r.leaveMinutes || (isLeave ? requiredNet : 0);
     const totalCreditMinutes = isLeave ? requiredNet : (physicalWorked + (r.leaveMinutes || 0));
 
-    // Determine bar color and style
-    let barColor = 'from-indigo-600 to-cyan-400';
+    // Determine bar color and style using Nordic tokens
+    let barColor = 'bg-accent/80';
     if (isCurrentlyWorking) {
-      barColor = 'from-cyan-500 via-teal-400 to-emerald-400';
+      barColor = 'bg-semantic-info';
     } else if (isLeave) {
-      barColor = 'from-amber-600 to-amber-400';
+      barColor = 'bg-semantic-warning';
     } else if (isHol) {
       if (r.workedMinutes > 0) {
-        barColor = 'from-purple-600 to-indigo-400';
+        barColor = 'bg-semantic-info';
       } else {
-        barColor = 'from-slate-800 to-slate-700';
+        barColor = 'bg-surface-2';
       }
     } else if (r.overtimeMinutes > 0) {
-      barColor = 'from-emerald-600 to-teal-400';
+      barColor = 'bg-semantic-success';
     } else if (r.deficitMinutes > 0) {
-      barColor = 'from-rose-600 to-rose-400';
+      barColor = 'bg-semantic-danger';
     } else if (isThu && totalCreditMinutes >= requiredNet) {
-      barColor = 'from-cyan-600 to-teal-400';
+      barColor = 'bg-accent';
     }
 
     return {
@@ -183,48 +183,48 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       {/* 1. Daily Work Hours Bar Chart (Span 2 cols on lg) */}
       <LiquidGlassCard
         className="lg:col-span-2 rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl flex flex-col justify-between"
-        sheenColor="rgba(6, 182, 212, 0.15)"
+        sheenColor="rgba(166, 138, 100, 0.12)"
       >
         {/* Header with Clean Status & Minimal Legend */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/15 pb-3 mb-3 gap-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-3 mb-3 gap-2.5">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-2xl bg-indigo-500/20 p-2.5 text-indigo-300 border border-indigo-400/30 shadow-inner">
+            <div className="rounded-2xl bg-surface-2 p-2.5 text-accent border border-border shadow-inner">
               <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xs sm:text-sm font-bold text-white/95">روند کارکرد روزانه این ماه</h3>
+                <h3 className="text-xs sm:text-sm font-bold text-text">روند کارکرد روزانه این ماه</h3>
                 {isAnyWorkingToday && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 px-2.5 py-0.5 text-[10px] font-bold text-cyan-300 shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded-full badge-info px-2.5 py-0.5 text-[10px] font-bold shadow-sm">
                     <span className="relative flex h-1.5 w-1.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-semantic-info opacity-75" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-semantic-info" />
                     </span>
                     <span>شیفت زنده امروز</span>
                   </span>
                 )}
               </div>
-              <p className="text-[10px] sm:text-xs text-white/60 mt-0.5">
+              <p className="text-[10px] sm:text-xs text-muted mt-0.5">
                 ساعات کارکرد خالص و موثر روزانه در مقایسه با سقف موظفی
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-slate-400 flex-wrap">
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
+          <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-muted flex-wrap">
+            <span className="flex items-center gap-1 text-muted">
+              <span className="h-2 w-2 rounded-full bg-accent" />
               تکمیل موظفی
             </span>
-            <span className="flex items-center gap-1 text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="flex items-center gap-1 text-semantic-success font-medium">
+              <span className="h-2 w-2 rounded-full bg-semantic-success" />
               اضافه کار
             </span>
-            <span className="flex items-center gap-1 text-rose-400">
-              <span className="h-2 w-2 rounded-full bg-rose-400" />
+            <span className="flex items-center gap-1 text-semantic-danger font-medium">
+              <span className="h-2 w-2 rounded-full bg-semantic-danger" />
               کسر کار
             </span>
-            <span className="flex items-center gap-1 text-amber-400">
-              <span className="h-2 w-2 rounded-full bg-amber-400" />
+            <span className="flex items-center gap-1 text-semantic-warning font-medium">
+              <span className="h-2 w-2 rounded-full bg-semantic-warning" />
               مرخصی
             </span>
           </div>
@@ -233,8 +233,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
         {/* The Bar Chart Canvas */}
         <div className="pt-2 pb-1 overflow-x-auto no-scrollbar">
           {chartItems.length === 0 ? (
-            <div className="w-full flex flex-col items-center justify-center text-xs text-slate-500 h-48 gap-2">
-              <Calendar className="h-6 w-6 text-slate-600" />
+            <div className="w-full flex flex-col items-center justify-center text-xs text-muted h-48 gap-2">
+              <Calendar className="h-6 w-6 text-muted opacity-60" />
               <span>هنوز ترددی در این ماه ثبت نشده است.</span>
             </div>
           ) : (
@@ -280,10 +280,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               <div className="relative h-44 sm:h-52 w-full">
                 {/* Standard Target Line (8 hours) */}
                 <div
-                  className="absolute left-0 right-0 border-b border-dashed border-cyan-500/25 z-10 pointer-events-none flex items-center justify-end px-1"
+                  className="absolute left-0 right-0 border-b border-dashed border-accent/40 z-10 pointer-events-none flex items-center justify-end px-1"
                   style={{ bottom: `${standardTargetPercent}%` }}
                 >
-                  <span className="text-[9px] font-mono text-cyan-400/70 select-none">
+                  <span className="text-[9px] font-mono text-accent select-none font-semibold">
                     موظفی عادی: {toPersianDigits((standardDailyNet / 60).toFixed(0))}س
                   </span>
                 </div>
@@ -291,10 +291,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                 {/* Thursday Target Line (4 hours) */}
                 {config.thursdayStatus === 'half_day' && (
                   <div
-                    className="absolute left-0 right-0 border-b border-dotted border-amber-500/25 z-10 pointer-events-none flex items-center justify-start px-1"
+                    className="absolute left-0 right-0 border-b border-dotted border-semantic-warning/40 z-10 pointer-events-none flex items-center justify-start px-1"
                     style={{ bottom: `${thursdayTargetPercent}%` }}
                   >
-                    <span className="text-[9px] font-mono text-amber-400/70 select-none">
+                    <span className="text-[9px] font-mono text-semantic-warning select-none font-semibold">
                       پنج‌شنبه: {toPersianDigits(((config.thursdayMinutes || 240) / 60).toFixed(0))}س
                     </span>
                   </div>
@@ -321,24 +321,24 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                         {hoveredRecord?.date === r.date && (
                           <div className="absolute -top-36 sm:-top-40 left-1/2 -translate-x-1/2 z-40 w-56 rounded-2xl liquid-glass-modal p-3 text-xs shadow-2xl backdrop-blur-2xl animate-in fade-in zoom-in-95 pointer-events-none space-y-1.5">
                             {/* Card Header: Date & Status Badge */}
-                            <div className="flex items-center justify-between border-b border-white/15 pb-1.5 text-[11px]">
-                              <span className="font-bold text-white font-mono flex items-center gap-1">
+                            <div className="flex items-center justify-between border-b border-border pb-1.5 text-[11px]">
+                              <span className="font-bold text-text font-mono flex items-center gap-1">
                                 {item.isCurrentlyWorking && (
-                                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-semantic-info animate-pulse" />
                                 )}
-                                روز {toPersianDigits(jd)} <span className="text-slate-400 font-normal">({weekdayName})</span>
+                                روز {toPersianDigits(jd)} <span className="text-muted font-normal">({weekdayName})</span>
                               </span>
                               <span
                                 className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                   item.isCurrentlyWorking
-                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+                                    ? 'badge-info'
                                     : item.isLeave
-                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                                    ? 'badge-warning'
                                     : item.isHol
-                                    ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                                    ? 'badge-neutral'
                                     : r.status === 'present'
-                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                                    : 'bg-slate-800 text-slate-400'
+                                    ? 'badge-success'
+                                    : 'badge-neutral'
                                 }`}
                               >
                                 {item.isCurrentlyWorking
@@ -356,9 +356,9 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                             {/* Key-Value Details */}
                             <div className="space-y-1 text-[11px]">
                               {/* 1. Time In & Time Out */}
-                              <div className="flex items-center justify-between text-slate-300">
-                                <span className="text-slate-400">ورود / خروج:</span>
-                                <span className="font-mono text-white font-medium">
+                              <div className="flex items-center justify-between text-text">
+                                <span className="text-muted">ورود / خروج:</span>
+                                <span className="font-mono text-text font-medium">
                                   {r.checkIn ? toPersianDigits(r.checkIn) : '—'}
                                   {' تا '}
                                   {item.isCurrentlyWorking
@@ -369,10 +369,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
                               {/* 2. Effective / Worked Time */}
                               <div className="flex items-center justify-between">
-                                <span className="text-slate-400">
+                                <span className="text-muted">
                                   {item.isCurrentlyWorking ? 'کارکرد تا اکنون:' : 'کارکرد موثر:'}
                                 </span>
-                                <span className="font-mono font-bold text-cyan-300">
+                                <span className="font-mono font-bold text-semantic-success">
                                   {item.isLeave
                                     ? formatMinutesToPersianReadable(item.totalCreditMinutes)
                                     : item.physicalWorked > 0
@@ -384,8 +384,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                               {/* 3. Hourly Leave if any */}
                               {!item.isLeave && item.leaveMinutes > 0 && (
                                 <div className="flex items-center justify-between text-[10px]">
-                                  <span className="text-slate-400">مرخصی ساعتی:</span>
-                                  <span className="font-mono font-bold text-amber-300">
+                                  <span className="text-muted">مرخصی ساعتی:</span>
+                                  <span className="font-mono font-bold text-semantic-warning">
                                     {formatMinutesToPersianReadable(item.leaveMinutes)}
                                   </span>
                                 </div>
@@ -393,8 +393,8 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
                               {/* 4. Delay or Early Departure if any */}
                               {(r.delayMinutes > 0 || r.earlyLeaveMinutes > 0) && !item.isCurrentlyWorking && (
-                                <div className="flex items-center justify-between text-[10px] text-rose-300/90">
-                                  <span className="text-slate-400">کسورات زمانی:</span>
+                                <div className="flex items-center justify-between text-[10px] text-semantic-danger font-medium">
+                                  <span className="text-muted">کسورات زمانی:</span>
                                   <span className="font-mono">
                                     {r.delayMinutes > 0 && `تاخیر: ${toPersianDigits(r.delayMinutes)}د`}
                                     {r.delayMinutes > 0 && r.earlyLeaveMinutes > 0 && ' | '}
@@ -404,36 +404,36 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                               )}
 
                               {/* 5. Balance / Result Row */}
-                              <div className="border-t border-slate-800/80 pt-1 flex items-center justify-between font-bold">
-                                <span className="text-slate-400 text-[10px]">وضعیت تراز:</span>
+                              <div className="border-t border-border pt-1 flex items-center justify-between font-bold">
+                                <span className="text-muted text-[10px]">وضعیت تراز:</span>
                                 {item.isCurrentlyWorking ? (
                                   item.remainingMinutesToTarget > 0 ? (
-                                    <span className="text-amber-300 font-mono text-[10px]">
+                                    <span className="text-semantic-warning font-mono text-[10px]">
                                       {formatMinutesToPersianReadable(item.remainingMinutesToTarget)} تا موظفی
                                     </span>
                                   ) : (
-                                    <span className="text-emerald-400 font-mono text-[10px]">
+                                    <span className="text-semantic-success font-mono text-[10px]">
                                       <bdi dir="ltr">+{formatMinutesToPersianReadable(item.liveOvertime)}</bdi> اضافه کار
                                     </span>
                                   )
                                 ) : r.overtimeMinutes > 0 ? (
-                                  <span className="text-emerald-400 font-mono text-[10px]">
+                                  <span className="text-semantic-success font-mono text-[10px]">
                                     <bdi dir="ltr">+{formatMinutesToPersianReadable(r.overtimeMinutes)}</bdi> اضافه کار
                                   </span>
                                 ) : r.deficitMinutes > 0 ? (
-                                  <span className="text-rose-400 font-mono text-[10px]">
+                                  <span className="text-semantic-danger font-mono text-[10px]">
                                     <bdi dir="ltr">-{formatMinutesToPersianReadable(r.deficitMinutes)}</bdi> کسر کار
                                   </span>
                                 ) : item.isLeave ? (
-                                  <span className="text-amber-400 font-mono text-[10px]">
+                                  <span className="text-semantic-warning font-mono text-[10px]">
                                     مرخصی کامل
                                   </span>
                                 ) : item.isHol ? (
-                                  <span className="text-purple-300 font-mono text-[10px]">
+                                  <span className="text-muted font-mono text-[10px]">
                                     روز تعطیل
                                   </span>
                                 ) : (
-                                  <span className="text-cyan-400 font-mono text-[10px]">
+                                  <span className="text-accent font-mono text-[10px]">
                                     تکمیل موظفی
                                   </span>
                                 )}
@@ -442,22 +442,22 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                           </div>
                         )}
 
-                        {/* Bar Pillar with Dynamic Live Glow */}
+                        {/* Bar Pillar */}
                         <div
-                          className={`w-full max-w-[20px] rounded-t-md bg-gradient-to-t ${item.barColor} transition-all duration-300 group-hover:brightness-125 shadow-sm ${
+                          className={`w-full max-w-[20px] rounded-t-md ${item.barColor} transition-all duration-300 hover:brightness-110 shadow-sm ${
                             item.isCurrentlyWorking
-                              ? 'ring-2 ring-cyan-400 shadow-md shadow-cyan-500/30 relative overflow-hidden min-h-[6px]'
+                              ? 'ring-2 ring-semantic-info relative overflow-hidden min-h-[6px]'
                               : ''
                           }`}
                           style={{ height: `${item.isCurrentlyWorking ? Math.max(4, heightPercent) : heightPercent}%` }}
                         >
-                          {/* Top neon cap for live bar */}
+                          {/* Top cap for live bar */}
                           {item.isCurrentlyWorking && (
-                            <div className="absolute top-0 inset-x-0 h-0.5 bg-white/90 rounded-t-md shadow-[0_0_6px_#22d3ee]" />
+                            <div className="absolute top-0 inset-x-0 h-0.5 bg-accent rounded-t-md" />
                           )}
                           {/* Live shimmer reflection effect */}
                           {item.isCurrentlyWorking && (
-                            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-cyan-300/20 to-transparent animate-pulse" />
+                            <div className="absolute inset-0 bg-white/10 animate-pulse" />
                           )}
                         </div>
                       </div>
@@ -467,7 +467,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
               </div>
 
               {/* Day Labels Row */}
-              <div className="flex items-center justify-between gap-1 sm:gap-2 px-1 mt-2 pt-1.5 border-t border-slate-800/60">
+              <div className="flex items-center justify-between gap-1 sm:gap-2 px-1 mt-2 pt-1.5 border-t border-border">
                 {chartItems.map((item) => {
                   const { jd } = parseJalaliDate(item.record.date);
                   return (
@@ -476,17 +476,17 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                       className="flex-1 text-center font-mono text-[9px] sm:text-[10px]"
                     >
                       {item.isToday ? (
-                        <span className="inline-flex items-center justify-center px-1 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/40 shadow-sm text-[8px] sm:text-[9px]">
+                        <span className="inline-flex items-center justify-center px-1 py-0.5 rounded badge-accent font-bold shadow-sm text-[8px] sm:text-[9px]">
                           {toPersianDigits(jd)}
                         </span>
                       ) : (
                         <span
                           className={
                             item.isFri
-                              ? 'text-rose-400 font-bold'
+                              ? 'text-semantic-danger font-bold'
                               : item.isThu
-                              ? 'text-cyan-400 font-medium'
-                              : 'text-slate-400'
+                              ? 'text-accent font-medium'
+                              : 'text-muted'
                           }
                         >
                           {toPersianDigits(jd)}
@@ -504,21 +504,21 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
       {/* 2. Donut & Performance Ratio Column */}
       <LiquidGlassCard
         className="rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl flex flex-col justify-between"
-        sheenColor="rgba(99, 102, 241, 0.15)"
+        sheenColor="rgba(166, 138, 100, 0.12)"
       >
-        <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-3">
+        <div className="flex items-center justify-between border-b border-border pb-3 mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-2xl bg-cyan-500/20 p-2.5 text-cyan-300 border border-cyan-400/30 shadow-inner">
+            <div className="rounded-2xl bg-surface-2 p-2.5 text-accent border border-border shadow-inner">
               <PieChartIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div>
-              <h3 className="text-xs sm:text-sm font-bold text-white/95">توزیع وضعیت روزها</h3>
-              <p className="text-[10px] text-white/60">تحلیل نرخ حضور و انضباط ماه</p>
+              <h3 className="text-xs sm:text-sm font-bold text-text">توزیع وضعیت روزها</h3>
+              <p className="text-[10px] text-muted">تحلیل نرخ حضور و انضباط ماه</p>
             </div>
           </div>
           {isAnyWorkingToday && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300 animate-pulse shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="inline-flex items-center gap-1.5 rounded-full badge-info px-2.5 py-0.5 text-[10px] font-bold shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-semantic-info animate-ping" />
               شیفت فعال
             </span>
           )}
@@ -526,10 +526,10 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
         {/* Visual Donut Ring synchronized with Completion Rate */}
         <div className="flex items-center justify-center my-3 relative">
-          <svg className="w-32 h-32 transform -rotate-90 drop-shadow-[0_0_12px_rgba(6,182,212,0.3)]" viewBox="0 0 36 36">
+          <svg className="w-32 h-32 transform -rotate-90 drop-shadow-sm" viewBox="0 0 36 36">
             {/* Background Track */}
             <path
-              className="text-white/10"
+              className="text-border"
               strokeWidth="3.6"
               stroke="currentColor"
               fill="none"
@@ -537,7 +537,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
             />
             {/* Completion Ring */}
             <path
-              className="text-cyan-400 transition-all duration-1000 ease-out"
+              className="text-accent transition-all duration-1000 ease-out"
               strokeDasharray={`${completionPercent}, 100`}
               strokeWidth="3.8"
               strokeLinecap="round"
@@ -549,41 +549,41 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
 
           {/* Center Info in Donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-xl sm:text-2xl font-black text-white/95 font-mono">
+            <span className="text-xl sm:text-2xl font-black text-text font-mono">
               {toPersianDigits(completionPercent)}%
             </span>
-            <span className="text-[10px] text-white/60">تکمیل موظفی</span>
+            <span className="text-[10px] text-muted">تکمیل موظفی</span>
           </div>
         </div>
 
         {/* Stats breakdown list */}
-        <div className="space-y-2.5 pt-2 border-t border-white/10 text-xs">
+        <div className="space-y-2.5 pt-2 border-t border-border text-xs">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-white/70">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="flex items-center gap-1.5 text-muted">
+              <span className="h-2 w-2 rounded-full bg-semantic-success" />
               روزهای حضور موثر:
             </span>
-            <span className="font-mono font-bold text-emerald-300">
+            <span className="font-mono font-bold text-semantic-success">
               {toPersianDigits(stats.presentDaysCount)} روز
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-white/70">
-              <span className="h-2 w-2 rounded-full bg-amber-400" />
+            <span className="flex items-center gap-1.5 text-muted">
+              <span className="h-2 w-2 rounded-full bg-semantic-warning" />
               مرخصی استفاده‌شده:
             </span>
-            <span className="font-mono font-bold text-amber-300">
+            <span className="font-mono font-bold text-semantic-warning">
               {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز ({toPersianDigits(stats.totalLeaveHours.toFixed(1))}س)
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-white/70">
-              <Award className="h-3.5 w-3.5 text-indigo-300" />
+            <span className="flex items-center gap-1.5 text-muted">
+              <Award className="h-3.5 w-3.5 text-accent" />
               شاخص خوش‌قولی ورود:
             </span>
-            <span className="font-mono font-bold text-indigo-300">
+            <span className="font-mono font-bold text-accent">
               {toPersianDigits(punctualityPct)}%
             </span>
           </div>

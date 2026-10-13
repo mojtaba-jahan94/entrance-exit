@@ -37,46 +37,46 @@ export const LiquidMeshBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#07080f] select-none"
+      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[var(--bg)] select-none transition-colors duration-300"
     >
-      {/* Deep Canvas Gradient */}
-      <div className="absolute inset-0 bg-radial from-[#12162a]/60 via-[#0a0d18] to-[#07080f]" />
+      {/* Deep Canvas Ambient Vignette */}
+      <div className="absolute inset-0 bg-radial from-[var(--surface-2)] via-transparent to-transparent opacity-60" />
 
-      {/* Blob 1: Top-Left Electric Indigo / Violet */}
+      {/* Blob 1: Top-Left Subtle Fjord Gray (#6B7280) */}
       <div
-        className="absolute -top-[10%] -left-[10%] h-[520px] w-[520px] rounded-full mix-blend-screen filter transition-opacity duration-500"
+        className="absolute -top-[10%] -left-[10%] h-[520px] w-[520px] rounded-full mix-blend-plus-lighter filter transition-opacity duration-500"
         style={{
           background:
-            'radial-gradient(circle, rgba(99, 102, 241, 0.42) 0%, rgba(129, 140, 248, 0.2) 45%, transparent 70%)',
+            'radial-gradient(circle, rgba(107, 114, 128, 0.14) 0%, rgba(107, 114, 128, 0.06) 45%, transparent 70%)',
           filter: 'blur(70px)',
-          opacity: isLowEffects ? 0.35 : 0.65,
-          animation: isLowEffects ? 'none' : 'liquid-blob-1 22s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+          opacity: isLowEffects ? 0.2 : 0.55,
+          animation: isLowEffects ? 'none' : 'liquid-blob-1 26s cubic-bezier(0.4, 0, 0.2, 1) infinite',
           animationPlayState: animPlayState,
         }}
       />
 
-      {/* Blob 2: Center-Right Cyan / Sky Blue */}
+      {/* Blob 2: Center-Right Gentle Warm Wood (#A68A64) */}
       <div
-        className="absolute top-[20%] -right-[12%] h-[580px] w-[580px] rounded-full mix-blend-screen filter transition-opacity duration-500"
+        className="absolute top-[20%] -right-[12%] h-[580px] w-[580px] rounded-full mix-blend-plus-lighter filter transition-opacity duration-500"
         style={{
           background:
-            'radial-gradient(circle, rgba(6, 182, 212, 0.36) 0%, rgba(56, 189, 248, 0.18) 50%, transparent 70%)',
+            'radial-gradient(circle, rgba(166, 138, 100, 0.12) 0%, rgba(166, 138, 100, 0.05) 50%, transparent 70%)',
           filter: 'blur(75px)',
-          opacity: isLowEffects ? 0.3 : 0.6,
-          animation: isLowEffects ? 'none' : 'liquid-blob-2 26s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+          opacity: isLowEffects ? 0.2 : 0.5,
+          animation: isLowEffects ? 'none' : 'liquid-blob-2 30s cubic-bezier(0.4, 0, 0.2, 1) infinite',
           animationPlayState: animPlayState,
         }}
       />
 
-      {/* Blob 3: Bottom-Center Fuchsia / Magenta */}
+      {/* Blob 3: Bottom-Center Soft Cloud Gray (#D1D5DB) */}
       <div
-        className="absolute -bottom-[12%] left-[25%] h-[480px] w-[480px] rounded-full mix-blend-screen filter transition-opacity duration-500"
+        className="absolute -bottom-[12%] left-[25%] h-[480px] w-[480px] rounded-full mix-blend-plus-lighter filter transition-opacity duration-500"
         style={{
           background:
-            'radial-gradient(circle, rgba(236, 72, 153, 0.32) 0%, rgba(217, 70, 239, 0.16) 48%, transparent 70%)',
+            'radial-gradient(circle, rgba(209, 213, 219, 0.09) 0%, rgba(209, 213, 219, 0.03) 48%, transparent 70%)',
           filter: 'blur(65px)',
-          opacity: isLowEffects ? 0.25 : 0.55,
-          animation: isLowEffects ? 'none' : 'liquid-blob-3 20s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+          opacity: isLowEffects ? 0.15 : 0.45,
+          animation: isLowEffects ? 'none' : 'liquid-blob-1 22s cubic-bezier(0.4, 0, 0.2, 1) infinite',
           animationPlayState: animPlayState,
         }}
       />
@@ -85,7 +85,7 @@ export const LiquidMeshBackground: React.FC = () => {
       {!isLowEffects && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full opacity-40 mix-blend-overlay pointer-events-none"
+          className="absolute inset-0 h-full w-full opacity-20 mix-blend-overlay pointer-events-none"
           style={{
             backgroundImage: STATIC_NOISE_BG,
             backgroundRepeat: 'repeat',

@@ -65,36 +65,36 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
         role="dialog"
         aria-modal="true"
         aria-labelledby="change-password-modal-title"
-        className="relative w-full max-w-md liquid-glass-modal border border-white/20 rounded-[32px] p-6 shadow-2xl text-slate-100"
+        className="relative w-full max-w-md liquid-glass-modal border border-[var(--border)] rounded-[32px] p-6 shadow-2xl text-[var(--text-main)]"
       >
-        <div className="flex items-center justify-between pb-4 border-b border-white/15">
+        <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 shadow-inner">
+            <div className="p-2.5 rounded-2xl bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--border)] shadow-inner">
               <KeyRound className="h-5 w-5" />
             </div>
             <div>
-              <h3 id="change-password-modal-title" className="font-bold text-sm sm:text-base text-white/95">تغییر کلمه عبور امن</h3>
-              <p className="text-xs text-white/60">به‌روزرسانی امن کلمه عبور در سرور مرکزی</p>
+              <h3 id="change-password-modal-title" className="font-bold text-sm sm:text-base text-[var(--text-main)]">تغییر کلمه عبور امن</h3>
+              <p className="text-xs text-muted">به‌روزرسانی امن کلمه عبور در سرور مرکزی</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="بستن پنجره"
-            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-[var(--surface-2)] hover:text-[var(--text-main)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md">
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-[var(--semantic-danger)]/10 border border-[var(--semantic-danger)]/30 text-[var(--semantic-danger)] text-xs backdrop-blur-md">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md">
+          <div className="mt-4 flex items-start gap-2 p-3 rounded-2xl bg-[var(--semantic-success)]/10 border border-[var(--semantic-success)]/30 text-[var(--semantic-success)] text-xs backdrop-blur-md">
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{successMsg}</span>
           </div>
@@ -102,7 +102,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-white/80 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
               رمز عبور فعلی
             </label>
             <input
@@ -112,12 +112,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="••••••••"
-              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-white/80 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
               رمز عبور جدید
             </label>
             <input
@@ -127,12 +127,12 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="حداقل ۶ کاراکتر"
-              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-white/80 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
               تکرار رمز عبور جدید
             </label>
             <input
@@ -142,7 +142,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
               required
               dir="ltr"
               placeholder="تکرار رمز عبور جدید"
-              className="liquid-input w-full px-3.5 py-2.5 text-sm text-white/95 placeholder-white/30 font-mono"
+              className="liquid-input w-full px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
             />
           </div>
 

@@ -78,50 +78,50 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 text-slate-100 overflow-hidden font-sans">
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 text-[var(--text-main)] overflow-hidden font-sans">
       {/* 1. Dynamic Fluid Mesh Background Engine */}
       <LiquidMeshBackground />
 
       <div className="relative w-full max-w-md mx-auto z-10">
         {/* Brand / Logo Section */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-[24px] bg-gradient-to-tr from-indigo-500 via-indigo-600 to-cyan-400 shadow-2xl shadow-indigo-500/40 border border-white/30 mb-4 animate-in zoom-in-95 duration-500">
-            <CalendarClock className="h-8 w-8 text-white" />
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-[24px] bg-[var(--surface-2)] text-[var(--accent)] shadow-xl border border-[var(--border-strong)] mb-4 animate-in zoom-in-95 duration-500">
+            <CalendarClock className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1.5">
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-main)] mb-1.5">
             سامانه یکپارچه مدیریت کارکرد و تردد
           </h1>
-          <p className="text-xs sm:text-sm text-white/60">
+          <p className="text-xs sm:text-sm text-muted">
             احراز هویت امن با استانداردهای نوین حفاظت از اطلاعات
           </p>
         </div>
 
         {/* Server Status Ribbon */}
         <div className="mb-4 flex items-center justify-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] border border-white/15 text-[11px] font-medium backdrop-blur-md shadow-sm">
-            <Server className="h-3.5 w-3.5 text-cyan-300" />
-            <span className="text-white/60">وضعیت سامانه:</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--surface-2)] border border-[var(--border)] text-[11px] font-medium backdrop-blur-md shadow-sm">
+            <Server className="h-3.5 w-3.5 text-[var(--accent)]" />
+            <span className="text-muted">وضعیت سامانه:</span>
             {dbStatus === 'connected' && (
-              <span className="flex items-center gap-1.5 text-emerald-300 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="flex items-center gap-1.5 text-[var(--semantic-success)] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[var(--semantic-success)] animate-pulse" />
                 سرور مرکزی فعال و متصل
               </span>
             )}
             {dbStatus === 'not_configured' && (
-              <span className="flex items-center gap-1.5 text-amber-300 font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
+              <span className="flex items-center gap-1.5 text-[var(--semantic-warning)] font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
+                <span className="h-2 w-2 rounded-full bg-[var(--semantic-warning)]" />
                 در انتظار راه‌اندازی سرور مرکزی
               </span>
             )}
             {dbStatus === 'error' && (
-              <span className="flex items-center gap-1.5 text-rose-300 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-rose-400" />
+              <span className="flex items-center gap-1.5 text-[var(--semantic-danger)] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[var(--semantic-danger)]" />
                 عدم اتصال به سرور مرکزی
               </span>
             )}
             {dbStatus === 'checking' && (
-              <span className="flex items-center gap-1.5 text-white/60">
-                <span className="h-2 w-2 rounded-full bg-white/40 animate-ping" />
+              <span className="flex items-center gap-1.5 text-muted">
+                <span className="h-2 w-2 rounded-full bg-muted animate-ping" />
                 بررسی وضعیت اتصال...
               </span>
             )}
@@ -131,10 +131,9 @@ export const AuthScreen: React.FC = () => {
         {/* Auth Card */}
         <LiquidGlassCard
           className="rounded-[34px] p-6 sm:p-8 shadow-2xl relative overflow-hidden"
-          sheenColor="rgba(99, 102, 241, 0.18)"
         >
           {/* Tabs */}
-          <div className="grid grid-cols-2 p-1 rounded-full bg-white/[0.06] border border-white/15 mb-6 backdrop-blur-md">
+          <div className="grid grid-cols-2 p-1 rounded-full bg-[var(--surface-2)] border border-[var(--border)] mb-6 backdrop-blur-md">
             <button
               type="button"
               onClick={() => {
@@ -145,7 +144,7 @@ export const AuthScreen: React.FC = () => {
               className={`flex items-center justify-center gap-2 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'login'
                   ? 'liquid-pill-btn-primary shadow-lg'
-                  : 'text-white/70 hover:text-white'
+                  : 'text-muted hover:text-[var(--text-main)]'
               }`}
             >
               <LogIn className="h-4 w-4" />
@@ -161,7 +160,7 @@ export const AuthScreen: React.FC = () => {
               className={`flex items-center justify-center gap-2 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all ${
                 mode === 'register'
                   ? 'liquid-pill-btn-primary shadow-lg'
-                  : 'text-white/70 hover:text-white'
+                  : 'text-muted hover:text-[var(--text-main)]'
               }`}
             >
               <UserPlus className="h-4 w-4" />
@@ -171,14 +170,14 @@ export const AuthScreen: React.FC = () => {
 
           {/* Alerts */}
           {errorMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md">
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-[var(--semantic-danger)]/10 border border-[var(--semantic-danger)]/30 text-[var(--semantic-danger)] text-xs backdrop-blur-md">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md">
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-2xl bg-[var(--semantic-success)]/10 border border-[var(--semantic-success)]/30 text-[var(--semantic-success)] text-xs backdrop-blur-md">
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
@@ -188,11 +187,11 @@ export const AuthScreen: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                   نام و نام خانوادگی
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-muted">
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <input
@@ -201,18 +200,18 @@ export const AuthScreen: React.FC = () => {
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="مثال: علی احمدی"
                     required
-                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30"
+                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-white/80 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 نام کاربری
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-muted">
                   <UserIcon className="h-4 w-4" />
                 </div>
                 <input
@@ -222,17 +221,17 @@ export const AuthScreen: React.FC = () => {
                   placeholder="مثال: user_admin"
                   dir="ltr"
                   required
-                  className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
+                  className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-white/80 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 رمز عبور
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-muted">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -242,12 +241,12 @@ export const AuthScreen: React.FC = () => {
                   placeholder="حداقل ۶ کاراکتر"
                   dir="ltr"
                   required
-                  className="liquid-input w-full pr-10 pl-10 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
+                  className="liquid-input w-full pr-10 pl-10 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted hover:text-[var(--text-main)] transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -256,11 +255,11 @@ export const AuthScreen: React.FC = () => {
 
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                   تکرار رمز عبور
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-white/40">
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-muted">
                     <KeyRound className="h-4 w-4" />
                   </div>
                   <input
@@ -270,7 +269,7 @@ export const AuthScreen: React.FC = () => {
                     placeholder="تکرار همان رمز عبور"
                     dir="ltr"
                     required
-                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-white/95 placeholder:text-white/30 font-mono"
+                    className="liquid-input w-full pr-10 pl-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder:text-muted font-mono"
                   />
                 </div>
               </div>
@@ -301,8 +300,8 @@ export const AuthScreen: React.FC = () => {
           </form>
 
           {/* Security details footnote */}
-          <div className="mt-6 pt-5 border-t border-white/10 flex items-start gap-2.5 text-[11px] text-white/50 leading-relaxed">
-            <ShieldCheck className="h-4 w-4 text-emerald-300 shrink-0 mt-0.5" />
+          <div className="mt-6 pt-5 border-t border-[var(--border)] flex items-start gap-2.5 text-[11px] text-muted leading-relaxed">
+            <ShieldCheck className="h-4 w-4 text-[var(--semantic-success)] shrink-0 mt-0.5" />
             <span>
               امنیت کامل اطلاعات: کلمات عبور با الگوریتم‌های استاندارد چندمرحله‌ای رمزنگاری شده و نشست‌های کاربری به صورت امن محافظت می‌شوند. در این سامانه می‌توانید اطلاعات تردد خود را به صورت محرمانه روی مرورگر ذخیره کنید یا همگام‌سازی ابری رمزنگاری‌شده (AES-256) را فعال نمایید.
             </span>

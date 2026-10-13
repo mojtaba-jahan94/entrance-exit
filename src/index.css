@@ -1,8 +1,77 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-glass: var(--surface-glass);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-focus: var(--focus);
+
+  --color-nordic-charcoal: #1F2933;
+  --color-fjord-gray: #6B7280;
+  --color-cloud-gray: #D1D5DB;
+  --color-snow-cream: #F7F7F2;
+  --color-warm-wood: #A68A64;
+
+  --color-semantic-success: var(--semantic-success);
+  --color-semantic-warning: var(--semantic-warning);
+  --color-semantic-danger: var(--semantic-danger);
+  --color-semantic-info: var(--semantic-info);
+}
+
 @layer base {
-  :root {
+  :root,
+  [data-theme="dark"],
+  body[data-theme="dark"] {
     --font-vazir: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Nordic Dark Mode */
+    --bg: #1F2933;
+    --surface: rgba(209, 213, 219, 0.06);
+    --surface-2: rgba(209, 213, 219, 0.12);
+    --surface-glass: rgba(31, 41, 51, 0.85);
+    --border: rgba(107, 114, 128, 0.28);
+    --border-strong: #8E96A6;
+    --text: #F7F7F2;
+    --text-muted: #D1D5DB;
+    --accent: #A68A64;
+    --accent-contrast: #1F2933;
+    --focus: #A68A64;
+
+    /* Verified Semantic Colors (WCAG >= 4.5:1 text, >= 3:1 graphical) */
+    --semantic-success: #85C99F;
+    --semantic-warning: #F0B961;
+    --semantic-danger: #ED9A94;
+    --semantic-info: #A5BFE0;
+  }
+
+  [data-theme="light"],
+  body[data-theme="light"] {
+    /* Nordic Light Mode */
+    --bg: #F7F7F2;
+    --surface: #FFFFFF;
+    --surface-2: rgba(209, 213, 219, 0.45);
+    --surface-glass: rgba(247, 247, 242, 0.90);
+    --border: #D1D5DB;
+    --border-strong: #6B7280;
+    --text: #1F2933;
+    --text-muted: #4B5563;
+    --accent: #7A5E38;
+    --accent-contrast: #FFFFFF;
+    --focus: #7A5E38;
+
+    /* Verified Semantic Colors (WCAG >= 4.5:1 text, >= 3:1 graphical) */
+    --semantic-success: #22553A;
+    --semantic-warning: #875104;
+    --semantic-danger: #8C2224;
+    --semantic-info: #23446D;
   }
 
   * {
@@ -14,24 +83,24 @@
     overflow-x: hidden;
     direction: rtl;
     text-align: right;
-    background-color: #07080f;
-    color: #f8fafc;
-    transition: background 0.3s ease, color 0.3s ease;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
 /* ======================================================== */
-/* 🌟 LIQUID MESH BACKGROUND ANIMATIONS                    */
+/* 🌟 SUBTLE NORDIC MESH BACKGROUND ANIMATIONS             */
 /* ======================================================== */
 @keyframes liquid-blob-1 {
   0%, 100% {
     transform: translate(0px, 0px) scale(1);
   }
   33% {
-    transform: translate(80px, -50px) scale(1.12);
+    transform: translate(40px, -30px) scale(1.06);
   }
   66% {
-    transform: translate(-50px, 60px) scale(0.92);
+    transform: translate(-30px, 35px) scale(0.96);
   }
 }
 
@@ -40,28 +109,10 @@
     transform: translate(0px, 0px) scale(1) rotate(0deg);
   }
   33% {
-    transform: translate(-90px, 70px) scale(1.15) rotate(120deg);
+    transform: translate(-45px, 35px) scale(1.08) rotate(60deg);
   }
   66% {
-    transform: translate(60px, -60px) scale(0.9) rotate(240deg);
-  }
-}
-
-@keyframes liquid-blob-3 {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  50% {
-    transform: translate(90px, -80px) scale(1.14);
-  }
-}
-
-@keyframes liquid-blob-4 {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  50% {
-    transform: translate(-70px, 50px) scale(1.08);
+    transform: translate(30px, -30px) scale(0.95) rotate(120deg);
   }
 }
 
@@ -79,92 +130,86 @@
 }
 
 /* ======================================================== */
-/* 💎 iOS 27 LIQUID GLASS DESIGN SYSTEM CLASSES             */
+/* 💎 CALMED LIQUID GLASS SYSTEM CLASSES (NORDIC ADAPTED)   */
 /* ======================================================== */
 
 /* Primary Physical Liquid Glass Card */
 .liquid-glass {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
-  backdrop-filter: blur(28px) saturate(210%) contrast(108%);
-  -webkit-backdrop-filter: blur(28px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
-              inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25),
-              0 20px 45px -10px rgba(0, 0, 0, 0.45);
-  border-radius: 28px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+              0 14px 35px -8px rgba(0, 0, 0, 0.25);
+  border-radius: 24px;
 }
 
 /* Secondary / Nested Sub-surface Glass */
 .liquid-glass-subtle {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-              0 10px 30px -8px rgba(0, 0, 0, 0.3);
-  border-radius: 22px;
+  background: var(--surface-2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+              0 8px 20px -6px rgba(0, 0, 0, 0.18);
+  border-radius: 18px;
 }
 
-/* Liquid Glass Modals (Deeper elevation & diffusion) */
+/* Liquid Glass Modals */
 .liquid-glass-modal {
-  background: linear-gradient(145deg, rgba(18, 22, 38, 0.82) 0%, rgba(9, 12, 22, 0.94) 100%);
-  backdrop-filter: blur(36px) saturate(220%) contrast(110%);
-  -webkit-backdrop-filter: blur(36px) saturate(220%);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
-              inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
-              0 30px 70px -15px rgba(0, 0, 0, 0.7);
-  border-radius: 32px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+              0 24px 50px -12px rgba(0, 0, 0, 0.45);
+  border-radius: 28px;
 }
 
-/* ======================================================== */
-/* ⚡ LOW EFFECTS MODE & ACCESSIBILITY OPTIMIZATIONS       */
-/* ======================================================== */
-
-/* Low Effects Mode: blur max 10-12px, remove saturate/contrast filters */
+/* ⚡ LOW EFFECTS MODE & ACCESSIBILITY OPTIMIZATIONS */
 [data-effects="low"] .liquid-glass,
 body[data-effects="low"] .liquid-glass {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(18, 24, 38, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: var(--surface);
 }
 
 [data-effects="low"] .liquid-glass-subtle,
 body[data-effects="low"] .liquid-glass-subtle {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(15, 20, 32, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: var(--surface-2);
 }
 
 [data-effects="low"] .liquid-glass-modal,
 body[data-effects="low"] .liquid-glass-modal {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: rgba(14, 18, 30, 0.97);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--surface-glass);
 }
 
 [data-effects="low"] .liquid-pill-btn,
 body[data-effects="low"] .liquid-pill-btn,
 [data-effects="low"] .liquid-input,
 body[data-effects="low"] .liquid-input {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Fallback for browsers without backdrop-filter support */
 @supports not (backdrop-filter: blur(1px)) {
   .liquid-glass {
-    background: rgba(18, 24, 38, 0.94);
+    background: var(--surface);
   }
   .liquid-glass-subtle {
-    background: rgba(15, 20, 32, 0.92);
+    background: var(--surface-2);
   }
   .liquid-glass-modal {
-    background: rgba(12, 16, 28, 0.98);
+    background: var(--bg);
   }
   .liquid-pill-btn,
   .liquid-input {
-    background: rgba(24, 32, 48, 0.92);
+    background: var(--surface-2);
   }
 }
 
@@ -174,267 +219,99 @@ body[data-effects="low"] .liquid-input {
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.55),
-              0 8px 20px -4px rgba(0, 0, 0, 0.3);
-  color: #ffffff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+  color: var(--text);
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-pill-btn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.45);
-  transform: translateY(-1.5px) scale(1.02);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.7),
-              0 12px 25px -4px rgba(0, 0, 0, 0.35);
+  background: var(--surface);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
 }
 
 .liquid-pill-btn:active {
-  transform: scale(0.96);
-  box-shadow: inset 0 1px 1px 0 rgba(0, 0, 0, 0.2);
+  transform: scale(0.97);
 }
 
-/* Translucent Liquid Pill Button (Primary / Neon Accent) */
+/* Accent Action Pill Button */
 .liquid-pill-btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: linear-gradient(135deg, rgba(79, 110, 247, 0.88) 0%, rgba(59, 130, 246, 0.75) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.65),
-              0 10px 25px -4px rgba(59, 130, 246, 0.45);
-  color: #ffffff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: 0 6px 16px -3px rgba(166, 138, 100, 0.35);
+  color: var(--accent-contrast);
   font-weight: 700;
   cursor: pointer;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-pill-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.98) 0%, rgba(37, 99, 235, 0.9) 100%);
-  border-color: rgba(255, 255, 255, 0.55);
-  transform: translateY(-1.5px) scale(1.02);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.8),
-              0 14px 30px -4px rgba(79, 110, 247, 0.6);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .liquid-pill-btn-primary:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
-/* Translucent Liquid Pill Button (Danger / Rose) */
+/* Danger Pill Button */
 .liquid-pill-btn-danger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(225, 29, 72, 0.7) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
-              0 10px 25px -4px rgba(239, 68, 68, 0.4);
-  color: #ffffff;
+  background: var(--semantic-danger);
+  border: 1px solid var(--semantic-danger);
+  box-shadow: 0 6px 16px -3px rgba(192, 92, 84, 0.35);
+  color: #FFFFFF;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-pill-btn-danger:hover {
-  background: linear-gradient(135deg, rgba(244, 63, 94, 0.9) 0%, rgba(225, 29, 72, 0.85) 100%);
-  transform: translateY(-1.5px) scale(1.02);
-  box-shadow: inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.75),
-              0 14px 30px -4px rgba(239, 68, 68, 0.55);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .liquid-pill-btn-danger:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
-/* Translucent Liquid Inputs, Selects & Search */
+/* Translucent Liquid Inputs & Selects */
 .liquid-input {
-  background: rgba(15, 20, 32, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1.5px 3px 0 rgba(0, 0, 0, 0.35),
-              inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-  border-radius: 18px;
-  color: rgba(255, 255, 255, 0.95);
+  background: var(--surface-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  color: var(--text);
   padding: 0.65rem 1rem;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 .liquid-input:focus {
-  background: rgba(20, 26, 42, 0.65);
-  border-color: rgba(255, 255, 255, 0.48);
+  border-color: var(--accent);
   outline: none;
-  box-shadow: inset 0 1.5px 2px 0 rgba(0, 0, 0, 0.25),
-              0 0 0 3px rgba(255, 255, 255, 0.16),
-              0 0 20px -3px rgba(99, 102, 241, 0.4);
-}
-
-/* ======================================================== */
-/* 1. OBSIDIAN AURORA (Default Liquid Glass Experience)    */
-/* ======================================================== */
-:root,
-[data-theme="obsidian"],
-body[data-theme="obsidian"] {
-  --theme-bg-gradient: transparent;
-  --theme-card-bg: rgba(23, 28, 42, 0.7);
-  --theme-surface-bg: rgba(17, 21, 32, 0.85);
-  --theme-border: rgba(255, 255, 255, 0.18);
-  --theme-border-highlight: rgba(99, 102, 241, 0.55);
-  --theme-accent: #3b82f6;
-  --theme-accent-hover: #2563eb;
-  --theme-text: #ffffff;
-  --theme-text-muted: #94a3b8;
-}
-
-[data-theme="obsidian"] body,
-body[data-theme="obsidian"],
-[data-theme="obsidian"] #root > div {
-  background: transparent !important;
-  color: #f8fafc !important;
-}
-
-/* ======================================================== */
-/* 2. NORDIC FOREST (زمرد نوردیک - سبز جنگلی متالیک)         */
-/* ======================================================== */
-[data-theme="emerald"],
-body[data-theme="emerald"] {
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, rgba(13, 56, 34, 0.4) 0%, transparent 70%);
-  --theme-card-bg: rgba(10, 31, 19, 0.7);
-  --theme-surface-bg: rgba(6, 20, 12, 0.85);
-  --theme-border: rgba(16, 185, 129, 0.25);
-  --theme-border-highlight: rgba(52, 211, 153, 0.55);
-  --theme-accent: #10b981;
-  --theme-accent-hover: #059669;
-  --theme-text: #f0fdf4;
-  --theme-text-muted: #86efac;
-}
-
-[data-theme="emerald"] body,
-body[data-theme="emerald"],
-[data-theme="emerald"] #root > div {
-  background: radial-gradient(circle at 50% 0%, rgba(13, 56, 34, 0.35) 0%, transparent 70%) !important;
-  color: #f0fdf4 !important;
-}
-
-/* ======================================================== */
-/* 3. CYBER SUNSET (غروب سایبر - نارنجی و بنفش نئونی)        */
-/* ======================================================== */
-[data-theme="sunset"],
-body[data-theme="sunset"] {
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, rgba(56, 18, 40, 0.4) 0%, transparent 70%);
-  --theme-card-bg: rgba(36, 16, 29, 0.7);
-  --theme-surface-bg: rgba(24, 10, 19, 0.85);
-  --theme-border: rgba(249, 115, 22, 0.25);
-  --theme-border-highlight: rgba(249, 115, 22, 0.55);
-  --theme-accent: #f97316;
-  --theme-accent-hover: #ea580c;
-  --theme-text: #fff1f2;
-  --theme-text-muted: #fda4af;
-}
-
-[data-theme="sunset"] body,
-body[data-theme="sunset"],
-[data-theme="sunset"] #root > div {
-  background: radial-gradient(circle at 50% 0%, rgba(56, 18, 40, 0.35) 0%, transparent 70%) !important;
-  color: #fff1f2 !important;
-}
-
-/* ======================================================== */
-/* 4. WARM ESPRESSO (اسپرسو و کهربا)                       */
-/* ======================================================== */
-[data-theme="espresso"],
-body[data-theme="espresso"] {
-  --theme-bg-gradient: radial-gradient(circle at 50% 0%, rgba(56, 36, 20, 0.4) 0%, transparent 70%);
-  --theme-card-bg: rgba(33, 22, 15, 0.7);
-  --theme-surface-bg: rgba(22, 14, 10, 0.85);
-  --theme-border: rgba(245, 158, 11, 0.25);
-  --theme-border-highlight: rgba(245, 158, 11, 0.55);
-  --theme-accent: #f59e0b;
-  --theme-accent-hover: #d97706;
-  --theme-text: #fffbeb;
-  --theme-text-muted: #fde68a;
-}
-
-[data-theme="espresso"] body,
-body[data-theme="espresso"],
-[data-theme="espresso"] #root > div {
-  background: radial-gradient(circle at 50% 0%, rgba(56, 36, 20, 0.35) 0%, transparent 70%) !important;
-  color: #fffbeb !important;
-}
-
-/* ======================================================== */
-/* 5. ALABASTER LIGHT (سفید کریستالی اداری)                */
-/* ======================================================== */
-[data-theme="light"],
-body[data-theme="light"] {
-  --theme-card-bg: rgba(255, 255, 255, 0.85);
-  --theme-surface-bg: rgba(255, 255, 255, 0.95);
-  --theme-border: rgba(226, 232, 240, 0.8);
-  --theme-border-highlight: rgba(79, 70, 229, 0.4);
-  --theme-accent: #4f46e5;
-  --theme-accent-hover: #4338ca;
-  --theme-text: #0f172a;
-  --theme-text-muted: #64748b;
-}
-
-[data-theme="light"] body,
-body[data-theme="light"],
-[data-theme="light"] #root > div {
-  background-color: #f1f5f9 !important;
-  color: #0f172a !important;
-}
-
-[data-theme="light"] .liquid-glass {
-  background: rgba(255, 255, 255, 0.75) !important;
-  border-color: rgba(226, 232, 240, 0.8) !important;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08) !important;
-}
-
-[data-theme="light"] .liquid-glass-modal {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(203, 213, 225, 0.8) !important;
-  color: #0f172a !important;
-}
-
-[data-theme="light"] .liquid-input {
-  background: rgba(248, 250, 252, 0.85) !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
-}
-
-[data-theme="light"] .text-white {
-  color: #0f172a !important;
-}
-[data-theme="light"] .text-slate-100 {
-  color: #0f172a !important;
-}
-[data-theme="light"] .text-slate-200 {
-  color: #1e293b !important;
-}
-[data-theme="light"] .text-slate-300 {
-  color: #334155 !important;
-}
-[data-theme="light"] .text-slate-400 {
-  color: #64748b !important;
+  box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.25);
 }
 
 /* Custom scrollbars */
@@ -448,13 +325,13 @@ body[data-theme="light"],
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
+  background: var(--border-strong);
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: var(--accent);
 }
 
 /* Hide scrollbar for tabs */
@@ -482,8 +359,8 @@ body[data-theme="light"],
   .liquid-glass,
   .liquid-glass-subtle,
   .liquid-glass-modal {
-    backdrop-filter: blur(10px) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
     transform: none !important;
     transition: none !important;
   }
@@ -495,15 +372,97 @@ body[data-theme="light"],
     transition: none !important;
   }
 }
+
 /* ======================================================== */
 /* 🎯 ACCESSIBLE FOCUS INDICATORS (WCAG 2.4.7 / 2.4.11)     */
 /* ======================================================== */
 :focus-visible {
-  outline: 2px solid #38bdf8 !important; /* Sky/Cyan-400 with 11.3:1 contrast against dark bg */
+  outline: 2px solid var(--focus) !important;
   outline-offset: 2px !important;
 }
 
-[data-theme="light"] :focus-visible {
-  outline: 2px solid #0284c7 !important; /* Sky-600 with 3.3:1 contrast against light bg */
-  outline-offset: 2px !important;
+/* ======================================================== */
+/* 🏷️ ACCESSIBLE SEMANTIC BADGES & CHIPS                     */
+/* ======================================================== */
+.badge-success {
+  background: var(--surface-2);
+  color: var(--semantic-success);
+  border: 1px solid color-mix(in srgb, var(--semantic-success) 45%, transparent);
+}
+
+.badge-warning {
+  background: var(--surface-2);
+  color: var(--semantic-warning);
+  border: 1px solid color-mix(in srgb, var(--semantic-warning) 45%, transparent);
+}
+
+.badge-danger {
+  background: var(--surface-2);
+  color: var(--semantic-danger);
+  border: 1px solid color-mix(in srgb, var(--semantic-danger) 45%, transparent);
+}
+
+.badge-info {
+  background: var(--surface-2);
+  color: var(--semantic-info);
+  border: 1px solid color-mix(in srgb, var(--semantic-info) 45%, transparent);
+}
+
+.badge-neutral {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.badge-accent {
+  background: var(--surface-2);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ======================================================== */
+/* 🖨️ PRINT STYLES                                          */
+/* ======================================================== */
+@media print {
+  body, #root, [data-theme], [data-theme="dark"], [data-theme="light"] {
+    background: #FFFFFF !important;
+    color: #1F2933 !important;
+  }
+
+  .liquid-glass,
+  .liquid-glass-subtle,
+  .liquid-glass-modal {
+    background: #FFFFFF !important;
+    border: 1px solid #D1D5DB !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #1F2933 !important;
+  }
+
+  .badge-success,
+  .badge-warning,
+  .badge-danger,
+  .badge-info,
+  .badge-neutral,
+  .badge-accent {
+    background: transparent !important;
+    border: 1px solid #6B7280 !important;
+    color: #1F2933 !important;
+  }
+
+  /* Force dark text for print on all textual nodes */
+  h1, h2, h3, h4, h5, h6, p, span, td, th, bdi, strong {
+    color: #1F2933 !important;
+    text-shadow: none !important;
+  }
+
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th, td {
+    border: 1px solid #D1D5DB !important;
+    background: #FFFFFF !important;
+  }
 }

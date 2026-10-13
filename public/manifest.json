@@ -4,8 +4,8 @@
   "description": "ثبت ورود و خروج، محاسبه اضافه کاری، تاخیر و مرخصی بر پایه تقویم شمسی",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0b0f17",
-  "theme_color": "#0b0f17",
+  "background_color": "#1F2933",
+  "theme_color": "#1F2933",
   "dir": "rtl",
   "lang": "fa",
   "icons": [

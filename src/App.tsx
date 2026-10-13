@@ -43,11 +43,10 @@ import {
   exportMonthToExcel,
 } from './utils/storage';
 import {
-  getStoredTheme,
-  saveStoredTheme,
-  applyThemeToDOM,
-  AppTheme,
-} from './utils/theme';
+  useEffectiveTheme,
+  applyUISettingsToDOM,
+  getStoredUISettings,
+} from './utils/uiSettings';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthScreen } from './components/AuthScreen';
@@ -77,8 +76,8 @@ function DashboardApp() {
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
 
-  // Theme State
-  const [currentTheme, setCurrentTheme] = useState<AppTheme>(getStoredTheme);
+  // Theme State via unified uiSettings
+  const effectiveTheme = useEffectiveTheme();
 
   // Active Tab State (dashboard, timesheet, leaves, reports)
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -104,15 +103,10 @@ function DashboardApp() {
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
 
-  // Initialize theme on mount
+  // Initialize UI settings on mount
   useEffect(() => {
-    applyThemeToDOM(currentTheme);
-  }, [currentTheme]);
-
-  const handleSelectTheme = (theme: AppTheme) => {
-    setCurrentTheme(theme);
-    saveStoredTheme(theme);
-  };
+    applyUISettingsToDOM(getStoredUISettings());
+  }, []);
 
   // Dashboard & Sync States
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
@@ -607,7 +601,7 @@ function DashboardApp() {
   };
 
   return (
-    <div data-theme={currentTheme} className="relative min-h-screen flex flex-col font-sans pb-36 md:pb-16 transition-colors duration-300">
+    <div data-theme={effectiveTheme} className="relative min-h-screen flex flex-col font-sans pb-36 md:pb-16 transition-colors duration-300">
       {/* Dynamic Fluid Mesh Background Engine */}
       <LiquidMeshBackground />
 
@@ -615,8 +609,6 @@ function DashboardApp() {
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        currentTheme={currentTheme}
-        onSelectTheme={handleSelectTheme}
         onOpenManualEntry={() => {
           setEditingRecord(null);
           setIsManualModalOpen(true);
@@ -640,18 +632,18 @@ function DashboardApp() {
               <aside
                 role="alert"
                 aria-label="هشدار خروج ثبت نشده روز گذشته"
-                className="rounded-[24px] border border-amber-400/40 bg-gradient-to-r from-amber-500/15 via-rose-500/10 to-amber-500/15 backdrop-blur-xl p-3.5 sm:p-4 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-3 duration-300"
+                className="rounded-[24px] border border-[var(--semantic-warning)]/40 bg-[var(--surface-2)]/90 backdrop-blur-xl p-3.5 sm:p-4 text-text shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-3 duration-300"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-xl bg-amber-500/20 p-2 text-amber-300 border border-amber-400/40 shrink-0 shadow-sm shadow-amber-500/20">
+                  <div className="rounded-xl bg-[var(--semantic-warning)]/15 p-2 text-[var(--semantic-warning)] border border-[var(--semantic-warning)]/30 shrink-0 shadow-sm">
                     <AlertTriangle className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-amber-200">
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--semantic-warning)]">
                       خروج روز {toPersianDigits(unclosedPreviousRecord.date)} ثبت نشده است
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-slate-200 font-medium mt-0.5">
-                      ورود در ساعت <strong className="font-mono text-white">{toPersianDigits(unclosedPreviousRecord.checkIn || '')}</strong> ثبت شده اما خروج آن ثبت نشده است.
+                    <p className="text-[11px] sm:text-xs text-muted font-medium mt-0.5">
+                      ورود در ساعت <strong className="font-mono text-text">{toPersianDigits(unclosedPreviousRecord.checkIn || '')}</strong> ثبت شده اما خروج آن ثبت نشده است.
                     </p>
                   </div>
                 </div>
@@ -663,14 +655,14 @@ function DashboardApp() {
                       setEditingRecord(unclosedPreviousRecord);
                       setIsManualModalOpen(true);
                     }}
-                    className="rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-black px-4 py-2 text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                    className="liquid-pill-btn-primary px-4 py-2 text-xs active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
                   >
                     <span>تکمیل دستی</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setDismissedMissingCheckoutDate(unclosedPreviousRecord.date)}
-                    className="text-slate-300 hover:text-white p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                    className="text-muted hover:text-text p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
                     title="بستن موقت"
                     aria-label="بستن موقت هشدار"
                   >
@@ -685,17 +677,17 @@ function DashboardApp() {
               <aside
                 role="status"
                 aria-live="polite"
-                className="rounded-[24px] border border-rose-400/35 bg-gradient-to-r from-rose-950/50 via-slate-900/60 to-rose-950/40 backdrop-blur-xl p-3.5 sm:p-4 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300"
+                className="rounded-[24px] border border-[var(--semantic-danger)]/40 bg-[var(--surface-2)]/90 backdrop-blur-xl p-3.5 sm:p-4 text-text shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-xl bg-rose-500/20 p-2 text-rose-300 border border-rose-400/35 shrink-0 shadow-sm shadow-rose-500/20">
+                  <div className="rounded-xl bg-[var(--semantic-danger)]/15 p-2 text-[var(--semantic-danger)] border border-[var(--semantic-danger)]/30 shrink-0 shadow-sm">
                     <CloudOff className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-rose-200">
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--semantic-danger)]">
                       عدم همگام‌سازی با فضای ابری
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-slate-200 font-medium mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-muted font-medium mt-0.5">
                       {cloudSyncError}
                     </p>
                   </div>
@@ -706,7 +698,7 @@ function DashboardApp() {
                     type="button"
                     onClick={handleRetryCloudSync}
                     disabled={isRetryingSync}
-                    className="rounded-full bg-rose-500/25 hover:bg-rose-500/35 text-rose-200 border border-rose-400/40 font-bold px-4 py-2 text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-rose-400 disabled:opacity-60"
+                    className="rounded-full bg-[var(--semantic-danger)]/20 hover:bg-[var(--semantic-danger)]/30 text-[var(--semantic-danger)] border border-[var(--semantic-danger)]/40 font-bold px-4 py-2 text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus)] disabled:opacity-60"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isRetryingSync ? 'animate-spin' : ''}`} />
                     <span>{isRetryingSync ? 'در حال ارسال...' : 'تلاش مجدد'}</span>
@@ -714,7 +706,7 @@ function DashboardApp() {
                   <button
                     type="button"
                     onClick={() => setCloudSyncError(null)}
-                    className="text-slate-300 hover:text-white p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                    className="text-muted hover:text-text p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
                     title="بستن پیام خطا"
                     aria-label="بستن پیام خطا"
                   >
@@ -760,20 +752,20 @@ function DashboardApp() {
             <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
               <div className="flex items-center justify-between mb-2 px-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse shadow-sm shadow-cyan-400/50" />
-                  <span className="text-xs sm:text-sm font-bold text-white/95">
+                  <div className="h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse shadow-sm" />
+                  <span className="text-xs sm:text-sm font-bold text-text">
                     {dashboardView === 'calendar' ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی' : 'نمودارهای آماری کارکرد'}
                   </span>
                 </div>
 
                 {/* View switcher between Calendar and Charts */}
-                <div className="flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.08] backdrop-blur-xl p-1 shadow-inner text-xs">
+                <div className="flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] backdrop-blur-xl p-1 shadow-inner text-xs">
                   <button
                     onClick={() => setDashboardView('calendar')}
                     className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold transition-all ${
                       dashboardView === 'calendar'
-                        ? 'liquid-pill-btn-primary shadow-lg shadow-blue-500/30'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'liquid-pill-btn-primary shadow-md'
+                        : 'text-muted hover:text-text hover:bg-[var(--surface)]'
                     }`}
                   >
                     <Calendar className="h-3.5 w-3.5" />
@@ -783,8 +775,8 @@ function DashboardApp() {
                     onClick={() => setDashboardView('charts')}
                     className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold transition-all ${
                       dashboardView === 'charts'
-                        ? 'liquid-pill-btn-primary shadow-lg shadow-blue-500/30'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'liquid-pill-btn-primary shadow-md'
+                        : 'text-muted hover:text-text hover:bg-[var(--surface)]'
                     }`}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
@@ -912,7 +904,7 @@ function DashboardApp() {
               <button
                 type="button"
                 onClick={handleMobilePunch}
-                className="w-full min-h-[48px] h-12 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-5 text-sm font-black text-white shadow-xl shadow-emerald-500/30 border border-white/40 backdrop-blur-xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
+                className="liquid-pill-btn-primary w-full min-h-[48px] h-12 rounded-full px-5 text-sm font-black shadow-xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
               >
                 <LogIn className="h-5 w-5 shrink-0" />
                 <span>ثبت ورود</span>
@@ -926,10 +918,10 @@ function DashboardApp() {
                 <button
                   type="button"
                   onClick={handleMobilePunch}
-                  className={`flex-1 min-h-[48px] h-12 rounded-full px-4 text-xs sm:text-sm font-black text-white shadow-xl border backdrop-blur-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
+                  className={`flex-1 min-h-[48px] h-12 rounded-full px-4 text-xs sm:text-sm font-black shadow-xl border backdrop-blur-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
                     checkoutConfirmActive
-                      ? 'bg-gradient-to-r from-amber-500 via-orange-600 to-rose-600 border-amber-300/80 shadow-rose-600/40 animate-pulse'
-                      : 'bg-gradient-to-r from-rose-500 via-pink-600 to-amber-600 border-white/40 shadow-rose-500/30'
+                      ? 'bg-[var(--semantic-danger)] text-white border-[var(--border-strong)] shadow-lg animate-pulse'
+                      : 'bg-[var(--surface-2)] text-text border-[var(--border-strong)] hover:border-[var(--accent)] shadow-md'
                   }`}
                 >
                   <LogOut className="h-5 w-5 shrink-0" />
@@ -942,7 +934,7 @@ function DashboardApp() {
                   <button
                     type="button"
                     onClick={() => setCheckoutConfirmActive(false)}
-                    className="min-h-[48px] h-12 min-w-[48px] px-3.5 rounded-full bg-slate-900/90 text-slate-200 border border-white/25 backdrop-blur-xl text-xs font-bold active:scale-95 transition-all flex items-center justify-center"
+                    className="min-h-[48px] h-12 min-w-[48px] px-3.5 rounded-full bg-[var(--surface-2)] text-muted hover:text-text border border-[var(--border-strong)] backdrop-blur-xl text-xs font-bold active:scale-95 transition-all flex items-center justify-center"
                     aria-label="انصراف از خروج"
                     title="انصراف"
                   >
@@ -955,9 +947,9 @@ function DashboardApp() {
               <button
                 type="button"
                 disabled
-                className="w-full min-h-[48px] h-12 rounded-full bg-slate-900/85 text-emerald-300 border border-emerald-500/35 backdrop-blur-xl px-5 text-xs font-bold flex items-center justify-center gap-2 opacity-80 cursor-not-allowed shadow-md"
+                className="w-full min-h-[48px] h-12 rounded-full bg-[var(--surface-2)] text-[var(--semantic-success)] border border-[var(--semantic-success)]/40 backdrop-blur-xl px-5 text-xs font-bold flex items-center justify-center gap-2 opacity-80 cursor-not-allowed shadow-md"
               >
-                <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                <CheckCircle className="h-4 w-4 text-[var(--semantic-success)] shrink-0" />
                 <span>حضور امروز کامل شد</span>
               </button>
             )}
@@ -968,7 +960,7 @@ function DashboardApp() {
       {/* Mobile Sticky Bottom Navigation Bar */}
       <nav
         aria-label="ناوبری سریع موبایل"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)]/95 backdrop-blur-xl border-t border-[var(--border-strong)] px-2 py-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] flex items-center justify-around text-[10px] max-w-full box-border"
       >
         <button
           type="button"
@@ -977,8 +969,8 @@ function DashboardApp() {
           aria-current={activeTab === 'dashboard' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'dashboard'
-              ? 'text-indigo-400 font-bold scale-105'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-[var(--accent)] font-bold scale-105'
+              : 'text-muted hover:text-text'
           }`}
         >
           <LayoutDashboard className="h-4 w-4" />
@@ -992,8 +984,8 @@ function DashboardApp() {
           aria-current={activeTab === 'timesheet' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'timesheet'
-              ? 'text-indigo-400 font-bold scale-105'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-[var(--accent)] font-bold scale-105'
+              : 'text-muted hover:text-text'
           }`}
         >
           <TableIcon className="h-4 w-4" />
@@ -1008,9 +1000,9 @@ function DashboardApp() {
             setIsManualModalOpen(true);
           }}
           aria-label="ثبت دستی تردد جدید"
-          className="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-0.5 px-2 text-indigo-400 font-bold active:scale-95 transition-all"
+          className="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-0.5 px-2 text-[var(--accent)] font-bold active:scale-95 transition-all"
         >
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-600 to-cyan-500 shadow-md shadow-indigo-500/30 flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-full bg-[var(--accent)] text-[var(--accent-contrast)] shadow-md flex items-center justify-center">
             <PlusCircle className="h-5 w-5" />
           </div>
           <span className="text-[9px]">ثبت تردد</span>
@@ -1023,8 +1015,8 @@ function DashboardApp() {
           aria-current={activeTab === 'leaves' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'leaves'
-              ? 'text-amber-400 font-bold scale-105'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-[var(--accent)] font-bold scale-105'
+              : 'text-muted hover:text-text'
           }`}
         >
           <Coffee className="h-4 w-4" />
@@ -1038,8 +1030,8 @@ function DashboardApp() {
           aria-current={activeTab === 'reports' ? 'page' : undefined}
           className={`flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] py-1 px-2.5 transition-all ${
             activeTab === 'reports'
-              ? 'text-indigo-400 font-bold scale-105'
-              : 'text-slate-400 hover:text-white'
+              ? 'text-[var(--accent)] font-bold scale-105'
+              : 'text-muted hover:text-text'
           }`}
         >
           <TrendingUp className="h-4 w-4" />
@@ -1054,12 +1046,12 @@ function DashboardApp() {
           aria-live="polite"
           className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto"
         >
-          <div className="relative overflow-hidden rounded-2xl bg-slate-900/95 border border-cyan-400/40 p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-white">
+          <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-2)]/95 border border-[var(--border-strong)] p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-text">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="rounded-xl bg-emerald-500/20 p-1.5 text-emerald-300 border border-emerald-400/30 shrink-0">
-                <CheckCircle className="h-4 w-4 text-emerald-400" />
+              <div className="rounded-xl bg-[var(--semantic-success)]/15 p-1.5 text-[var(--semantic-success)] border border-[var(--semantic-success)]/30 shrink-0">
+                <CheckCircle className="h-4 w-4 text-[var(--semantic-success)]" />
               </div>
-              <span className="text-xs sm:text-sm font-semibold truncate text-white">
+              <span className="text-xs sm:text-sm font-semibold truncate text-text">
                 {undoState.message}
               </span>
             </div>
@@ -1068,7 +1060,7 @@ function DashboardApp() {
               <button
                 type="button"
                 onClick={handleUndoLastPunch}
-                className="rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold px-3.5 py-1.5 text-xs transition-all shadow-md active:scale-95 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="liquid-pill-btn-primary px-3.5 py-1.5 text-xs transition-all shadow-md active:scale-95 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 <span>بازگردانی</span>
@@ -1076,7 +1068,7 @@ function DashboardApp() {
               <button
                 type="button"
                 onClick={() => setUndoState(null)}
-                className="text-slate-300 hover:text-white p-1 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                className="text-muted hover:text-text p-1 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
                 aria-label="بستن اعلان"
               >
                 <X className="h-4 w-4" />
@@ -1084,10 +1076,10 @@ function DashboardApp() {
             </div>
 
             {/* Visual 8-second progress line */}
-            <div className="absolute bottom-0 inset-x-0 h-1 bg-white/10 overflow-hidden">
+            <div className="absolute bottom-0 inset-x-0 h-1 bg-[var(--border-strong)]/30 overflow-hidden">
               <div
                 key={undoState.id}
-                className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 animate-shrink-8s"
+                className="h-full bg-[var(--accent)] animate-shrink-8s"
               />
             </div>
           </div>
@@ -1164,17 +1156,17 @@ function AppWithAuth() {
 
   if (isLoading) {
     return (
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 text-white overflow-hidden">
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 text-text overflow-hidden">
         <LiquidMeshBackground />
-        <div className="relative liquid-glass p-8 rounded-[32px] flex flex-col items-center max-w-sm w-full text-center shadow-2xl">
+        <div className="relative liquid-glass p-8 rounded-[32px] flex flex-col items-center max-w-sm w-full text-center shadow-2xl border border-[var(--border-strong)]">
           <div className="relative flex items-center justify-center mb-5">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 via-blue-500 to-cyan-400 flex items-center justify-center shadow-xl shadow-indigo-500/35 border border-white/30">
-              <CalendarClock className="h-8 w-8 text-white animate-pulse" />
+            <div className="h-16 w-16 rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] flex items-center justify-center shadow-xl border border-[var(--border-strong)]">
+              <CalendarClock className="h-8 w-8 animate-pulse" />
             </div>
           </div>
-          <h3 className="text-base font-bold text-white mb-2">سامانه مدیریت هوشمند تردد</h3>
-          <div className="flex items-center gap-2 text-xs text-white/70 font-medium">
-            <span className="h-4 w-4 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+          <h3 className="text-base font-bold text-text mb-2">سامانه مدیریت هوشمند تردد</h3>
+          <div className="flex items-center gap-2 text-xs text-muted font-medium">
+            <span className="h-4 w-4 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
             <span>در حال بررسی امنیت و بارگذاری داده‌ها...</span>
           </div>
         </div>

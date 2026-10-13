@@ -34,7 +34,8 @@ import {
   formatMinutesToTimeString,
   timeStringToMinutes,
 } from '../utils/jalali';
-import { APP_THEMES, AppTheme } from '../utils/theme';
+type AppTheme = string;
+const APP_THEMES: any[] = [];
 import { useAuth } from '../context/AuthContext';
 import { exportFullBackupJSON, importBackupFromJSON } from '../utils/storage';
 import {

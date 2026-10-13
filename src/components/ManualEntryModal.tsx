@@ -422,7 +422,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
     >
       <div
         ref={modalRef}
-        className="relative w-full max-w-lg rounded-[32px] liquid-glass-modal p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col border border-white/20"
+        className="relative w-full max-w-lg rounded-[32px] liquid-glass-modal p-5 sm:p-6 shadow-2xl max-h-[92vh] flex flex-col border border-[var(--border)]"
       >
         {/* 7. Confirmation Modal on Unsaved Changes */}
         {showUnsavedConfirm && (
@@ -431,16 +431,16 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
             aria-modal="true"
             aria-labelledby="unsaved-title"
             aria-describedby="unsaved-desc"
-            className="absolute inset-0 z-50 flex items-center justify-center bg-black/85 p-5 rounded-[32px] backdrop-blur-md animate-in fade-in duration-150"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 p-5 rounded-[32px] backdrop-blur-md animate-in fade-in duration-150"
           >
-            <div className="bg-[#121626] border border-amber-400/40 rounded-2xl p-5 max-w-sm w-full text-center shadow-2xl space-y-3.5">
-              <div className="mx-auto w-11 h-11 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 flex items-center justify-center">
+            <div className="bg-[var(--surface)] border border-[var(--border-strong)] rounded-2xl p-5 max-w-sm w-full text-center shadow-2xl space-y-3.5">
+              <div className="mx-auto w-11 h-11 rounded-full bg-[var(--semantic-warning)]/15 text-[var(--semantic-warning)] border border-[var(--semantic-warning)]/30 flex items-center justify-center">
                 <AlertTriangle className="h-6 w-6" />
               </div>
-              <h4 id="unsaved-title" className="text-sm font-bold text-white">
+              <h4 id="unsaved-title" className="text-sm font-bold text-[var(--text-main)]">
                 تغییرات ذخیره‌نشده!
               </h4>
-              <p id="unsaved-desc" className="text-xs text-slate-300 leading-relaxed">
+              <p id="unsaved-desc" className="text-xs text-muted leading-relaxed">
                 تغییراتی در فرم وارد کرده‌اید که ذخیره نشده‌اند. آیا مطمئن هستید که می‌خواهید بدون ذخیره از فرم خارج شوید؟
               </p>
               <div className="flex items-center justify-center gap-2 pt-2">
@@ -457,7 +457,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                     setShowUnsavedConfirm(false);
                     onClose();
                   }}
-                  className="rounded-full bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 text-xs font-bold shadow-md transition-colors"
+                  className="rounded-full bg-[var(--semantic-danger)] text-[var(--bg)] px-4 py-2 text-xs font-bold shadow-md transition-opacity hover:opacity-90"
                 >
                   خروج بدون ذخیره
                 </button>
@@ -467,25 +467,25 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-2xl bg-indigo-500/20 p-2.5 text-indigo-300 border border-indigo-400/30 shadow-inner">
+            <div className="rounded-2xl bg-[var(--surface-2)] p-2.5 text-[var(--accent)] border border-[var(--border)] shadow-inner">
               <Calendar className="h-5 w-5" />
             </div>
             <div>
-              <h3 id="manual-entry-modal-title" className="text-sm sm:text-base font-bold text-white/95">
+              <h3 id="manual-entry-modal-title" className="text-sm sm:text-base font-bold text-[var(--text-main)]">
                 {isEditingExisting ? 'ویرایش تردد' : 'ثبت تردد جدید'}
               </h3>
-              <p className="text-[11px] sm:text-xs text-white/70">
-                تاریخ انتخاب‌شده: <span className="font-semibold text-white">{weekdayName}</span>،{' '}
-                <span className="font-mono text-cyan-300">{toPersianDigits(dateStr)}</span>
+              <p className="text-[11px] sm:text-xs text-muted">
+                تاریخ انتخاب‌شده: <span className="font-semibold text-[var(--text-main)]">{weekdayName}</span>،{' '}
+                <span className="font-mono text-[var(--accent)]">{toPersianDigits(dateStr)}</span>
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={handleAttemptClose}
-            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-[var(--surface-2)] hover:text-[var(--text-main)] transition-colors"
             title="بستن"
             aria-label="بستن فرم"
           >
@@ -495,13 +495,13 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
         {/* 6. Informative Banner: Editing Existing Record */}
         {isEditingExisting && (
-          <div className="mt-3 rounded-2xl border border-cyan-400/35 bg-cyan-500/15 p-3 text-xs text-cyan-200 flex items-start gap-2.5">
-            <Info className="h-4 w-4 shrink-0 text-cyan-300 mt-0.5" />
+          <div className="mt-3 rounded-2xl border border-[var(--semantic-info)]/30 bg-[var(--semantic-info)]/10 p-3 text-xs text-[var(--semantic-info)] flex items-start gap-2.5">
+            <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
-              <strong className="block text-white font-bold">
+              <strong className="block text-[var(--text-main)] font-bold">
                 توجه: در حال ویرایش رکورد موجود
               </strong>
-              <p className="text-[11px] text-cyan-100/90 leading-relaxed">
+              <p className="text-[11px] text-[var(--text-main)]/85 leading-relaxed">
                 برای تاریخ {toPersianDigits(dateStr)} قبلاً تردد ثبت شده است. ذخیره این فرم، رکورد موجود را با مقادیر جدید به‌روزرسانی خواهد کرد.
               </p>
             </div>
@@ -510,14 +510,14 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
         {/* 5. Soft Warning Banner: Official Holiday or Full Leave */}
         {isSpecialHolidayOrFullLeave && (
-          <div className="mt-3 rounded-2xl border border-amber-400/40 bg-amber-500/15 p-3 text-xs text-amber-200 space-y-2">
+          <div className="mt-3 rounded-2xl border border-[var(--semantic-warning)]/30 bg-[var(--semantic-warning)]/10 p-3 text-xs text-[var(--semantic-warning)] space-y-2">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-300 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <strong className="block text-white font-bold">
+                <strong className="block text-[var(--text-main)] font-bold">
                   هشدار: این روز «{holidayReasonText}» است
                 </strong>
-                <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                <p className="text-[11px] text-[var(--text-main)]/85 leading-relaxed">
                   بر اساس تقویم یا سوابق مرخصی، این روز کاری عادی نیست. ثبت تردد به صورت اضافه کاری یا استثنایی منظور خواهد شد.
                 </p>
               </div>
@@ -538,15 +538,15 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                     });
                   }
                 }}
-                className="rounded border-amber-400/50 text-indigo-500 focus:ring-amber-400 h-4 w-4"
+                className="rounded border-[var(--border-strong)] text-[var(--accent)] focus:ring-[var(--focus)] h-4 w-4"
               />
-              <span className="text-xs font-semibold text-white">
+              <span className="text-xs font-semibold text-[var(--text-main)]">
                 ثبت تردد در این روز را تأیید می‌کنم و مایل به ادامه هستم
               </span>
             </label>
 
             {errors.holiday && (
-              <p id="holiday-error" role="alert" className="text-[11px] text-rose-300 font-bold flex items-center gap-1">
+              <p id="holiday-error" role="alert" className="text-[11px] text-[var(--semantic-danger)] font-bold flex items-center gap-1">
                 <AlertCircle className="h-3 w-3 shrink-0" />
                 <span>{errors.holiday}</span>
               </p>
@@ -558,7 +558,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
         <form onSubmit={handleSubmit} className="mt-3 sm:mt-4 space-y-3.5 sm:space-y-4 overflow-y-auto pr-0.5">
           {/* Jalali Date Selection */}
           <div>
-            <label className="block text-xs font-semibold text-white/90 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
               تاریخ شمسی
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -573,12 +573,12 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }}
                   aria-invalid={Boolean(errors.date)}
                   aria-describedby={errors.date ? 'date-error' : undefined}
-                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-white/95 ${
-                    errors.date ? 'border-rose-400/70 focus:border-rose-400' : ''
+                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-[var(--text-main)] ${
+                    errors.date ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)]' : ''
                   }`}
                 >
                   {Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1).map((d) => (
-                    <option key={d} value={d} className="bg-[#0f121d] text-white">
+                    <option key={d} value={d} className="bg-[var(--surface)] text-[var(--text-main)]">
                       روز {toPersianDigits(d)}
                     </option>
                   ))}
@@ -595,12 +595,12 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }}
                   aria-invalid={Boolean(errors.date)}
                   aria-describedby={errors.date ? 'date-error' : undefined}
-                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-white/95 ${
-                    errors.date ? 'border-rose-400/70 focus:border-rose-400' : ''
+                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-[var(--text-main)] ${
+                    errors.date ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)]' : ''
                   }`}
                 >
                   {PERSIAN_MONTH_NAMES.map((m, idx) => (
-                    <option key={m} value={idx + 1} className="bg-[#0f121d] text-white">
+                    <option key={m} value={idx + 1} className="bg-[var(--surface)] text-[var(--text-main)]">
                       {m}
                     </option>
                   ))}
@@ -617,12 +617,12 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }}
                   aria-invalid={Boolean(errors.date)}
                   aria-describedby={errors.date ? 'date-error' : undefined}
-                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-white/95 font-mono ${
-                    errors.date ? 'border-rose-400/70 focus:border-rose-400' : ''
+                  className={`liquid-input w-full px-3 py-2 text-xs font-medium text-[var(--text-main)] font-mono ${
+                    errors.date ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)]' : ''
                   }`}
                 >
                   {[1402, 1403, 1404, 1405, 1406].map((yr) => (
-                    <option key={yr} value={yr} className="bg-[#0f121d] text-white">
+                    <option key={yr} value={yr} className="bg-[var(--surface)] text-[var(--text-main)]">
                       {toPersianDigits(yr)}
                     </option>
                   ))}
@@ -635,9 +635,9 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               <p
                 id="date-error"
                 role="alert"
-                className="mt-1.5 text-xs text-rose-300 font-medium flex items-center gap-1"
+                className="mt-1.5 text-xs text-[var(--semantic-danger)] font-medium flex items-center gap-1"
               >
-                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-rose-400" />
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 <span>{errors.date}</span>
               </p>
             )}
@@ -646,7 +646,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           {/* Time Check-In & Check-Out */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="manual-checkin-input" className="block text-xs font-semibold text-white/90 mb-1.5">
+              <label htmlFor="manual-checkin-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 ساعت ورود
               </label>
               <div className="relative">
@@ -661,8 +661,8 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }}
                   aria-invalid={Boolean(errors.checkIn)}
                   aria-describedby={errors.checkIn ? 'checkin-error' : undefined}
-                  className={`liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center ${
-                    errors.checkIn ? 'border-rose-400/70 focus:border-rose-400 ring-1 ring-rose-500/30' : ''
+                  className={`liquid-input w-full px-3 py-2 text-sm font-mono text-[var(--text-main)] text-center ${
+                    errors.checkIn ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)] ring-1 ring-[var(--semantic-danger)]/30' : ''
                   }`}
                 />
               </div>
@@ -671,16 +671,16 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <p
                   id="checkin-error"
                   role="alert"
-                  className="mt-1 text-xs text-rose-300 font-medium flex items-center gap-1"
+                  className="mt-1 text-xs text-[var(--semantic-danger)] font-medium flex items-center gap-1"
                 >
-                  <AlertCircle className="h-3 w-3 shrink-0 text-rose-400" />
+                  <AlertCircle className="h-3 w-3 shrink-0" />
                   <span>{errors.checkIn}</span>
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="manual-checkout-input" className="block text-xs font-semibold text-white/90 mb-1.5">
+              <label htmlFor="manual-checkout-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 ساعت خروج
               </label>
               <div className="relative">
@@ -695,8 +695,8 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }}
                   aria-invalid={Boolean(errors.checkOut)}
                   aria-describedby={errors.checkOut ? 'checkout-error' : undefined}
-                  className={`liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center ${
-                    errors.checkOut ? 'border-rose-400/70 focus:border-rose-400 ring-1 ring-rose-500/30' : ''
+                  className={`liquid-input w-full px-3 py-2 text-sm font-mono text-[var(--text-main)] text-center ${
+                    errors.checkOut ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)] ring-1 ring-[var(--semantic-danger)]/30' : ''
                   }`}
                 />
               </div>
@@ -705,9 +705,9 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <p
                   id="checkout-error"
                   role="alert"
-                  className="mt-1 text-xs text-rose-300 font-medium flex items-center gap-1"
+                  className="mt-1 text-xs text-[var(--semantic-danger)] font-medium flex items-center gap-1"
                 >
-                  <AlertCircle className="h-3 w-3 shrink-0 text-rose-400" />
+                  <AlertCircle className="h-3 w-3 shrink-0" />
                   <span>{errors.checkOut}</span>
                 </p>
               )}
@@ -717,7 +717,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
           {/* Break and Status */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="manual-break-input" className="block text-xs font-semibold text-white/90 mb-1.5">
+              <label htmlFor="manual-break-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 مدت ناهار / استراحت (دقیقه)
               </label>
               <input
@@ -733,8 +733,8 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 }}
                 aria-invalid={Boolean(errors.breakMinutes)}
                 aria-describedby={errors.breakMinutes ? 'break-error' : undefined}
-                className={`liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center ${
-                  errors.breakMinutes ? 'border-rose-400/70 focus:border-rose-400 ring-1 ring-rose-500/30' : ''
+                className={`liquid-input w-full px-3 py-2 text-xs font-mono text-[var(--text-main)] text-center ${
+                  errors.breakMinutes ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)] ring-1 ring-[var(--semantic-danger)]/30' : ''
                 }`}
               />
               {/* 3. Break > Presence Error Message */}
@@ -742,35 +742,35 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <p
                   id="break-error"
                   role="alert"
-                  className="mt-1 text-xs text-rose-300 font-medium flex items-center gap-1"
+                  className="mt-1 text-xs text-[var(--semantic-danger)] font-medium flex items-center gap-1"
                 >
-                  <AlertCircle className="h-3 w-3 shrink-0 text-rose-400" />
+                  <AlertCircle className="h-3 w-3 shrink-0" />
                   <span>{errors.breakMinutes}</span>
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-white/90 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
                 وضعیت روز
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DayStatus)}
-                className="liquid-input w-full px-3 py-2 text-xs font-medium text-white/95"
+                className="liquid-input w-full px-3 py-2 text-xs font-medium text-[var(--text-main)]"
               >
-                <option value="present" className="bg-[#0f121d] text-white">حاضر عادی</option>
-                <option value="leave" className="bg-[#0f121d] text-white">مرخصی</option>
-                <option value="absent" className="bg-[#0f121d] text-white">غیبت</option>
-                <option value="holiday" className="bg-[#0f121d] text-white">تعطیل رسمی</option>
-                <option value="weekend" className="bg-[#0f121d] text-white">جمعه / تعطیل هفتگی</option>
+                <option value="present" className="bg-[var(--surface)] text-[var(--text-main)]">حاضر عادی</option>
+                <option value="leave" className="bg-[var(--surface)] text-[var(--text-main)]">مرخصی</option>
+                <option value="absent" className="bg-[var(--surface)] text-[var(--text-main)]">غیبت</option>
+                <option value="holiday" className="bg-[var(--surface)] text-[var(--text-main)]">تعطیل رسمی</option>
+                <option value="weekend" className="bg-[var(--surface)] text-[var(--text-main)]">جمعه / تعطیل هفتگی</option>
               </select>
             </div>
           </div>
 
           {/* Note / Description */}
           <div>
-            <label className="block text-xs font-semibold text-white/90 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
               یادداشت یا علت تاخیر / اضافه کاری
             </label>
             <textarea
@@ -778,31 +778,31 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="مثال: حضور در جلسه، ماموریت، تاخیر با هماهنگی..."
-              className="liquid-input w-full p-2.5 text-xs text-white/90 placeholder:text-white/40 resize-none"
+              className="liquid-input w-full p-2.5 text-xs text-[var(--text-main)] placeholder:text-muted resize-none"
             />
           </div>
 
           {/* 8. Live Calculation Preview Banner */}
-          <div className="rounded-2xl bg-white/[0.04] p-3 border border-white/10 text-xs backdrop-blur-md shadow-inner space-y-1.5">
-            <div className="flex items-center justify-between text-slate-300 text-[11px]">
-              <span className="font-semibold text-white/90 flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 text-cyan-300" />
+          <div className="rounded-2xl bg-[var(--surface-2)] p-3 border border-[var(--border)] text-xs backdrop-blur-md shadow-inner space-y-1.5">
+            <div className="flex items-center justify-between text-muted text-[11px]">
+              <span className="font-semibold text-[var(--text-main)] flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5 text-[var(--accent)]" />
                 <span>پیش‌نمایش زنده محاسبه کارکرد:</span>
               </span>
               {livePreview.isValid && livePreview.balanceMinutes !== null && (
                 <div className="font-mono font-bold">
                   {livePreview.balanceMinutes > 0 ? (
-                    <span className="text-emerald-300 inline-flex items-center gap-0.5">
+                    <span className="text-[var(--semantic-success)] inline-flex items-center gap-0.5">
                       <TrendingUp className="h-3 w-3" />
                       <bdi dir="ltr">+{toPersianDigits(formatMinutesToTimeString(livePreview.balanceMinutes))}</bdi>
                     </span>
                   ) : livePreview.balanceMinutes < 0 ? (
-                    <span className="text-rose-300 inline-flex items-center gap-0.5">
+                    <span className="text-[var(--semantic-danger)] inline-flex items-center gap-0.5">
                       <TrendingDown className="h-3 w-3" />
                       <bdi dir="ltr">-{toPersianDigits(formatMinutesToTimeString(Math.abs(livePreview.balanceMinutes)))}</bdi>
                     </span>
                   ) : (
-                    <span className="text-slate-400 inline-flex items-center gap-0.5">
+                    <span className="text-muted inline-flex items-center gap-0.5">
                       <Minus className="h-3 w-3" />
                       <bdi dir="ltr">۰</bdi>
                     </span>
@@ -811,24 +811,24 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-white/10 font-mono">
+            <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-[var(--border)] font-mono">
               <div>
-                <span className="text-slate-300 block mb-0.5 font-sans">کل حضور</span>
-                <strong className="text-white text-xs">{livePreview.rawPresenceText}</strong>
+                <span className="text-muted block mb-0.5 font-sans">کل حضور</span>
+                <strong className="text-[var(--text-main)] text-xs">{livePreview.rawPresenceText}</strong>
               </div>
               <div>
-                <span className="text-slate-300 block mb-0.5 font-sans">کسر ناهار</span>
-                <strong className="text-amber-300 text-xs">{livePreview.breakText}</strong>
+                <span className="text-muted block mb-0.5 font-sans">کسر ناهار</span>
+                <strong className="text-[var(--semantic-warning)] text-xs">{livePreview.breakText}</strong>
               </div>
               <div>
-                <span className="text-slate-300 block mb-0.5 font-sans">کارکرد مفید خالص</span>
-                <strong className="text-emerald-300 text-xs font-black">{livePreview.netWorkedText}</strong>
+                <span className="text-muted block mb-0.5 font-sans">کارکرد مفید خالص</span>
+                <strong className="text-[var(--semantic-success)] text-xs font-black">{livePreview.netWorkedText}</strong>
               </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
             <button
               type="button"
               onClick={handleAttemptClose}

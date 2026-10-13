@@ -169,19 +169,19 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="storage-mode-modal-title"
-        className="relative w-full max-w-xl liquid-glass-modal border border-white/20 rounded-[32px] p-5 sm:p-7 shadow-2xl text-slate-100 max-h-[92vh] overflow-y-auto"
+        className="relative w-full max-w-xl liquid-glass-modal border border-[var(--border)] rounded-[32px] p-5 sm:p-7 shadow-2xl text-[var(--text-main)] max-h-[92vh] overflow-y-auto"
       >
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/15">
+        <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 shadow-inner">
+            <div className="p-2.5 rounded-2xl bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--border)] shadow-inner">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <h3 id="storage-mode-modal-title" className="font-bold text-base sm:text-lg text-white/95">
+              <h3 id="storage-mode-modal-title" className="font-bold text-base sm:text-lg text-[var(--text-main)]">
                 مدیریت محل ذخیره‌سازی و امنیت داده‌ها
               </h3>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-muted">
                 انتخاب محل نگهداری و سطح رمزنگاری اطلاعات تردد و محاسبات
               </p>
             </div>
@@ -189,7 +189,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
           <button
             onClick={onClose}
             aria-label="بستن پنجره"
-            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-[var(--surface-2)] hover:text-[var(--text-main)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -200,7 +200,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
           <div
             role="status"
             aria-live="polite"
-            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs backdrop-blur-md"
+            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-[var(--semantic-success)]/10 border border-[var(--semantic-success)]/30 text-[var(--semantic-success)] text-xs backdrop-blur-md"
           >
             <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{successMsg}</span>
@@ -210,7 +210,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
         {errorMsg && (
           <div
             role="alert"
-            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs backdrop-blur-md"
+            className="mt-4 flex items-start gap-2.5 p-3 rounded-2xl bg-[var(--semantic-danger)]/10 border border-[var(--semantic-danger)]/30 text-[var(--semantic-danger)] text-xs backdrop-blur-md"
           >
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
@@ -219,7 +219,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
         {/* Storage Mode Selection Cards */}
         <div className="mt-5 space-y-3.5">
-          <p className="text-xs font-semibold text-white/80">
+          <p className="text-xs font-semibold text-[var(--text-main)]">
             محل ذخیره‌سازی داده‌های تردد، مرخصی و شیفت‌های کاری:
           </p>
 
@@ -237,8 +237,8 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
             aria-pressed={storageMode === 'local'}
             className={`cursor-pointer p-4 rounded-2xl border transition-all relative backdrop-blur-md ${
               storageMode === 'local'
-                ? 'bg-indigo-500/20 border-indigo-400/60 shadow-xl shadow-indigo-500/10'
-                : 'bg-white/[0.04] border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
+                ? 'bg-[var(--surface-2)] border-[var(--border-strong)] shadow-md'
+                : 'bg-[var(--surface)] border-[var(--border)] hover:border-[var(--border-strong)]'
             }`}
           >
             <div className="flex items-start justify-between gap-3">
@@ -246,22 +246,22 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 <div
                   className={`p-2.5 rounded-xl shrink-0 mt-0.5 ${
                     storageMode === 'local'
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                      : 'bg-white/10 text-white/60'
+                      ? 'bg-[var(--accent)] text-[var(--bg)] shadow-md'
+                      : 'bg-[var(--surface-2)] text-muted'
                   }`}
                 >
                   <Laptop className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-white/95">
+                    <span className="font-bold text-sm text-[var(--text-main)]">
                       ذخیره‌سازی محلی (فقط روی این دستگاه)
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/10 text-white/70 border border-white/15">
+                    <span className="badge-neutral text-[10px] px-2 py-0.5 rounded-full">
                       خصوصی و آفلاین
                     </span>
                   </div>
-                  <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                  <p className="text-xs text-muted mt-1 leading-relaxed">
                     اطلاعات تردد، ساعات کاری و مرخصی‌ها به صورت محرمانه تنها در حافظه مرورگر این دستگاه ذخیره می‌شوند و هیچ دیتایی به خارج ارسال نمی‌گردد.
                   </p>
                 </div>
@@ -270,8 +270,8 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 <div
                   className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors ${
                     storageMode === 'local'
-                      ? 'border-indigo-400 bg-indigo-500 text-white shadow-sm'
-                      : 'border-white/30 bg-transparent'
+                      ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--bg)] shadow-sm'
+                      : 'border-[var(--border-strong)] bg-transparent'
                   }`}
                 >
                   {storageMode === 'local' && <Check className="h-3 w-3 stroke-[3]" />}
@@ -294,8 +294,8 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
             aria-pressed={storageMode === 'cloud_encrypted'}
             className={`cursor-pointer p-4 rounded-2xl border transition-all relative backdrop-blur-md ${
               storageMode === 'cloud_encrypted'
-                ? 'bg-cyan-500/20 border-cyan-400/60 shadow-xl shadow-cyan-500/10'
-                : 'bg-white/[0.04] border-white/10 hover:border-white/20 hover:bg-white/[0.06]'
+                ? 'bg-[var(--surface-2)] border-[var(--border-strong)] shadow-md'
+                : 'bg-[var(--surface)] border-[var(--border)] hover:border-[var(--border-strong)]'
             }`}
           >
             <div className="flex items-start justify-between gap-3">
@@ -303,22 +303,22 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 <div
                   className={`p-2.5 rounded-xl shrink-0 mt-0.5 ${
                     storageMode === 'cloud_encrypted'
-                      ? 'bg-gradient-to-tr from-cyan-500 to-indigo-600 text-white shadow-md shadow-cyan-500/30'
-                      : 'bg-white/10 text-white/60'
+                      ? 'bg-[var(--accent)] text-[var(--bg)] shadow-md'
+                      : 'bg-[var(--surface-2)] text-muted'
                   }`}
                 >
                   <Lock className="h-5 w-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-white/95">
+                    <span className="font-bold text-sm text-[var(--text-main)]">
                       همگام‌سازی ابری با رمزنگاری پیشرفته (AES-256)
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    <span className="badge-success text-[10px] px-2 py-0.5 rounded-full">
                       رمزنگاری سراسری
                     </span>
                   </div>
-                  <p className="text-xs text-white/60 mt-1 leading-relaxed">
+                  <p className="text-xs text-muted mt-1 leading-relaxed">
                     تمامی اطلاعات تردد، مرخصی و تنظیمات پیش از ارسال، با کلید ۲۵۶ بیتی اختصاصی بر روی همین مرورگر رمزگذاری شده و بر روی سرور ایمن نگهداری می‌شوند. حتی مدیر سرور نیز قادر به خواندن داده‌های شما نخواهد بود.
                   </p>
                 </div>
@@ -327,8 +327,8 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 <div
                   className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors ${
                     storageMode === 'cloud_encrypted'
-                      ? 'border-cyan-400 bg-cyan-500 text-white shadow-sm'
-                      : 'border-white/30 bg-transparent'
+                      ? 'border-[var(--accent)] bg-[var(--accent)] text-[var(--bg)] shadow-sm'
+                      : 'border-[var(--border-strong)] bg-transparent'
                   }`}
                 >
                   {storageMode === 'cloud_encrypted' && <Check className="h-3 w-3 stroke-[3]" />}
@@ -342,18 +342,18 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 role="region"
                 aria-label="هشدار مهم رمزنگاری ابری"
                 onClick={(e) => e.stopPropagation()}
-                className="mt-4 p-4 rounded-2xl bg-amber-500/15 border border-amber-400/40 text-amber-100 text-xs space-y-3.5 backdrop-blur-lg animate-in fade-in duration-200"
+                className="mt-4 p-4 rounded-2xl bg-[var(--semantic-warning)]/10 border border-[var(--semantic-warning)]/30 text-[var(--text-main)] text-xs space-y-3.5 backdrop-blur-lg animate-in fade-in duration-200"
               >
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangle className="h-5 w-5 text-amber-300 shrink-0 mt-0.5" />
+                  <AlertTriangle className="h-5 w-5 text-[var(--semantic-warning)] shrink-0 mt-0.5" />
                   <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-amber-200">
+                    <h4 className="font-bold text-sm text-[var(--semantic-warning)]">
                       هشدار امنیتی بسیار مهم قبل از فعال‌سازی:
                     </h4>
-                    <p className="text-amber-100/90 leading-relaxed text-[11px] sm:text-xs">
+                    <p className="text-[var(--text-main)]/90 leading-relaxed text-[11px] sm:text-xs">
                       داده‌های شما پیش از ارسال با کلید مشتق‌شده از رمز عبورتان رمزنگاری می‌شوند.
                       {' '}
-                      <strong className="text-white font-bold">
+                      <strong className="text-[var(--text-main)] font-bold">
                         در صورتی که کلید یا رمز عبور حساب خود را فراموش یا گم کنید، داده‌های ابری به هیچ عنوان قابل بازیابی یا رمزگشایی نخواهند بود
                       </strong>
                       {' '}
@@ -363,15 +363,15 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 </div>
 
                 {/* Recommendation & Backup Shortcut Button */}
-                <div className="p-3 rounded-xl bg-black/40 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                  <span className="text-[11px] text-white/80">
+                <div className="p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <span className="text-[11px] text-muted">
                     پیشنهاد امنیتی: توصیه می‌شود ابتدا یک نسخه پشتیبان آفلاین JSON از داده‌های فعلی خود دریافت نمایید.
                   </span>
                   {onOpenBackup && (
                     <button
                       type="button"
                       onClick={onOpenBackup}
-                      className="liquid-pill-btn shrink-0 text-cyan-300 border-cyan-400/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold hover:bg-cyan-500/30 transition-all flex items-center gap-1.5 self-start sm:self-auto"
+                      className="liquid-pill-btn shrink-0 text-[var(--accent)] border-[var(--border-strong)] px-3 py-1.5 text-xs font-bold hover:bg-[var(--surface-2)] transition-all flex items-center gap-1.5 self-start sm:self-auto"
                     >
                       <Download className="h-3.5 w-3.5" />
                       <span>ابتدا پشتیبان JSON بگیر</span>
@@ -385,22 +385,22 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                     type="checkbox"
                     checked={lossAcknowledged}
                     onChange={(e) => setLossAcknowledged(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-amber-400/50 bg-slate-900 text-amber-500 focus:ring-amber-400 focus:ring-offset-0 cursor-pointer"
+                    className="mt-0.5 h-4 w-4 rounded border-[var(--border-strong)] bg-[var(--surface)] text-[var(--accent)] focus:ring-[var(--focus)] cursor-pointer"
                   />
-                  <span className="text-xs text-white font-medium leading-relaxed">
+                  <span className="text-xs text-[var(--text-main)] font-medium leading-relaxed">
                     متوجه شدم و می‌دانم در صورت گم شدن رمز عبور، اطلاعات ابری به هیچ وجه قابل بازیابی نیست.
                   </span>
                 </label>
 
                 {/* Actions */}
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-amber-400/20">
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--semantic-warning)]/20">
                   <button
                     type="button"
                     onClick={() => {
                       setPendingCloudActivation(false);
                       setLossAcknowledged(false);
                     }}
-                    className="liquid-pill-btn px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white"
+                    className="liquid-pill-btn px-3 py-1.5 text-xs font-semibold text-muted hover:text-[var(--text-main)]"
                   >
                     انصراف
                   </button>
@@ -420,33 +420,33 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
 
         {/* Sync Controls (Visible when Cloud Sync is active) */}
         {storageMode === 'cloud_encrypted' && (
-          <div className="mt-5 p-4 rounded-2xl bg-white/[0.04] border border-white/10 space-y-3 backdrop-blur-md">
+          <div className="mt-5 p-4 rounded-2xl bg-[var(--surface-2)] border border-[var(--border)] space-y-3 backdrop-blur-md">
             <div className="flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-white/70">
-                <Server className="h-4 w-4 text-cyan-300" />
+              <div className="flex items-center gap-2 text-muted">
+                <Server className="h-4 w-4 text-[var(--accent)]" />
                 <span>وضعیت ارتباط با سرور:</span>
-                <span className="text-emerald-300 font-semibold flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[var(--semantic-success)] font-semibold flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[var(--semantic-success)] animate-pulse" />
                   سرور مرکزی فعال و متصل
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
-              <span className="text-white/60">آخرین همگام‌سازی ابری:</span>
-              <span className="text-white/95 font-mono text-[11px]">
+            <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border)]">
+              <span className="text-muted">آخرین همگام‌سازی ابری:</span>
+              <span className="text-[var(--text-main)] font-mono text-[11px]">
                 {formatLastSync(lastSyncedAt)}
               </span>
             </div>
 
             {/* Security Backup Shortcut */}
             {onOpenBackup && (
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
-                <span className="text-white/70">پشتیبان‌گیری محلی از نسخه فعلی:</span>
+              <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between text-xs">
+                <span className="text-muted">پشتیبان‌گیری محلی از نسخه فعلی:</span>
                 <button
                   type="button"
                   onClick={onOpenBackup}
-                  className="liquid-pill-btn text-cyan-300 border-cyan-400/30 px-3 py-1 text-[11px] font-semibold flex items-center gap-1"
+                  className="liquid-pill-btn text-[var(--accent)] border-[var(--border-strong)] px-3 py-1 text-[11px] font-semibold flex items-center gap-1"
                 >
                   <Download className="h-3 w-3" />
                   <span>پشتیبان‌گیری JSON</span>
@@ -471,7 +471,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
                 disabled={isSyncing}
                 className="liquid-pill-btn flex items-center justify-center gap-2 py-2.5 text-xs font-semibold disabled:opacity-50"
               >
-                <Cloud className="h-4 w-4 text-cyan-300" />
+                <Cloud className="h-4 w-4 text-[var(--accent)]" />
                 <span>بازیابی از نسخه ابری</span>
               </button>
             </div>
