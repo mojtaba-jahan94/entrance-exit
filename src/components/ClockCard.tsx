@@ -135,6 +135,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
           spread: 50,
           ticks: 120, // Short duration
           origin: { y: 0.65 },
+          colors: ['#A68A64', '#85C99F', '#A5BFE0', '#F7F7F2', '#6B7280'],
           disableForReducedMotion: true,
         });
       } catch {
@@ -392,7 +393,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-label="درصد تکمیل شیفت کاری امروز"
-                  className="mt-2.5 h-2 w-full rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/15"
+                  className="mt-2.5 h-2 w-full rounded-full bg-[var(--surface-2)] overflow-hidden p-0.5 border border-[var(--border)]"
                 >
                   <div
                     className="h-full rounded-full transition-all duration-1000 shadow-sm bg-[var(--accent)]"
@@ -401,7 +402,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                 </div>
 
                 {/* Overtime or Remaining Time Notice */}
-                <div className="mt-3 pt-2.5 border-t border-white/15">
+                <div className="mt-3 pt-2.5 border-t border-[var(--border)]">
                   {isOvertimeLive ? (
                     <div className="flex items-center justify-between text-[var(--semantic-info)]">
                       <span className="text-xs sm:text-sm font-bold flex items-center gap-1.5">
@@ -427,8 +428,8 @@ export const ClockCard: React.FC<ClockCardProps> = ({
               </div>
 
               {/* Break / Lunch Selector */}
-              <div className="w-full rounded-[22px] liquid-glass-subtle p-3 border border-white/20 space-y-2">
-                <div className="flex items-center justify-between text-xs text-white">
+              <div className="w-full rounded-[22px] liquid-glass-subtle p-3 border border-[var(--border)] space-y-2">
+                <div className="flex items-center justify-between text-xs text-[var(--text)]">
                   <span className="flex items-center gap-1.5 font-semibold text-[var(--text)]">
                     <Coffee className="h-3.5 w-3.5 text-[var(--semantic-warning)]" />
                     استراحت و ناهار:
@@ -456,7 +457,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
                       className={`rounded-xl py-1 text-xs transition-all ${
                         breakMinutesInput === preset
                           ? 'bg-[var(--accent)] text-[var(--accent-contrast)] border border-[var(--accent)] font-bold shadow-sm'
-                          : 'bg-white/[0.08] text-[var(--text-muted)] hover:text-[var(--text)] border border-white/15 font-medium'
+                          : 'bg-[var(--surface-2)] text-[var(--text-muted)] hover:text-[var(--text)] border border-[var(--border)] font-medium'
                       }`}
                     >
                       {preset === 0 ? 'بدون ناهار' : `${toPersianDigits(preset)} د`}

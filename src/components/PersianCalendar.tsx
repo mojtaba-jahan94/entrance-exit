@@ -176,7 +176,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
   return (
     <LiquidGlassCard className="w-full rounded-[32px] p-4 sm:p-6 shadow-2xl">
       {/* Top Header Bar: Month/Year Selector, Chevrons, Today Button & Month Badges */}
-        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-white/15 pb-4 mb-4">
+        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] pb-4 mb-4">
           {/* Left / Title & Selectors */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
@@ -476,7 +476,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
           </div>
 
           {/* Right Panel: "Scheduled" / روز و رویدادهای انتخاب شده */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-[28px] liquid-glass-subtle p-4 sm:p-5 border border-white/20 shadow-xl">
+          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-[28px] liquid-glass-subtle p-4 sm:p-5 border border-[var(--border)] shadow-xl">
             {/* Header: Scheduled + Date + Day Chevrons */}
             <div>
               <div className="flex items-center justify-between border-b border-border pb-3 mb-4">

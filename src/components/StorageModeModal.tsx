@@ -479,7 +479,7 @@ export const StorageModeModal: React.FC<StorageModeModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-end">
+        <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-end">
           <button
             type="button"
             onClick={onClose}

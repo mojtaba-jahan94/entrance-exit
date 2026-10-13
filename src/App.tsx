@@ -920,7 +920,7 @@ function DashboardApp() {
                   onClick={handleMobilePunch}
                   className={`flex-1 min-h-[48px] h-12 rounded-full px-4 text-xs sm:text-sm font-black shadow-xl border backdrop-blur-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
                     checkoutConfirmActive
-                      ? 'bg-[var(--semantic-danger)] text-white border-[var(--border-strong)] shadow-lg animate-pulse'
+                      ? 'bg-[var(--semantic-danger)] text-[var(--accent-contrast)] border-[var(--border-strong)] shadow-lg animate-pulse'
                       : 'bg-[var(--surface-2)] text-text border-[var(--border-strong)] hover:border-[var(--accent)] shadow-md'
                   }`}
                 >

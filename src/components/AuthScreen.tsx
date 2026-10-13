@@ -282,7 +282,7 @@ export const AuthScreen: React.FC = () => {
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span className="h-4 w-4 rounded-full border-2 border-[var(--accent-contrast)]/30 border-t-[var(--accent-contrast)] animate-spin" />
                   <span>در حال اعتبارسنجی و اتصال به سرور...</span>
                 </div>
               ) : mode === 'login' ? (

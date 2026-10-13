@@ -161,7 +161,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen
             >
               {isSubmitting ? (
                 <>
-                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--accent-contrast)]/30 border-t-[var(--accent-contrast)] animate-spin" />
                   <span>در حال ذخیره...</span>
                 </>
               ) : (

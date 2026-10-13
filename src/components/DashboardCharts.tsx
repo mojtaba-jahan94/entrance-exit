@@ -457,7 +457,7 @@ export const DashboardCharts: React.FC<DashboardChartsProps> = ({
                           )}
                           {/* Live shimmer reflection effect */}
                           {item.isCurrentlyWorking && (
-                            <div className="absolute inset-0 bg-white/10 animate-pulse" />
+                            <div className="absolute inset-0 bg-[var(--surface-2)] animate-pulse" />
                           )}
                         </div>
                       </div>

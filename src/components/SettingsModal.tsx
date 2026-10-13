@@ -118,23 +118,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-modal-title"
-        className="relative w-full max-w-xl rounded-[32px] border border-white/20 liquid-glass-modal p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
+        className="relative w-full max-w-xl rounded-[32px] border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--text)] p-5 sm:p-6 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4 shrink-0">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-3 sm:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="rounded-2xl bg-[var(--surface-2)] p-2.5 text-[var(--accent)] border border-[var(--border)] shadow-inner">
               <Settings className="h-5 w-5" />
             </div>
             <div>
-              <h3 id="settings-modal-title" className="text-sm sm:text-base font-bold text-white/95">تنظیمات و شخصی‌سازی قوانین کار</h3>
-              <p className="text-[11px] sm:text-xs text-white/60">سفارشی‌سازی شیفت شناور، ناهار، پنج‌شنبه و مرخصی</p>
+              <h3 id="settings-modal-title" className="text-sm sm:text-base font-bold text-text">تنظیمات و شخصی‌سازی قوانین کار</h3>
+              <p className="text-[11px] sm:text-xs text-muted">سفارشی‌سازی شیفت شناور، ناهار، پنج‌شنبه و مرخصی</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="بستن پنجره"
-            className="rounded-full p-2 text-white/60 hover:bg-white/15 hover:text-white transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-[var(--surface-2)] hover:text-text transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -144,7 +144,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div
           role="tablist"
           aria-label="بخش‌های تنظیمات"
-          className="flex items-center gap-2 border-b border-white/10 pt-3 pb-2.5 text-xs overflow-x-auto whitespace-nowrap shrink-0 no-scrollbar"
+          className="flex items-center gap-2 border-b border-[var(--border)] pt-3 pb-2.5 text-xs overflow-x-auto whitespace-nowrap shrink-0 no-scrollbar"
         >
           <button
             type="button"
@@ -154,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'shift'
                 ? 'liquid-pill-btn-primary shadow-md'
-                : 'liquid-pill-btn text-white/70'
+                : 'liquid-pill-btn text-muted hover:text-text'
             }`}
           >
             شیفت روزهای عادی
@@ -167,7 +167,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'thursday'
                 ? 'liquid-pill-btn-primary shadow-md'
-                : 'liquid-pill-btn text-white/70'
+                : 'liquid-pill-btn text-muted hover:text-text'
             }`}
           >
             پنج‌شنبه‌ها (۴.۵س)
@@ -180,7 +180,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'leave'
                 ? 'liquid-pill-btn-primary shadow-md'
-                : 'liquid-pill-btn text-white/70'
+                : 'liquid-pill-btn text-muted hover:text-text'
             }`}
           >
             سهمیه مرخصی (۲.۵ روز)
@@ -193,7 +193,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all ${
               activeTab === 'finance'
                 ? 'liquid-pill-btn-primary shadow-md'
-                : 'liquid-pill-btn text-white/70'
+                : 'liquid-pill-btn text-muted hover:text-text'
             }`}
           >
             ضرایب و مالی
@@ -206,7 +206,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className={`px-3.5 py-1.5 rounded-full font-semibold shrink-0 transition-all flex items-center gap-1.5 ${
               activeTab === 'effects'
                 ? 'liquid-pill-btn-primary shadow-md'
-                : 'liquid-pill-btn text-white/70'
+                : 'liquid-pill-btn text-muted hover:text-text'
             }`}
           >
             <Sparkles className="h-3 w-3" />
@@ -224,10 +224,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Toggle Flexible Shift */}
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--surface-2)] border border-[var(--border)] backdrop-blur-md">
                 <div>
-                  <span className="text-xs font-bold text-white/95 block">فعال بودن شیفت شناور</span>
-                  <span className="text-[11px] text-white/60">ورود در بازه تعیین‌شده تاخیر محاسبه نمی‌شود</span>
+                  <span className="text-xs font-bold text-text block">فعال بودن شیفت شناور</span>
+                  <span className="text-[11px] text-muted">ورود در بازه تعیین‌شده تاخیر محاسبه نمی‌شود</span>
                 </div>
                 <input
                   type="checkbox"
@@ -240,65 +240,65 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Flexible Start Time Range */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     شروع بازه ورود شناور
                   </label>
                   <input
                     type="time"
                     value={formData.flexStartTimeMin || '08:30'}
                     onChange={(e) => setFormData({ ...formData, flexStartTimeMin: e.target.value })}
-                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">پیش‌فرض: ۰۸:۳۰</span>
+                  <span className="text-[10px] text-muted mt-1 block">پیش‌فرض: ۰۸:۳۰</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     پایان بازه ورود مجاز (شروع تاخیر)
                   </label>
                   <input
                     type="time"
                     value={formData.flexStartTimeMax || '09:30'}
                     onChange={(e) => setFormData({ ...formData, flexStartTimeMax: e.target.value })}
-                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">پیش‌فرض: ۰۹:۳۰</span>
+                  <span className="text-[10px] text-muted mt-1 block">پیش‌فرض: ۰۹:۳۰</span>
                 </div>
               </div>
 
               {/* Flexible Departure Time Range */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     حداقل ساعت خروج (ورود ۰۸:۳۰)
                   </label>
                   <input
                     type="time"
                     value={formData.flexDepartureMin || '17:00'}
                     onChange={(e) => setFormData({ ...formData, flexDepartureMin: e.target.value })}
-                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">پیش‌فرض: ۱۷:۰۰</span>
+                  <span className="text-[10px] text-muted mt-1 block">پیش‌فرض: ۱۷:۰۰</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     حداکثر ساعت خروج (ورود ۰۹:۳۰)
                   </label>
                   <input
                     type="time"
                     value={formData.flexDepartureMax || '18:00'}
                     onChange={(e) => setFormData({ ...formData, flexDepartureMax: e.target.value })}
-                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">پیش‌فرض: ۱۸:۰۰</span>
+                  <span className="text-[10px] text-muted mt-1 block">پیش‌فرض: ۱۸:۰۰</span>
                 </div>
               </div>
 
               {/* Total Presence and Lunch Break */}
-              <div className="grid grid-cols-2 gap-3 border-t border-white/10 pt-3">
+              <div className="grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-3">
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     مدت کل حضور الزامی روزانه
                   </label>
                   <div className="flex items-center gap-1.5">
@@ -313,17 +313,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           requiredDailyMinutes: Math.max(0, parseInt(e.target.value) || 510),
                         })
                       }
-                      className="liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center"
+                      className="liquid-input w-full px-3 py-2 text-xs font-mono text-text text-center"
                     />
-                    <span className="text-xs text-white/60">دقیقه</span>
+                    <span className="text-xs text-muted">دقیقه</span>
                   </div>
-                  <span className="text-[10px] text-white/50 mt-1 block">
+                  <span className="text-[10px] text-muted mt-1 block">
                     معادل ۸ ساعت و ۳۰ دقیقه حضور فیزیکی
                   </span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     کسر خودکار تایم ناهار / استراحت
                   </label>
                   <div className="flex items-center gap-1.5">
@@ -338,9 +338,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           defaultBreakMinutes: Math.max(0, parseInt(e.target.value) || 0),
                         })
                       }
-                      className="liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center"
+                      className="liquid-input w-full px-3 py-2 text-xs font-mono text-text text-center"
                     />
-                    <span className="text-xs text-white/60">دقیقه</span>
+                    <span className="text-xs text-muted">دقیقه</span>
                   </div>
                   <span className="text-[10px] text-[var(--semantic-success)] mt-1 block">
                     کارکرد خالص محاسبه شده: ۸ ساعت در روز
@@ -358,7 +358,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-white/80 mb-1.5">
+                <label className="block text-xs font-semibold text-text mb-1.5">
                   وضعیت روزهای پنج‌شنبه
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -402,7 +402,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {formData.thursdayStatus === 'half_day' && (
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     مدت حضور پنج‌شنبه (دقیقه)
                   </label>
                   <div className="flex items-center gap-2">
@@ -417,9 +417,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           thursdayMinutes: Math.max(0, parseInt(e.target.value) || 240),
                         })
                       }
-                      className="liquid-input w-32 px-3 py-2 text-xs font-mono text-white/95 text-center"
+                      className="liquid-input w-32 px-3 py-2 text-xs font-mono text-text text-center"
                     />
-                    <span className="text-xs text-white/60">
+                    <span className="text-xs text-muted">
                       معادل {toPersianDigits(formatMinutesToTimeString(formData.thursdayMinutes || 240))} ساعت حضور موظفی
                     </span>
                   </div>
@@ -437,7 +437,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     سهمیه مرخصی ماهانه (بر حسب روز)
                   </label>
                   <input
@@ -454,13 +454,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         monthlyLeaveQuotaHours: Math.round(val * 8),
                       });
                     }}
-                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-sm font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">پیش‌فرض: ۲.۵ روز در ماه</span>
+                  <span className="text-[10px] text-muted mt-1 block">پیش‌فرض: ۲.۵ روز در ماه</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     معادل سهمیه مرخصی به ساعت
                   </label>
                   <input
@@ -469,7 +469,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={Math.round((formData.monthlyLeaveDays || 2.5) * 8)}
                     className="liquid-input w-full px-3 py-2 text-sm font-mono text-[var(--accent)] text-center cursor-not-allowed opacity-80"
                   />
-                  <span className="text-[10px] text-white/50 mt-1 block">
+                  <span className="text-[10px] text-muted mt-1 block">
                     (۲.۵ روز × ۸ ساعت کار = ۲۰ ساعت)
                   </span>
                 </div>
@@ -482,7 +482,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     ضریب اضافه کاری عادی
                   </label>
                   <input
@@ -523,15 +523,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         }
                       }
                     }}
-                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-0.5 block">
+                  <span className="text-[10px] text-muted mt-0.5 block">
                     قانون کار: ۱.۴ برابر (بدون محدودیت سقف)
                   </span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-white/80 mb-1">
+                  <label className="block text-xs font-semibold text-text mb-1">
                     ضریب اضافه کار تعطیلات
                   </label>
                   <input
@@ -572,18 +572,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         }
                       }
                     }}
-                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center"
+                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-text text-center"
                   />
-                  <span className="text-[10px] text-white/50 mt-0.5 block">
+                  <span className="text-[10px] text-muted mt-0.5 block">
                     قانون کار: ۱.۸ تا ۲ برابر (بدون محدودیت سقف)
                   </span>
                 </div>
               </div>
 
               {/* Optional Hourly Wage for Estimation */}
-              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md">
+              <div className="p-3.5 rounded-2xl bg-[var(--surface-2)] border border-[var(--border)] backdrop-blur-md">
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-white/80">
+                  <label className="block text-xs font-semibold text-text">
                     نرخ دستمزد ساعتی تخمینی (اختیاری - تومان)
                   </label>
                   {formData.hourlyRateToman ? (
@@ -610,7 +610,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         hourlyRateToman: val,
                       });
                     }}
-                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-white/95 text-center tracking-wider"
+                    className="liquid-input w-full px-3 py-2 text-xs font-mono text-text text-center tracking-wider"
                   />
                   {formData.hourlyRateToman ? (
                     <button
@@ -623,7 +623,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   ) : null}
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-white/50 mt-1.5">
+                <div className="flex items-center justify-between text-[10px] text-muted mt-1.5">
                   <span>امکان وارد کردن هر عدد دلخواه (بدون اجبار به عدد رند)</span>
                   {formData.hourlyRateToman ? (
                     <span className="text-[var(--accent)] font-medium font-mono">
@@ -640,9 +640,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="space-y-5">
               {/* Theme Mode Selector */}
               <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-xs font-bold text-white/95">
+                <div className="flex items-center justify-between text-xs font-bold text-text">
                   <span>حالت نمایش و تم برنامه (پالت نوردیک)</span>
-                  <span className="text-[10px] text-white/50 font-mono">Nordic Palette</span>
+                  <span className="text-[10px] text-muted font-mono">Nordic Palette</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -650,13 +650,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleThemeModeChange('auto')}
                     className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                       uiSettings.themeMode === 'auto'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/20 shadow-md text-white font-bold'
-                        : 'border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:border-white/20'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] text-muted hover:text-text hover:border-[var(--border-strong)]'
                     }`}
                   >
                     <Laptop className="h-4 w-4" />
                     <span className="text-xs">خودکار</span>
-                    <span className="text-[10px] text-white/50">هماهنگ با سیستم</span>
+                    <span className="text-[10px] text-muted">هماهنگ با سیستم</span>
                   </button>
 
                   <button
@@ -664,13 +664,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleThemeModeChange('dark')}
                     className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                       uiSettings.themeMode === 'dark'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/20 shadow-md text-white font-bold'
-                        : 'border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:border-white/20'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] text-muted hover:text-text hover:border-[var(--border-strong)]'
                     }`}
                   >
                     <Moon className="h-4 w-4" />
                     <span className="text-xs">حالت تیره</span>
-                    <span className="text-[10px] text-white/50">Nordic Charcoal</span>
+                    <span className="text-[10px] text-muted">Nordic Charcoal</span>
                   </button>
 
                   <button
@@ -678,19 +678,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleThemeModeChange('light')}
                     className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
                       uiSettings.themeMode === 'light'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/20 shadow-md text-white font-bold'
-                        : 'border-white/10 bg-white/[0.04] text-white/70 hover:text-white hover:border-white/20'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] text-muted hover:text-text hover:border-[var(--border-strong)]'
                     }`}
                   >
                     <Sun className="h-4 w-4" />
                     <span className="text-xs">حالت روشن</span>
-                    <span className="text-[10px] text-white/50">Snow Cream</span>
+                    <span className="text-[10px] text-muted">Snow Cream</span>
                   </button>
                 </div>
               </div>
 
               {/* Visual Effects Section */}
-              <div className="space-y-2.5 pt-2 border-t border-white/10">
+              <div className="space-y-2.5 pt-2 border-t border-[var(--border)]">
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-3 text-xs text-[var(--text-muted)] backdrop-blur-md">
                   <span className="font-bold text-[var(--text)]">تنظیم مصرف منابع و پویانمایی:</span> در حالت «کم»، انیمیشن حباب‌های پس‌زمینه، فیلتر نویز، دنبال‌کردن ماوس و کانفتی خاموش شده و بلور تا سقف ۱۲px کاهش می‌یابد تا دستگاه‌های ضعیف روان کار کنند.
                 </div>
@@ -700,15 +700,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleVisualEffectsChange('auto')}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                       uiSettings.visualEffects === 'auto'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-white'
-                        : 'border-white/10 bg-white/[0.04] hover:border-white/20 text-white/70 hover:text-white'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-strong)] text-muted hover:text-text'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-xs font-bold">خودکار (پیش‌فرض)</span>
                       {uiSettings.visualEffects === 'auto' && <Check className="w-4 h-4 text-[var(--accent)]" />}
                     </div>
-                    <p className="text-[11px] text-white/60">
+                    <p className="text-[11px] text-muted">
                       تشخیص خودکار بر اساس قدرت سخت‌افزار یا ترجیح کاهش حرکت در سیستم عامل
                     </p>
                   </div>
@@ -717,15 +717,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleVisualEffectsChange('high')}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                       uiSettings.visualEffects === 'high'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-white'
-                        : 'border-white/10 bg-white/[0.04] hover:border-white/20 text-white/70 hover:text-white'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-strong)] text-muted hover:text-text'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-xs font-bold">کامل (High Effects)</span>
                       {uiSettings.visualEffects === 'high' && <Check className="w-4 h-4 text-[var(--accent)]" />}
                     </div>
-                    <p className="text-[11px] text-white/60">
+                    <p className="text-[11px] text-muted">
                       پویانمایی ملایم، بازتاب نوری کوارتز روی ماوس و کانفتی شادباش پایان شیفت
                     </p>
                   </div>
@@ -734,15 +734,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     onClick={() => handleVisualEffectsChange('low')}
                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                       uiSettings.visualEffects === 'low'
-                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-white'
-                        : 'border-white/10 bg-white/[0.04] hover:border-white/20 text-white/70 hover:text-white'
+                        ? 'border-[var(--accent)] bg-[var(--accent)]/15 shadow-md text-text font-bold'
+                        : 'border-[var(--border)] bg-[var(--surface-2)] hover:border-[var(--border-strong)] text-muted hover:text-text'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-xs font-bold">کم (Low Effects)</span>
                       {uiSettings.visualEffects === 'low' && <Check className="w-4 h-4 text-[var(--accent)]" />}
                     </div>
-                    <p className="text-[11px] text-white/60">
+                    <p className="text-[11px] text-muted">
                       حداقل مصرف باتری و منابع (بدون حرکت حباب‌ها و بدون بازتاب ماوس، بلور سبک)
                     </p>
                   </div>
@@ -752,11 +752,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
             <button
               type="button"
               onClick={handleResetDefaults}
-              className="liquid-pill-btn flex items-center gap-1.5 px-3 py-2 text-xs text-white/60 hover:text-white"
+              className="liquid-pill-btn flex items-center gap-1.5 px-3 py-2 text-xs text-muted hover:text-text"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               <span>پیش‌فرض‌های محل کار</span>

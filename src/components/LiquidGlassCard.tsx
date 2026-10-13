@@ -27,7 +27,7 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
   children,
   className = '',
   interactive = true,
-  glowColor = 'rgba(255, 255, 255, 0.16)',
+  glowColor = 'rgba(166, 138, 100, 0.12)',
   sheenColor,
   variant = 'primary',
   as: Component = 'div',
@@ -127,7 +127,7 @@ export const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
       {/* Top Edge Specular Reflection (Physical Glass Rim) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-90 z-20"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[var(--border-strong)]/40 to-transparent opacity-80 z-20"
       />
 
       {/* Mouse-Tracking Liquid Sheen Overlay (Only rendered for fine pointer desktop devices, driven by CSS vars) */}

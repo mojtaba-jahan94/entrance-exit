@@ -73,14 +73,14 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
               <span>تحقق موظفی</span>
               <span className="font-bold text-[var(--accent)] font-mono">{toPersianDigits(stats.completionRate)}٪</span>
             </div>
-            <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden p-0.5 border border-white/15">
+            <div className="h-1.5 w-full rounded-full bg-[var(--surface-2)] overflow-hidden p-0.5 border border-[var(--border)]">
               <div
                 className="h-full rounded-full bg-[var(--accent)] transition-all duration-700 shadow-sm"
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
               />
             </div>
             {stats.totalMonthRequiredMinutes && (
-              <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-[var(--text-muted)] border-t border-white/10 pt-1.5 font-medium">
+              <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-[var(--text-muted)] border-t border-[var(--border)] pt-1.5 font-medium">
                 <span>کل موظفی تقویمی:</span>
                 <span className="font-mono text-[var(--text)] font-semibold">{toPersianDigits(totalMonthHours)} ساعت</span>
               </div>
@@ -101,7 +101,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
                 isNetPositive
                   ? 'bg-[var(--semantic-success)]/20 text-[var(--semantic-success)] border-[var(--semantic-success)]/35'
                   : isNetZero
-                  ? 'bg-white/10 text-[var(--text-muted)] border-white/20'
+                  ? 'bg-[var(--surface-2)] text-[var(--text-muted)] border-[var(--border)]'
                   : 'bg-[var(--semantic-danger)]/20 text-[var(--semantic-danger)] border-[var(--semantic-danger)]/35'
               }`}
             >
@@ -124,7 +124,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             </span>
           </div>
 
-          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-white/10 pt-2">
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2">
             <span className="flex items-center gap-1.5 truncate text-[var(--semantic-success)] font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--semantic-success)] shrink-0 shadow-sm" />
               اضافه: {toPersianDigits(totalOvertimeHours)}س
@@ -184,7 +184,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             )}
           </div>
 
-          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-white/10 pt-2">
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2">
             <span
               className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-[var(--semantic-warning)] font-bold' : 'text-[var(--text-muted)] font-medium'}`}
             >
@@ -232,7 +232,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }
             </span>
           </div>
 
-          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-white/10 pt-2 font-medium">
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2 font-medium">
             <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز</span>
             <span className="text-[var(--semantic-success)] font-bold truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز

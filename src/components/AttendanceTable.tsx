@@ -266,14 +266,14 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   return (
     <LiquidGlassCard className="rounded-[32px] p-4 sm:p-6 shadow-2xl">
       {/* Table Header Controls */}
-      <div className="flex flex-col gap-3.5 border-b border-white/15 pb-4">
+      <div className="flex flex-col gap-3.5 border-b border-[var(--border)] pb-4">
         {/* Row 1: Month/Year Nav + View Switcher + Record Count */}
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           {/* Month & Year Selectors */}
-          <div className="flex items-center rounded-full bg-white/[0.08] border border-white/20 backdrop-blur-md p-1 shadow-inner">
+          <div className="flex items-center rounded-full bg-[var(--surface-2)] border border-[var(--border)] backdrop-blur-md p-1 shadow-inner">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/15 transition-colors"
+              className="p-1.5 rounded-full text-muted hover:text-text hover:bg-[var(--surface)] transition-colors"
               title="ماه قبل"
               aria-label="ماه قبل"
             >
