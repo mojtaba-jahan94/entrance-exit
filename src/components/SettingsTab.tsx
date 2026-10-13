@@ -102,6 +102,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   // Action status message
   const [saveNotice, setSaveNotice] = useState<string>('');
   const [syncStatusMsg, setSyncStatusMsg] = useState<string>('');
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
   // UI Settings (Visual Effects, Blur, etc.)
   const [uiSettings, setUiSettings] = useState<UISettings>(getStoredUISettings);
 
