@@ -37,6 +37,13 @@ import {
 import { APP_THEMES, AppTheme } from '../utils/theme';
 import { useAuth } from '../context/AuthContext';
 import { exportFullBackupJSON, importBackupFromJSON } from '../utils/storage';
+import {
+  getStoredUISettings,
+  saveStoredUISettings,
+  VisualEffectsSetting,
+  resolveEffectiveEffects,
+  UISettings,
+} from '../utils/uiSettings';
 
 interface SettingsTabProps {
   config: ShiftConfig;
@@ -95,7 +102,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   // Action status message
   const [saveNotice, setSaveNotice] = useState<string>('');
   const [syncStatusMsg, setSyncStatusMsg] = useState<string>('');
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  // UI Settings (Visual Effects, Blur, etc.)
+  const [uiSettings, setUiSettings] = useState<UISettings>(getStoredUISettings);
+
+  const handleVisualEffectsChange = (mode: VisualEffectsSetting) => {
+    const updated = { ...uiSettings, visualEffects: mode };
+    setUiSettings(updated);
+    saveStoredUISettings(updated);
+  };
 
   useEffect(() => {
     setFormData(config);
@@ -841,6 +855,82 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
                 <div className="w-10 h-10 rounded-xl border border-white/10 flex items-center justify-center text-[#eca8d6]">
                   <Palette className="w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Visual Effects Setting Card */}
+              <div className="p-5 rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur-md space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">افکت‌های بصری و پویانمایی</h3>
+                      <p className="text-[11px] text-white/60">
+                        کنترل مصرف پردازنده و روانی رابط کاربری (انیمیشن پس‌زمینه، شیشه و دنبال‌کردن ماوس)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-mono px-2.5 py-1 rounded-full bg-white/10 text-white/80 border border-white/15">
+                    حالت اعمال‌شده: {resolveEffectiveEffects(uiSettings.visualEffects) === 'high' ? 'کامل' : 'سبک / کم'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleVisualEffectsChange('auto')}
+                    className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
+                      uiSettings.visualEffects === 'auto'
+                        ? 'border-indigo-400 bg-indigo-500/20 shadow-md text-white'
+                        : 'border-white/10 bg-black/30 hover:border-white/20 text-white/70 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold">خودکار (پیش‌فرض)</span>
+                      {uiSettings.visualEffects === 'auto' && <Check className="w-3.5 h-3.5 text-indigo-300" />}
+                    </div>
+                    <p className="text-[11px] text-white/50 leading-relaxed">
+                      تنظیم خودکار بر اساس قدرت پردازنده یا ترجیح کاهش حرکت سیستم (prefers-reduced-motion)
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleVisualEffectsChange('high')}
+                    className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
+                      uiSettings.visualEffects === 'high'
+                        ? 'border-indigo-400 bg-indigo-500/20 shadow-md text-white'
+                        : 'border-white/10 bg-black/30 hover:border-white/20 text-white/70 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold">کامل (High Effects)</span>
+                      {uiSettings.visualEffects === 'high' && <Check className="w-3.5 h-3.5 text-indigo-300" />}
+                    </div>
+                    <p className="text-[11px] text-white/50 leading-relaxed">
+                      پویانمایی روان پس‌زمینه، بازتاب شیشه‌ای ماوس و کانفتی شادباش
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleVisualEffectsChange('low')}
+                    className={`p-3.5 rounded-xl border text-right transition-all cursor-pointer ${
+                      uiSettings.visualEffects === 'low'
+                        ? 'border-indigo-400 bg-indigo-500/20 shadow-md text-white'
+                        : 'border-white/10 bg-black/30 hover:border-white/20 text-white/70 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-bold">کم (Low Effects)</span>
+                      {uiSettings.visualEffects === 'low' && <Check className="w-3.5 h-3.5 text-indigo-300" />}
+                    </div>
+                    <p className="text-[11px] text-white/50 leading-relaxed">
+                      بدون پویانمایی حباب، بدون افکت ماوس، بلور سبک‌تر (حداکثر ۱۲px)؛ مناسب گوشی و ذخیره باتری
+                    </p>
+                  </button>
                 </div>
               </div>
 
