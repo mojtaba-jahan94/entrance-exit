@@ -1086,6 +1086,9 @@ function DashboardApp() {
         }}
         onSave={handleSaveManualRecord}
         initialRecord={editingRecord}
+        existingRecords={records}
+        leaves={leaves}
+        config={config}
       />
 
       <LeaveModal
