@@ -11,22 +11,17 @@ import { ActiveTab } from './Navbar';
 interface BottomCapsuleDockProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
-  onOpenSettings: () => void;
-  settingsButtonRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 interface DockItem {
-  id: ActiveTab | 'settings';
+  id: ActiveTab;
   label: string;
   icon: React.ReactNode;
-  isAction?: boolean;
 }
 
 export const BottomCapsuleDock: React.FC<BottomCapsuleDockProps> = ({
   activeTab,
   onTabChange,
-  onOpenSettings,
-  settingsButtonRef,
 }) => {
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const dockId = useId();
@@ -112,7 +107,6 @@ export const BottomCapsuleDock: React.FC<BottomCapsuleDockProps> = ({
       id: 'settings',
       label: 'تنظیمات',
       icon: <Settings className="h-5 w-5 shrink-0" />,
-      isAction: true,
     },
   ];
 
@@ -129,33 +123,12 @@ export const BottomCapsuleDock: React.FC<BottomCapsuleDockProps> = ({
     >
       <div className="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface)]/95 shadow-2xl backdrop-blur-2xl ring-1 ring-[var(--border)] max-w-[calc(100vw-1.5rem)]">
         {items.map((item) => {
-          if (item.isAction) {
-            // Action button: opens SettingsModal
-            return (
-              <button
-                key={item.id}
-                ref={settingsButtonRef}
-                type="button"
-                onClick={onOpenSettings}
-                aria-haspopup="dialog"
-                aria-label="تنظیمات سیستم و قوانین کار"
-                title="تنظیمات قوانین کار و شیفت"
-                className="relative flex items-center justify-center min-w-[44px] min-h-[44px] h-11 px-2.5 sm:px-3 rounded-full text-muted hover:text-text hover:bg-[var(--surface-2)] transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
-              >
-                {item.icon}
-                <span className="hidden sm:inline text-xs font-semibold mr-1.5">
-                  {item.label}
-                </span>
-              </button>
-            );
-          }
-
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => onTabChange(item.id as ActiveTab)}
+              onClick={() => onTabChange(item.id)}
               aria-current={isActive ? 'page' : undefined}
               aria-label={item.label}
               className={`relative flex items-center justify-center min-w-[44px] min-h-[44px] h-11 rounded-full transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--focus)] ${

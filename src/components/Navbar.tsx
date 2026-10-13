@@ -16,6 +16,7 @@ import {
   Lock,
   X,
   Sparkles,
+  Settings,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -25,7 +26,7 @@ import {
 } from '../utils/jalali';
 import { useAuth } from '../context/AuthContext';
 
-export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports';
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -106,6 +107,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           title: 'گزارشات و تحلیل آماری',
           subtitle: 'شاخص‌های کلیدی، ساعات کاری و اضافه‌کار',
           icon: <TrendingUp className="h-5 w-5" />,
+        };
+      case 'settings':
+        return {
+          title: 'مرکز تنظیمات و پیکربندی',
+          subtitle: 'قوانین کار، شیفت، مرخصی، مالی و شخصی‌سازی',
+          icon: <Settings className="h-5 w-5" />,
         };
     }
   }, [activeTab, weekdayName, todayStr]);
@@ -303,6 +310,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   <div className="py-1 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onTabChange('settings');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted hover:text-text hover:bg-[var(--surface-2)] transition-colors text-right font-medium"
+                    >
+                      <Settings className="h-4 w-4 text-[var(--accent)]" />
+                      <span>تنظیمات سیستم و قوانین</span>
+                    </button>
+
                     {onOpenStorageMode && (
                       <button
                         onClick={() => {

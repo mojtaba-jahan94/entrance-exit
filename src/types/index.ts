@@ -97,7 +97,7 @@ export interface MonthlyStats {
   estimatedOvertimePay?: number; // برآورد ریالی اضافه کار (در صورت تعیین دستمزد)
 }
 
-export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports';
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
 
 export interface User {
   id: string;

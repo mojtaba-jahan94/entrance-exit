@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Calendar,
   TrendingUp,
@@ -61,9 +61,9 @@ import { DashboardCharts } from './components/DashboardCharts';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
+import { SettingsPage } from './components/SettingsPage';
 import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
-import { SettingsModal } from './components/SettingsModal';
 import { BackupModal } from './components/BackupModal';
 
 function DashboardApp() {
@@ -95,11 +95,9 @@ function DashboardApp() {
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
   const [_editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
-  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Initialize UI settings on mount
   useEffect(() => {
@@ -887,6 +885,24 @@ function DashboardApp() {
             />
           </div>
         )}
+
+        {/* Tab 5: Professional Independent Settings Page */}
+        {activeTab === 'settings' && (
+          <div className="animate-in fade-in duration-200">
+            <SettingsPage
+              config={config}
+              onSaveConfig={handleSaveConfig}
+              onBackToDashboard={() => setActiveTab('dashboard')}
+              records={records}
+              leaves={leaves}
+              onDataRestored={handleDataRestored}
+              onResetAllData={handleResetAllData}
+              onExportExcel={handleExportExcel}
+              onTriggerSync={handleTriggerSync}
+              onTriggerPull={handleTriggerPull}
+            />
+          </div>
+        )}
       </main>
 
       {/* Mobile Floating Thumb-Zone Punch Bar (< 768px, positioned with fixed gap above bottom dock) */}
@@ -958,8 +974,6 @@ function DashboardApp() {
       <BottomCapsuleDock
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onOpenSettings={() => setIsSettingsModalOpen(true)}
-        settingsButtonRef={settingsButtonRef}
       />
 
       {/* 8-Second Accessible Undo Toast Snackbar */}
@@ -1039,16 +1053,6 @@ function DashboardApp() {
         monthlyQuotaDays={config.monthlyLeaveDays || 2.5}
         todayRecord={todayRecord}
         shiftConfig={config}
-      />
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => {
-          setIsSettingsModalOpen(false);
-          setTimeout(() => settingsButtonRef.current?.focus(), 50);
-        }}
-        config={config}
-        onSaveConfig={handleSaveConfig}
       />
 
       <BackupModal
