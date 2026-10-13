@@ -110,8 +110,14 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, [activeTab, weekdayName, todayStr]);
 
+  const isAnyMenuOpen = isUserMenuOpen || showNotificationToast;
+
   return (
-    <header className="sticky top-0 z-20 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-2xl shadow-sm print:hidden transition-colors duration-200">
+    <header
+      className={`sticky top-0 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-2xl shadow-sm print:hidden transition-all duration-200 ${
+        isAnyMenuOpen ? 'z-50' : 'z-20'
+      }`}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-6">
         {/* Right Header Area: Brand / Current Page Title */}
         <div className="flex items-center gap-3">
@@ -200,7 +206,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div
                 role="region"
                 aria-label="پنجره اعلان‌ها"
-                className="absolute left-0 mt-2 w-72 sm:w-80 rounded-[24px] bg-[var(--surface)] border border-[var(--border-strong)] p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+                className="absolute left-0 mt-2 w-72 sm:w-80 rounded-[24px] bg-[var(--surface)] border border-[var(--border-strong)] p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150 max-h-[calc(100vh-5rem)] overflow-y-auto"
               >
                 <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-2">
                   <span className="font-bold text-text flex items-center gap-1.5">
@@ -284,7 +290,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* User Dropdown */}
               {isUserMenuOpen && (
-                <div className="absolute left-0 mt-2 w-64 rounded-[26px] bg-[var(--surface)] border border-[var(--border-strong)] p-2.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
+                <div className="absolute left-0 mt-2 w-64 rounded-[26px] bg-[var(--surface)] border border-[var(--border-strong)] p-2.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
                   <div className="px-3 py-2 border-b border-[var(--border)]">
                     <p className="font-bold text-text truncate text-sm">{displayName}</p>
                     <p className="text-muted font-mono text-[11px] truncate dir-ltr text-right">

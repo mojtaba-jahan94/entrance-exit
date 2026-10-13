@@ -31,19 +31,60 @@ export const BottomCapsuleDock: React.FC<BottomCapsuleDockProps> = ({
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
   const dockId = useId();
 
-  // Detect virtual keyboard on mobile via visualViewport
+  // Detect virtual keyboard on mobile via visualViewport and active element focus
   useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const handleResize = () => {
-      // If visual viewport height is significantly less than window.innerHeight, virtual keyboard is open
-      const isKeyboard = vv.height < window.innerHeight * 0.78;
-      setIsKeyboardOpen(isKeyboard);
+    const isInputElement = (el: Element | null): boolean => {
+      if (!el) return false;
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'input') {
+        const type = (el as HTMLInputElement).type;
+        return !['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'color'].includes(type);
+      }
+      if (tag === 'textarea' || tag === 'select') return true;
+      if ((el as HTMLElement).isContentEditable) return true;
+      return false;
     };
 
-    vv.addEventListener('resize', handleResize);
-    return () => vv.removeEventListener('resize', handleResize);
+    const checkKeyboard = () => {
+      const vv = window.visualViewport;
+      const activeEl = document.activeElement;
+      const hasFocusedInput = isInputElement(activeEl);
+
+      if (!vv) {
+        setIsKeyboardOpen(hasFocusedInput);
+        return;
+      }
+
+      // 1. Pinch-to-zoom check: if scale > 1.05, user is zooming in, so dock stays visible!
+      const isZoomed = vv.scale > 1.05;
+
+      // 2. Significant viewport height shrink check (virtual keyboard typically takes 25-50% of screen)
+      const isHeightShrunk = vv.height < window.innerHeight * 0.78;
+
+      // 3. Virtual keyboard condition: focused input AND unzoomed (scale ~ 1) AND significant height drop
+      const isKeyboardActive = hasFocusedInput && !isZoomed && isHeightShrunk;
+
+      setIsKeyboardOpen(isKeyboardActive);
+    };
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', checkKeyboard);
+      vv.addEventListener('scroll', checkKeyboard);
+    }
+    document.addEventListener('focusin', checkKeyboard);
+    document.addEventListener('focusout', checkKeyboard);
+
+    checkKeyboard();
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', checkKeyboard);
+        vv.removeEventListener('scroll', checkKeyboard);
+      }
+      document.removeEventListener('focusin', checkKeyboard);
+      document.removeEventListener('focusout', checkKeyboard);
+    };
   }, []);
 
   const items: DockItem[] = [
@@ -86,7 +127,7 @@ export const BottomCapsuleDock: React.FC<BottomCapsuleDockProps> = ({
       aria-label="ناوبری اصلی کپسولی"
       className="fixed bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-40 print:hidden transition-all duration-300 pointer-events-auto"
     >
-      <div className="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface)]/95 shadow-2xl backdrop-blur-2xl ring-1 ring-black/5 dark:ring-white/10 max-w-[calc(100vw-1.5rem)]">
+      <div className="flex items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface)]/95 shadow-2xl backdrop-blur-2xl ring-1 ring-[var(--border)] max-w-[calc(100vw-1.5rem)]">
         {items.map((item) => {
           if (item.isAction) {
             // Action button: opens SettingsModal

@@ -967,7 +967,7 @@ function DashboardApp() {
         <aside
           role="status"
           aria-live="polite"
-          className="fixed bottom-36 md:bottom-20 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto print:hidden"
+          className="fixed bottom-36 md:bottom-24 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto print:hidden"
         >
           <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-2)]/95 border border-[var(--border-strong)] p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-text">
             <div className="flex items-center gap-2.5 min-w-0">

@@ -130,12 +130,23 @@ export const ClockCard: React.FC<ClockCardProps> = ({
     // Fire micro celebration confetti only when visual effects is 'high' and reduced motion is disabled
     if (effectsMode === 'high' && !isReducedMotionPreferred()) {
       try {
+        const style = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+        const dynamicColors = style
+          ? [
+              style.getPropertyValue('--accent').trim(),
+              style.getPropertyValue('--semantic-success').trim(),
+              style.getPropertyValue('--semantic-warning').trim(),
+              style.getPropertyValue('--semantic-info').trim(),
+              style.getPropertyValue('--border-strong').trim(),
+            ].filter(Boolean)
+          : [];
+
         confetti({
           particleCount: 35,
           spread: 50,
           ticks: 120, // Short duration
           origin: { y: 0.65 },
-          colors: ['#A68A64', '#85C99F', '#A5BFE0', '#F7F7F2', '#6B7280'],
+          colors: dynamicColors.length > 0 ? dynamicColors : ['#A68A64', '#85C99F', '#F0B961', '#A5BFE0', '#6B7280'],
           disableForReducedMotion: true,
         });
       } catch {
