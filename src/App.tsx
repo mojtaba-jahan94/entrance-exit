@@ -118,21 +118,25 @@ function DashboardApp() {
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
   const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
   const [isRetryingSync, setIsRetryingSync] = useState<boolean>(false);
+  // Sequential FIFO Promise queue for cloud synchronization
+  const syncQueueRef = React.useRef<Promise<void>>(Promise.resolve());
 
   // Auto-sync helper to cloud if user opted into cloud_encrypted
   const triggerAutoSync = useCallback(
     (updatedRecords: AttendanceRecord[], updatedLeaves: LeaveRecord[], updatedConfig: ShiftConfig) => {
       if (storageMode === 'cloud_encrypted') {
-        syncDataToCloud({
-          records: updatedRecords,
-          leaves: updatedLeaves,
-          config: updatedConfig,
-        })
-          .then(() => {
+        // Enqueue onto FIFO Promise chain to strictly guarantee sequential execution
+        syncQueueRef.current = syncQueueRef.current
+          .then(async () => {
+            await syncDataToCloud({
+              records: updatedRecords,
+              leaves: updatedLeaves,
+              config: updatedConfig,
+            });
             setCloudSyncError(null);
           })
           .catch((e) => {
-            console.warn('Auto cloud sync notice:', e);
+            console.warn('Sequential cloud sync notice:', e);
             setCloudSyncError('خطا در همگام‌سازی ابری. تغییرات شما به صورت امن در حافظه محلی ذخیره شده است.');
           });
       }
@@ -289,12 +293,15 @@ function DashboardApp() {
     return currentRecords;
   };
 
-  // Undo State & Handler
-  const [undoState, setUndoState] = useState<{
+  // Undo State & Handler (targets only the single record for the punch date)
+  interface UndoPunchState {
     message: string;
-    previousRecords: AttendanceRecord[];
+    targetDate: string;
+    previousRecordForDate: AttendanceRecord | null;
     id: number;
-  } | null>(null);
+  }
+
+  const [undoState, setUndoState] = useState<UndoPunchState | null>(null);
 
   useEffect(() => {
     if (!undoState) return;
@@ -306,17 +313,30 @@ function DashboardApp() {
 
   const handleUndoLastPunch = () => {
     if (!undoState) return;
-    const restored = undoState.previousRecords;
-    setRecords(restored);
-    saveAttendanceRecords(restored, userId);
-    triggerAutoSync(restored, leaves, config);
+    const { targetDate, previousRecordForDate } = undoState;
+    setRecords((currentRecords) => {
+      let updated: AttendanceRecord[];
+      if (!previousRecordForDate) {
+        // Record did not exist prior to punch: remove only this day's record
+        updated = currentRecords.filter((r) => r.date !== targetDate);
+      } else {
+        // Record existed: restore only this single day's previous record
+        const exists = currentRecords.some((r) => r.date === targetDate);
+        updated = exists
+          ? currentRecords.map((r) => (r.date === targetDate ? previousRecordForDate : r))
+          : [previousRecordForDate, ...currentRecords];
+      }
+      saveAttendanceRecords(updated, userId);
+      triggerAutoSync(updated, leaves, config);
+      return updated;
+    });
     setUndoState(null);
   };
 
   // 1. Clock in today
   const handleCheckIn = (time: string) => {
-    const prevSnapshot = [...records];
     let existing = records.find((r) => r.date === todayStr);
+    const prevSnapshotForToday = existing ? { ...existing } : null;
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
@@ -340,7 +360,8 @@ function DashboardApp() {
 
     setUndoState({
       message: `ورود ساعت ${toPersianDigits(time)} ثبت شد`,
-      previousRecords: prevSnapshot,
+      targetDate: todayStr,
+      previousRecordForDate: prevSnapshotForToday,
       id: Date.now(),
     });
   };
@@ -350,7 +371,7 @@ function DashboardApp() {
     let existing = records.find((r) => r.date === todayStr);
     if (!existing) return;
 
-    const prevSnapshot = [...records];
+    const prevSnapshotForToday = { ...existing };
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
@@ -370,7 +391,8 @@ function DashboardApp() {
 
     setUndoState({
       message: `خروج ساعت ${toPersianDigits(time)} ثبت شد`,
-      previousRecords: prevSnapshot,
+      targetDate: todayStr,
+      previousRecordForDate: prevSnapshotForToday,
       id: Date.now(),
     });
   };
@@ -404,6 +426,9 @@ function DashboardApp() {
   // 3. Reset today
   const handleResetToday = () => {
     if (window.confirm('آیا از بازنشانی ثبت ورود/خروج امروز مطمئن هستید؟')) {
+      if (undoState && undoState.targetDate === todayStr) {
+        setUndoState(null);
+      }
       const updatedList = records.filter((r) => r.date !== todayStr);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
@@ -414,6 +439,10 @@ function DashboardApp() {
   // 4. Save manual record (create or edit)
   const handleSaveManualRecord = (data: Partial<AttendanceRecord>) => {
     if (!data.date) return;
+
+    if (undoState && data.date === undoState.targetDate) {
+      setUndoState(null);
+    }
 
     const dayLeaves = leaves.filter((l) => l.date === data.date);
     const calculated = calculateAttendanceMetrics(data as any, config, dayLeaves);
@@ -437,6 +466,10 @@ function DashboardApp() {
   // 5. Delete record
   const handleDeleteRecord = (id: string) => {
     if (window.confirm('آیا از حذف این تردد مطمئن هستید؟')) {
+      const targetRec = records.find((r) => r.id === id);
+      if (undoState && targetRec?.date === undoState.targetDate) {
+        setUndoState(null);
+      }
       const updatedList = records.filter((r) => r.id !== id);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
@@ -446,6 +479,9 @@ function DashboardApp() {
 
   // 6. Leaves management
   const handleAddLeave = (leaveData: Omit<LeaveRecord, 'id' | 'createdAt'>) => {
+    if (undoState && leaveData.date === undoState.targetDate) {
+      setUndoState(null);
+    }
     const newLeave: LeaveRecord = {
       ...leaveData,
       id: `leave_${Date.now()}`,
@@ -462,6 +498,9 @@ function DashboardApp() {
   };
 
   const handleUpdateLeave = (updatedLeave: LeaveRecord) => {
+    if (undoState && updatedLeave.date === undoState.targetDate) {
+      setUndoState(null);
+    }
     const updatedLeaves = leaves.map((l) => (l.id === updatedLeave.id ? updatedLeave : l));
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves, userId);
@@ -475,6 +514,9 @@ function DashboardApp() {
   const handleDeleteLeave = (id: string) => {
     const targetLeave = leaves.find((l) => l.id === id);
     const dateStr = targetLeave?.date;
+    if (undoState && dateStr === undoState.targetDate) {
+      setUndoState(null);
+    }
     const updatedLeaves = leaves.filter((l) => l.id !== id);
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves, userId);
