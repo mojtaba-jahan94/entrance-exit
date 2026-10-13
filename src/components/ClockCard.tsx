@@ -25,6 +25,7 @@ import {
   formatMinutesToPersianReadable,
   formatMinutesToTimeString,
 } from '../utils/jalali';
+import { useVisualEffects, isReducedMotionPreferred } from '../utils/uiSettings';
 
 interface ClockCardProps {
   todayRecord: AttendanceRecord | null;
@@ -43,6 +44,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
   onResetToday,
   onOpenEdit,
 }) => {
+  const effectsMode = useVisualEffects();
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [customInTime, setCustomInTime] = useState<string>('');
   const [showCustomTime, setShowCustomTime] = useState<boolean>(false);
@@ -125,15 +127,19 @@ export const ClockCard: React.FC<ClockCardProps> = ({
     const curTime = getCurrentTimeString(false);
     onCheckOut(curTime, breakMinutesInput);
 
-    // Fire micro celebration confetti
-    try {
-      confetti({
-        particleCount: 90,
-        spread: 75,
-        origin: { y: 0.6 },
-      });
-    } catch (e) {
-      // ignore
+    // Fire micro celebration confetti only when visual effects is 'high' and reduced motion is disabled
+    if (effectsMode === 'high' && !isReducedMotionPreferred()) {
+      try {
+        confetti({
+          particleCount: 35,
+          spread: 50,
+          ticks: 120, // Short duration
+          origin: { y: 0.65 },
+          disableForReducedMotion: true,
+        });
+      } catch {
+        // ignore
+      }
     }
   };
 
