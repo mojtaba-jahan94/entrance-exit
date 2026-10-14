@@ -71,42 +71,47 @@ export const PageLoader: React.FC<PageLoaderProps> = ({
   keepMounted = false,
 }) => {
   const [shouldRender, setShouldRender] = useState<boolean>(isLoading);
-  const [isFadingOut, setIsFadingOut] = useState<boolean>(false);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     if (isLoading) {
       setShouldRender(true);
-      setIsFadingOut(false);
-    } else if (shouldRender) {
-      // Begin 0.4s smooth fade-out transition
-      setIsFadingOut(true);
+    } else {
+      // 0.4s fade-out transition before unmounting from DOM
       timer = setTimeout(() => {
-        setIsFadingOut(false);
         if (!keepMounted) {
           setShouldRender(false);
         }
-      }, 400); // 0.4s matches CSS transition duration
+      }, 400);
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading, shouldRender, keepMounted]);
+  }, [isLoading, keepMounted]);
+
+  // When isLoading is false, overlay is immediately hidden & click-through via styles and CSS
+  const isHidden = !isLoading;
 
   return (
     <>
       {/* SVG Filter block permanently mounted in DOM for cross-browser stability */}
       <MetaballFilterDefs />
 
-      {/* Full-viewport overlay with 0.4s fade-out */}
+      {/* Full-viewport overlay with guaranteed fade-out and pointer-events: none */}
       {(shouldRender || keepMounted) && (
         <div
-          className={`page-loader-overlay ${isFadingOut || (!isLoading && keepMounted) ? 'page-loader-hidden' : ''} ${className}`.trim()}
+          className={`page-loader-overlay ${isHidden ? 'page-loader-hidden' : ''} ${className}`.trim()}
+          style={{
+            opacity: isHidden ? 0 : 1,
+            visibility: isHidden ? 'hidden' : 'visible',
+            pointerEvents: isHidden ? 'none' : 'auto',
+            transition: 'opacity 0.4s ease, visibility 0.4s ease',
+          }}
           aria-live="polite"
           aria-busy={isLoading}
-          aria-hidden={!isLoading}
+          aria-hidden={isHidden}
           role="status"
         >
           <LiquidMetaballLoader />

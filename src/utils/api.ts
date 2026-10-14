@@ -15,14 +15,22 @@ export interface ApiErrorResponse {
 }
 
 export function getStoredToken(): string | null {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
+  try {
+    return localStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function setStoredToken(token: string | null): void {
-  if (token) {
-    localStorage.setItem(TOKEN_STORAGE_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  try {
+    if (token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    // Ignore storage errors in restricted contexts
   }
 }
 
@@ -35,23 +43,32 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(path, {
-    ...options,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutMs = (options as any).timeout || 6000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  let data: any;
   try {
-    data = await response.json();
-  } catch {
-    throw new Error('خطا در برقراری ارتباط با سرور.');
-  }
+    const response = await fetch(path, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal,
+    });
 
-  if (!response.ok) {
-    throw new Error(data?.error || `خطای سرور: ${response.status}`);
-  }
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error('خطا در برقراری ارتباط با سرور.');
+    }
 
-  return data as T;
+    if (!response.ok) {
+      throw new Error(data?.error || `خطای سرور: ${response.status}`);
+    }
+
+    return data as T;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export const authApi = {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Clock,
   PlusCircle,
@@ -129,6 +129,9 @@ function DashboardApp() {
     [storageMode, syncDataToCloud]
   );
 
+  // Guard to ensure initial cloud fetch runs only once per user session
+  const initialFetchDone = useRef<string | null>(null);
+
   // Initialize and load data scoped to current user
   useEffect(() => {
     if (!userId) return;
@@ -140,7 +143,8 @@ function DashboardApp() {
     setConfig(initial.config);
 
     // If user has cloud sync enabled, attempt to load cloud data if local was default or empty
-    if (storageMode === 'cloud_encrypted') {
+    if (storageMode === 'cloud_encrypted' && initialFetchDone.current !== userId) {
+      initialFetchDone.current = userId;
       withLoader(async () => {
         try {
           const cloudData = await loadDataFromCloud();

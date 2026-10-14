@@ -77,35 +77,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Validate existing token on boot
   useEffect(() => {
-    async function initAuth() {
-      checkConnection();
-      const existingToken = getStoredToken();
-      if (!existingToken) {
-        setIsLoading(false);
-        return;
-      }
+    let isMounted = true;
+    let safetyTimer: ReturnType<typeof setTimeout> | undefined;
 
-      try {
-        const res = await authApi.getMe();
-        if (res.success && res.user) {
-          setUser(res.user);
-          await loadCloudPreferences(res.user);
-        } else {
-          setStoredToken(null);
-          setToken(null);
-          setUser(null);
-        }
-      } catch (err) {
-        console.error('Failed to verify token:', err);
-        setStoredToken(null);
-        setToken(null);
-        setUser(null);
-      } finally {
+    // Safety timeout: guaranteed resolution within 3.5 seconds
+    safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Auth initialization reached safety timeout (3.5s). Resolving loading state.');
         setIsLoading(false);
+      }
+    }, 3500);
+
+    async function initAuth() {
+      try {
+        // Non-blocking status check
+        checkConnection().catch(() => {});
+
+        const existingToken = getStoredToken();
+        if (!existingToken) {
+          if (isMounted) {
+            setUser(null);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        try {
+          const res = await authApi.getMe();
+          if (!isMounted) return;
+          if (res && res.success && res.user) {
+            setUser(res.user);
+            await loadCloudPreferences(res.user).catch((e) => console.warn(e));
+          } else {
+            setStoredToken(null);
+            setToken(null);
+            setUser(null);
+          }
+        } catch (err) {
+          console.error('Failed to verify token:', err);
+          if (isMounted) {
+            setStoredToken(null);
+            setToken(null);
+            setUser(null);
+          }
+        }
+      } catch (globalErr) {
+        console.error('Unexpected auth initialization error:', globalErr);
+      } finally {
+        if (safetyTimer) clearTimeout(safetyTimer);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
 
     initAuth();
+
+    return () => {
+      isMounted = false;
+      if (safetyTimer) clearTimeout(safetyTimer);
+    };
   }, [checkConnection, loadCloudPreferences]);
 
   const login = async (params: { username: string; password: string }) => {
@@ -163,51 +194,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * Encrypts and syncs data to online database if mode is cloud_encrypted
    */
-  const syncDataToCloud = async (data: { records: any[]; leaves: any[]; config: any }) => {
-    if (!user) return;
-    if (storageMode !== 'cloud_encrypted') {
-      // Local mode: do not send data to cloud
-      return;
-    }
-
-    setIsSyncing(true);
-    try {
-      const payload: CloudPayload = {
-        records: data.records,
-        leaves: data.leaves,
-        config: data.config,
-        syncTime: new Date().toISOString(),
-      };
-
-      // AES-256-GCM encryption with user's private identity key
-      const encryptionSecret = `${user.id}_e2ee_key`;
-      const encryptedPayload = await encryptData(payload, encryptionSecret);
-
-      const res = await authApi.saveCloudData({
-        storageMode: 'cloud_encrypted',
-        encryptedPayload,
-      });
-
-      if (res.success) {
-        setLastSyncedAt(res.updatedAt);
+  const syncDataToCloud = useCallback(
+    async (data: { records: any[]; leaves: any[]; config: any }) => {
+      if (!user) return;
+      if (storageMode !== 'cloud_encrypted') {
+        // Local mode: do not send data to cloud
+        return;
       }
-    } catch (err) {
-      console.error('Failed to sync encrypted data to cloud:', err);
-      throw err;
-    } finally {
-      setIsSyncing(false);
-    }
-  };
+
+      setIsSyncing(true);
+      try {
+        const payload: CloudPayload = {
+          records: data.records,
+          leaves: data.leaves,
+          config: data.config,
+          syncTime: new Date().toISOString(),
+        };
+
+        // AES-256-GCM encryption with user's private identity key
+        const encryptionSecret = `${user.id}_e2ee_key`;
+        const encryptedPayload = await encryptData(payload, encryptionSecret);
+
+        const res = await authApi.saveCloudData({
+          storageMode: 'cloud_encrypted',
+          encryptedPayload,
+        });
+
+        if (res.success) {
+          setLastSyncedAt(res.updatedAt);
+        }
+      } catch (err) {
+        console.error('Failed to sync encrypted data to cloud:', err);
+        throw err;
+      } finally {
+        setIsSyncing(false);
+      }
+    },
+    [user, storageMode]
+  );
 
   /**
    * Fetches and decrypts data from online database
    */
-  const loadDataFromCloud = async (): Promise<CloudPayload | null> => {
-    if (!user) return null;
+  const loadDataFromCloud = useCallback(async (): Promise<CloudPayload | null> => {
+    if (!user) {
+      setIsSyncing(false);
+      return null;
+    }
     setIsSyncing(true);
     try {
       const res = await authApi.loadCloudData();
-      if (!res.success || !res.encryptedPayload) {
+      if (!res || !res.success || !res.encryptedPayload) {
         return null;
       }
 
@@ -221,12 +258,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return null;
     } catch (err) {
-      console.error('Failed to load encrypted data from cloud:', err);
-      throw err;
+      console.warn('Could not load encrypted data from cloud:', err);
+      return null;
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, [user]);
 
   return (
     <AuthContext.Provider
