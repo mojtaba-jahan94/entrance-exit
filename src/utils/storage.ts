@@ -380,6 +380,3 @@ export function importDataBackup(jsonString: string, userId?: string): boolean {
     return false;
   }
 }
-
-export const exportFullBackupJSON = exportAllDataBackup;
-export const importBackupFromJSON = importDataBackup;

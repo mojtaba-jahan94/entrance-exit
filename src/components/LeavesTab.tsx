@@ -5,8 +5,13 @@ import {
   Trash2,
   Edit2,
   Calendar,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  FileSpreadsheet,
+  Filter,
 } from 'lucide-react';
-import { LeaveRecord } from '../types';
+import { LeaveRecord, LeaveType, ShiftConfig, AttendanceRecord } from '../types';
 import {
   toPersianDigits,
   formatMinutesToPersianReadable,
@@ -14,7 +19,6 @@ import {
   getJalaliWeekdayName,
 } from '../utils/jalali';
 import { getLeaveDurationMinutes } from '../utils/calculator';
-import { LiquidGlassCard } from './LiquidGlassCard';
 
 interface LeavesTabProps {
   leaves: LeaveRecord[];
@@ -33,6 +37,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
   onDeleteLeave,
   monthlyQuotaHours,
   monthlyQuotaDays = 2.5,
+  selectedMonthName,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
 
@@ -57,117 +62,99 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Banner & Action */}
-      <LiquidGlassCard
-        className="rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="rounded-2xl bg-[var(--surface-2)] p-3 text-[var(--accent)] border border-[var(--border)] shadow-inner">
-              <Coffee className="h-6 w-6 sm:h-7 sm:w-7" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-xl font-bold text-[var(--text-main)]">کاردکس و مدیریت جامع مرخصی‌ها</h2>
-              <p className="text-xs sm:text-sm text-muted mt-0.5">
-                محاسبه دقیق مرخصی‌های روزانه، ساعتی و استعلاجی بر اساس استانداردهای قانون کار
-              </p>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl">
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-amber-500/20 p-3 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+            <Coffee className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
-
-          <button
-            onClick={onOpenAddModal}
-            className="liquid-pill-btn-primary px-5 py-2.5 text-xs sm:text-sm shadow-xl flex items-center justify-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>ثبت درخواست مرخصی جدید</span>
-          </button>
+          <div>
+            <h2 className="text-base sm:text-xl font-bold text-white">کاردکس و مدیریت جامع مرخصی‌ها</h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+              محاسبه دقیق مرخصی‌های روزانه، ساعتی و استعلاجی بر اساس استانداردهای قانون کار
+            </p>
+          </div>
         </div>
-      </LiquidGlassCard>
+
+        <button
+          onClick={onOpenAddModal}
+          className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" />
+          <span>ثبت درخواست مرخصی جدید</span>
+        </button>
+      </div>
 
       {/* 2. Quota Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Monthly Quota */}
-        <LiquidGlassCard
-          className="rounded-[28px] p-5 shadow-xl"
-        >
-          <span className="text-xs text-muted block mb-1">سهمیه قانونی ماه جاری</span>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
+          <span className="text-xs text-slate-400 block mb-1">سهمیه قانونی ماه جاری</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-[var(--text-main)] font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-white font-mono">
               {toPersianDigits(monthlyQuotaDays)}
             </span>
-            <span className="text-xs text-muted">روز کاری</span>
+            <span className="text-xs text-slate-300">روز کاری</span>
           </div>
-          <p className="text-xs text-muted font-mono mt-1">
+          <p className="text-xs text-slate-400 font-mono mt-1">
             معادل {toPersianDigits(monthlyQuotaHours)} ساعت کار مفید
           </p>
-        </LiquidGlassCard>
+        </div>
 
         {/* Used Leaves */}
-        <LiquidGlassCard
-          className="rounded-[28px] p-5 shadow-xl"
-        >
-          <span className="text-xs text-muted block mb-1">استفاده شده تا کنون</span>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
+          <span className="text-xs text-slate-400 block mb-1">استفاده شده تا کنون</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-[var(--semantic-warning)] font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
               {toPersianDigits(usedDays)}
             </span>
-            <span className="text-xs text-[var(--semantic-warning)]">روز</span>
+            <span className="text-xs text-amber-300">روز</span>
           </div>
-          <p className="text-xs text-[var(--semantic-warning)] font-mono mt-1">
+          <p className="text-xs text-amber-400/90 font-mono mt-1">
             ({formatMinutesToPersianReadable(totalUsedMinutes)})
           </p>
-        </LiquidGlassCard>
+        </div>
 
         {/* Remaining Leaves */}
-        <LiquidGlassCard
-          className="rounded-[28px] p-5 shadow-xl"
-        >
-          <span className="text-xs text-muted block mb-1">مانده باقیمانده سهمیه</span>
+        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
+          <span className="text-xs text-slate-400 block mb-1">مانده باقیمانده سهمیه</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-[var(--semantic-success)] font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
               {toPersianDigits(remainingDays)}
             </span>
-            <span className="text-xs text-[var(--semantic-success)]">روز</span>
+            <span className="text-xs text-emerald-300">روز</span>
           </div>
-          <p className="text-xs text-[var(--semantic-success)] font-mono mt-1">
+          <p className="text-xs text-emerald-400/90 font-mono mt-1">
             ({formatMinutesToPersianReadable(remainingMinutes)})
           </p>
-        </LiquidGlassCard>
+        </div>
       </div>
 
       {/* 3. Progress Bar */}
-      <LiquidGlassCard
-        className="rounded-[28px] p-5 shadow-xl"
-      >
-        <div className="flex items-center justify-between text-xs mb-2.5">
-          <span className="text-[var(--text-main)] font-medium">میزان مصرف سهمیه مرخصی این دوره</span>
-          <span className="font-mono font-bold text-[var(--accent)]">{toPersianDigits(usedPercent)}%</span>
+      <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4 shadow-lg backdrop-blur-xl">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="text-slate-300 font-medium">میزان مصرف سهمیه مرخصی این دوره</span>
+          <span className="font-mono font-bold text-amber-400">{toPersianDigits(usedPercent)}%</span>
         </div>
-        <div className="h-3 w-full rounded-full bg-[var(--surface-2)] p-0.5 border border-[var(--border)] overflow-hidden shadow-inner">
+        <div className="h-2.5 w-full rounded-full bg-[#111520] overflow-hidden">
           <div
-            className={`h-full rounded-full transition-all duration-700 shadow-sm ${
-              usedPercent > 80
-                ? 'bg-[var(--semantic-danger)]'
-                : usedPercent > 50
-                ? 'bg-[var(--semantic-warning)]'
-                : 'bg-[var(--semantic-success)]'
+            className={`h-full rounded-full transition-all duration-500 ${
+              usedPercent > 80 ? 'bg-rose-500' : usedPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500'
             }`}
             style={{ width: `${usedPercent}%` }}
           />
         </div>
-      </LiquidGlassCard>
+      </div>
 
       {/* 4. Filter Chips & Leaves List */}
-      <LiquidGlassCard
-        className="rounded-[32px] p-4 sm:p-6 shadow-2xl space-y-4"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
-          <h3 className="text-sm sm:text-base font-bold text-[var(--text-main)] flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-[var(--accent)]" />
+      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-4 sm:p-5 backdrop-blur-xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-amber-400" />
             <span>سوابق مرخصی‌های ثبت‌شده ({toPersianDigits(leaves.length)} مورد)</span>
           </h3>
 
           {/* Filter Chips */}
-          <div className="flex items-center gap-2 overflow-x-auto text-xs no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto text-xs no-scrollbar">
             {[
               { id: 'all', label: 'همه مرخصی‌ها' },
               { id: 'hourly', label: 'ساعتی' },
@@ -178,10 +165,10 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
               <button
                 key={f.id}
                 onClick={() => setFilterType(f.id)}
-                className={`px-3.5 py-1.5 rounded-full shrink-0 transition-all font-semibold ${
+                className={`px-3 py-1.5 rounded-xl shrink-0 transition-all font-medium ${
                   filterType === f.id
-                    ? 'bg-[var(--accent)] text-[var(--bg)] shadow-sm'
-                    : 'liquid-pill-btn text-muted hover:text-[var(--text-main)]'
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
+                    : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
                 {f.label}
@@ -191,9 +178,9 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
         </div>
 
         {/* List of Leaves */}
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {filteredLeaves.length === 0 ? (
-            <div className="py-12 text-center text-xs sm:text-sm text-muted">
+            <div className="py-12 text-center text-xs sm:text-sm text-slate-500">
               مرخصی‌ای با این فیلتر ثبت نشده است.
             </div>
           ) : (
@@ -203,19 +190,19 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
               return (
                 <div
                   key={l.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] backdrop-blur-md p-3.5 sm:p-4 hover:border-[var(--border-strong)] transition-all shadow-md"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/50 p-3.5 sm:p-4 hover:border-slate-700 transition-all"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="rounded-2xl bg-[var(--surface)] p-2.5 text-[var(--accent)] shrink-0 border border-[var(--border)] shadow-inner">
+                    <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400 shrink-0 border border-amber-500/20">
                       <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs sm:text-sm font-bold text-[var(--text-main)]">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-white">
                           {toPersianDigits(l.date)}
                         </span>
-                        <span className="text-[11px] text-muted">({weekday})</span>
-                        <span className="badge-neutral text-[10px] px-2.5 py-0.5 rounded-full">
+                        <span className="text-[11px] text-slate-400">({weekday})</span>
+                        <span className="rounded-full bg-slate-800/90 px-2 py-0.5 text-[10px] text-amber-300 font-medium border border-slate-700">
                           {l.type === 'hourly'
                             ? `ساعتی (${formatMinutesToPersianReadable(durMinutes)})`
                             : l.type === 'half_day'
@@ -227,9 +214,9 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                             : 'روزانه کامل (۱ روز)'}
                         </span>
                       </div>
-                      <div className="text-xs text-muted mt-1 flex items-center gap-2 truncate">
+                      <div className="text-xs text-slate-400 mt-1 flex items-center gap-2 truncate">
                         {l.startTime && l.endTime && (
-                          <span className="badge-warning font-mono font-semibold text-[11px] px-2 py-0.5 rounded-lg">
+                          <span className="font-mono text-amber-400/90 font-semibold bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20 text-[11px]">
                             از {toPersianDigits(l.startTime)} تا {toPersianDigits(l.endTime)}
                           </span>
                         )}
@@ -238,28 +225,26 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--border)]">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
                     <div className="text-left font-mono">
-                      <span className="text-sm sm:text-base font-bold text-[var(--semantic-warning)]">
+                      <span className="text-sm sm:text-base font-bold text-amber-400">
                         {formatMinutesToTimeString(durMinutes)}
                       </span>
-                      <span className="text-[10px] text-muted block">مدت معادل</span>
+                      <span className="text-[10px] text-slate-400 block">مدت معادل</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => onEditLeave(l)}
-                        className="p-2 rounded-xl text-muted hover:text-[var(--accent)] hover:bg-[var(--surface)] transition-colors"
+                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
                         title="ویرایش مرخصی"
-                        aria-label="ویرایش مرخصی"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onDeleteLeave(l.id)}
-                        className="p-2 rounded-xl text-muted hover:text-[var(--semantic-danger)] hover:bg-[var(--surface)] transition-colors"
+                        className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
                         title="حذف مرخصی"
-                        aria-label="حذف مرخصی"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -270,7 +255,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
             })
           )}
         </div>
-      </LiquidGlassCard>
+      </div>
     </div>
   );
 };

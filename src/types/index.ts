@@ -91,13 +91,9 @@ export interface MonthlyStats {
   presentDaysCount: number;
   absentDaysCount: number;
   leaveDaysCount: number;
-  workingDaysCount: number; // تعداد روزهای کاری موظف در ماه
-  monthTotalDays: number; // کل روزهای تقویمی ماه
   completionRate: number; // Percentage 0 - 100
   estimatedOvertimePay?: number; // برآورد ریالی اضافه کار (در صورت تعیین دستمزد)
 }
-
-export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
 
 export interface User {
   id: string;

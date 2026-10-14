@@ -4,10 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1F2933" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F7F2" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#090b14" />
     <meta name="description" content="سامانه هوشمند ثبت ورود و خروج، شیفت شناور، محاسبه اضافه کاری، تاخیر و مرخصی بر پایه تقویم شمسی" />
     <title>سامانه مدیریت تردد و کارکرد | تقویم شمسی</title>
     <!-- Google Fonts: Vazirmatn -->
@@ -17,37 +15,27 @@
     <script>
       (function() {
         try {
-          var KEY = 'entrance_exit_ui_settings_v2';
-          var LEGACY_KEY = 'entrance_exit_app_theme';
-          if (localStorage.getItem(LEGACY_KEY)) {
-            localStorage.removeItem(LEGACY_KEY);
-          }
-          var raw = localStorage.getItem(KEY);
-          var mode = 'auto';
-          if (raw) {
-            var parsed = JSON.parse(raw);
-            if (parsed && (parsed.themeMode === 'dark' || parsed.themeMode === 'light' || parsed.themeMode === 'auto')) {
-              mode = parsed.themeMode;
-            } else if (parsed && parsed.isLightMode !== undefined) {
-              mode = parsed.isLightMode ? 'light' : 'dark';
-            }
-          }
-          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var effective = mode === 'dark' ? 'dark' : (mode === 'light' ? 'light' : (prefersDark ? 'dark' : 'light'));
-          document.documentElement.setAttribute('data-theme', effective);
-          document.documentElement.style.colorScheme = effective;
-          if (effective === 'light') {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.classList.add('light');
-          } else {
-            document.documentElement.classList.remove('light');
+          var saved = localStorage.getItem('entrance_exit_app_theme') || 'obsidian';
+          document.documentElement.setAttribute('data-theme', saved);
+          if (saved !== 'light') {
             document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.add('light');
           }
         } catch (e) {}
       })();
     </script>
   </head>
-  <body class="antialiased selection:bg-[#A68A64] selection:text-[#1F2933] min-h-screen">
+  <body class="antialiased selection:bg-indigo-500/30 selection:text-indigo-200 min-h-screen">
+    <!-- SVG Filter for Liquid Metaball Fusion -->
+    <svg width="0" height="0" style="position:absolute; pointer-events:none;" aria-hidden="true">
+      <filter id="gooey-metaball-filter">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -9" result="goo" />
+        <feBlend in="SourceGraphic" in2="goo" />
+      </filter>
+    </svg>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

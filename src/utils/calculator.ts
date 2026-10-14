@@ -304,17 +304,15 @@ export function calculateAttendanceMetrics(
       );
 
       // 4. Overtime & Deficit:
-      // Overtime is generated only when actual physical work exceeds daily net requirement
-      if (workedMinutes > netRequiredMinutes) {
-        overtimeMinutes = workedMinutes - netRequiredMinutes;
-      } else {
-        overtimeMinutes = 0;
+      // Effective worked time = physical worked + approved leave credit
+      const effectiveWorked = workedMinutes + totalLeaveCreditMinutes;
+
+      if (effectiveWorked > netRequiredMinutes) {
+        overtimeMinutes = effectiveWorked - netRequiredMinutes;
       }
 
-      // Approved leave covers any shortfall from required hours
-      const effectiveCovered = workedMinutes + totalLeaveCreditMinutes;
-      if (effectiveCovered < netRequiredMinutes) {
-        deficitMinutes = netRequiredMinutes - effectiveCovered;
+      if (effectiveWorked < netRequiredMinutes) {
+        deficitMinutes = netRequiredMinutes - effectiveWorked;
       } else {
         deficitMinutes = 0;
       }
@@ -397,7 +395,6 @@ export function calculateMonthlyStats(
   const daysInMonth = getDaysInJalaliMonth(jy, jm);
   let totalMonthRequiredMinutes = 0;
   let passedRequiredMinutes = 0;
-  let workingDaysCount = 0;
   const today = getCurrentJalaliDate();
   const isCurrentMonth = today.jy === jy && today.jm === jm;
   const maxDayToCheck = isCurrentMonth ? today.jd : daysInMonth;
@@ -414,14 +411,11 @@ export function calculateMonthlyStats(
       if (isThursday) {
         if (config.thursdayStatus === 'half_day') {
           dayRequired = config.thursdayMinutes || 240;
-          workingDaysCount++;
         } else if (config.thursdayStatus === 'full_day') {
           dayRequired = standardDailyNetMinutes;
-          workingDaysCount++;
         }
       } else {
         dayRequired = standardDailyNetMinutes;
-        workingDaysCount++;
       }
     }
 
@@ -493,8 +487,6 @@ export function calculateMonthlyStats(
     presentDaysCount,
     absentDaysCount,
     leaveDaysCount,
-    workingDaysCount,
-    monthTotalDays: daysInMonth,
     completionRate,
     estimatedOvertimePay,
   };
