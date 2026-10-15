@@ -1402,10 +1402,10 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-text">سامانه هوشمند مدیریت تردد و کارکرد</h3>
-                    <p className="text-xs text-muted mt-0.5">نسخه ۲.۴.۰ (طراحی نوردیک مدرن)</p>
+                    <p className="text-xs text-muted mt-0.5">نسخه ۲.۵.۰ (طراحی Liquid Glass و همگام‌سازی ابری Turso)</p>
                   </div>
                   <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-[var(--accent)] text-[var(--accent-contrast)]">
-                    v2.4.0
+                    v2.5.0
                   </span>
                 </div>
                 <p className="text-xs text-muted leading-relaxed">
