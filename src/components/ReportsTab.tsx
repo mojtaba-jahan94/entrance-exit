@@ -2,13 +2,9 @@ import React from 'react';
 import {
   TrendingUp,
   Clock,
-  Calendar,
   AlertTriangle,
-  Coffee,
-  CheckCircle2,
   Banknote,
   Scale,
-  Award,
   Zap,
   Printer,
   FileSpreadsheet,
@@ -31,7 +27,6 @@ interface ReportsTabProps {
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
   stats,
-  records,
   config,
   selectedMonthName,
   selectedYear,
@@ -52,16 +47,16 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Banner & Print/Export */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border border-indigo-500/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-[#D1D5DB] p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-indigo-500/20 p-3 text-indigo-400 border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
+          <div className="rounded-2xl bg-[#F5F0E6] p-3 text-[#A68A64] border border-[#A68A64]/30 shadow-sm">
             <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           <div>
-            <h2 className="text-base sm:text-xl font-bold text-white">
+            <h2 className="text-base sm:text-xl font-bold text-[#1F2933]">
               گزارش جامع تحلیلی و مالی | {selectedMonthName} {toPersianDigits(selectedYear)}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-[#6B7280] mt-0.5">
               خلاصه ساعات کارکرد موظفی، اضافه کاری، انضباط تردد و برآورد مالی
             </p>
           </div>
@@ -70,14 +65,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onExportExcel}
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 text-xs font-semibold shadow-md transition-all"
+            className="flex items-center gap-1.5 rounded-xl bg-[#2E6F40] hover:bg-[#235833] text-white px-3.5 py-2 text-xs font-semibold shadow-sm transition-all"
           >
             <FileSpreadsheet className="h-4 w-4" />
             <span>خروجی اکسل</span>
           </button>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-slate-200 px-3.5 py-2 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F7F7F2] text-[#1F2933] px-3.5 py-2 text-xs font-semibold shadow-sm transition-all"
           >
             <Printer className="h-4 w-4" />
             <span>چاپ گزارش</span>
@@ -88,63 +83,63 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       {/* 2. Key Metrics Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Worked */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] mb-2">
             <span>مجموع کارکرد موثر</span>
-            <Clock className="h-4 w-4 text-emerald-400" />
+            <Clock className="h-4 w-4 text-[#2E6F40]" />
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-white">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[#1F2933]">
             {formatMinutesToPersianReadable(stats.totalWorkedMinutes)}
           </div>
-          <span className="text-[11px] text-slate-400 block mt-1 font-mono">
+          <span className="text-[11px] text-[#6B7280] block mt-1 font-mono">
             از {formatMinutesToPersianReadable(stats.totalRequiredMinutes)} موظفی
           </span>
         </div>
 
         {/* Net Balance */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] mb-2">
             <span>تراز کارکرد (خالص)</span>
-            <Scale className={`h-4 w-4 ${isNetPositive ? 'text-emerald-400' : 'text-rose-400'}`} />
+            <Scale className={`h-4 w-4 ${isNetPositive ? 'text-[#2E6F40]' : 'text-[#B91C1C]'}`} />
           </div>
           <div
             className={`font-mono text-xl sm:text-2xl font-bold ${
-              isNetPositive ? 'text-emerald-400' : 'text-rose-400'
+              isNetPositive ? 'text-[#2E6F40]' : 'text-[#B91C1C]'
             }`}
           >
             {isNetPositive ? '+' : '-'}
             {formatMinutesToPersianReadable(Math.abs(stats.netBalanceMinutes))}
           </div>
-          <span className="text-[11px] text-slate-400 block mt-1">
+          <span className="text-[11px] text-[#6B7280] block mt-1">
             {isNetPositive ? 'مازاد اضافه کاری بر کسر کار' : 'کسر کار بیشتر از اضافه کار'}
           </span>
         </div>
 
         {/* Overtime (Regular + Holiday) */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] mb-2">
             <span>مجموع اضافه کاری</span>
-            <Zap className="h-4 w-4 text-blue-400" />
+            <Zap className="h-4 w-4 text-[#A68A64]" />
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-blue-300">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[#1F2933]">
             {formatMinutesToPersianReadable(stats.totalOvertimeMinutes + stats.totalHolidayOvertimeMinutes)}
           </div>
-          <span className="text-[11px] text-slate-400 block mt-1 font-mono">
+          <span className="text-[11px] text-[#6B7280] block mt-1 font-mono">
             عادی: {toPersianDigits(formatMinutesToTimeString(stats.totalOvertimeMinutes))} | تعطیل:{' '}
             {toPersianDigits(formatMinutesToTimeString(stats.totalHolidayOvertimeMinutes))}
           </span>
         </div>
 
         {/* Total Delays & Early Leaves */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] mb-2">
             <span>تاخیر و تعجیل</span>
-            <AlertTriangle className="h-4 w-4 text-amber-400" />
+            <AlertTriangle className="h-4 w-4 text-[#D97706]" />
           </div>
-          <div className="font-mono text-xl sm:text-2xl font-bold text-amber-300">
+          <div className="font-mono text-xl sm:text-2xl font-bold text-[#D97706]">
             {toPersianDigits(stats.totalDelayMinutes + stats.totalEarlyLeaveMinutes)} دقیقه
           </div>
-          <span className="text-[11px] text-slate-400 block mt-1 font-mono">
+          <span className="text-[11px] text-[#6B7280] block mt-1 font-mono">
             تاخیر ورود: {toPersianDigits(stats.totalDelayMinutes)}د | تعجیل خروج: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
           </span>
         </div>
@@ -153,44 +148,44 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       {/* 3. Detailed Financial & Analytical Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Work Breakdown Table */}
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md shadow-xl space-y-3">
-          <h3 className="text-sm font-bold text-white border-b border-slate-800/80 pb-2.5 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-cyan-400" />
+        <div className="rounded-2xl sm:rounded-3xl border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3">
+          <h3 className="text-sm font-bold text-[#1F2933] border-b border-[#D1D5DB] pb-2.5 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-[#A68A64]" />
             <span>جزئیات محاسبات زمانی ماه</span>
           </h3>
 
           <div className="space-y-2.5 text-xs">
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-800/40">
-              <span className="text-slate-400">ساعات موظفی کل ماه:</span>
-              <span className="font-mono font-bold text-white">
+            <div className="flex items-center justify-between py-1.5 border-b border-[#D1D5DB]/60">
+              <span className="text-[#6B7280]">ساعات موظفی کل ماه:</span>
+              <span className="font-mono font-bold text-[#1F2933]">
                 {formatMinutesToPersianReadable(stats.totalRequiredMinutes)}
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-800/40">
-              <span className="text-slate-400">ساعات کارکرد واقعی موثر:</span>
-              <span className="font-mono font-bold text-emerald-400">
+            <div className="flex items-center justify-between py-1.5 border-b border-[#D1D5DB]/60">
+              <span className="text-[#6B7280]">ساعات کارکرد واقعی موثر:</span>
+              <span className="font-mono font-bold text-[#2E6F40]">
                 {formatMinutesToPersianReadable(stats.totalWorkedMinutes)}
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-800/40">
-              <span className="text-slate-400">میانگین کارکرد در روزهای حضور:</span>
-              <span className="font-mono font-bold text-cyan-300">
+            <div className="flex items-center justify-between py-1.5 border-b border-[#D1D5DB]/60">
+              <span className="text-[#6B7280]">میانگین کارکرد در روزهای حضور:</span>
+              <span className="font-mono font-bold text-[#1F2933]">
                 {formatMinutesToPersianReadable(avgWorkedDaily)}
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-1.5 border-b border-slate-800/40">
-              <span className="text-slate-400">مرخصی‌های استفاده‌شده:</span>
-              <span className="font-mono font-bold text-amber-400">
+            <div className="flex items-center justify-between py-1.5 border-b border-[#D1D5DB]/60">
+              <span className="text-[#6B7280]">مرخصی‌های استفاده‌شده:</span>
+              <span className="font-mono font-bold text-[#D97706]">
                 {toPersianDigits(stats.totalLeaveDays)} روز ({toPersianDigits(stats.totalLeaveHours)} ساعت)
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-slate-400">درصد تحقق موظفی ماهانه:</span>
-              <span className="font-mono font-bold text-indigo-400 text-sm">
+              <span className="text-[#6B7280]">درصد تحقق موظفی ماهانه:</span>
+              <span className="font-mono font-bold text-[#A68A64] text-sm">
                 {toPersianDigits(stats.completionRate)}%
               </span>
             </div>
@@ -198,35 +193,35 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         </div>
 
         {/* Financial & Wage Estimation */}
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 backdrop-blur-md shadow-xl space-y-3 flex flex-col justify-between">
+        <div className="rounded-2xl sm:rounded-3xl border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm space-y-3 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white border-b border-slate-800/80 pb-2.5 flex items-center gap-2">
-              <Banknote className="h-4 w-4 text-emerald-400" />
+            <h3 className="text-sm font-bold text-[#1F2933] border-b border-[#D1D5DB] pb-2.5 flex items-center gap-2">
+              <Banknote className="h-4 w-4 text-[#2E6F40]" />
               <span>برآورد ریالی اضافه کاری و دستمزد</span>
             </h3>
 
             {config.hourlyRateToman && config.hourlyRateToman > 0 ? (
               <div className="space-y-3 pt-2 text-xs">
-                <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-center">
-                  <span className="text-[11px] text-emerald-300 block mb-1">
+                <div className="rounded-2xl bg-[#F5F0E6] border border-[#A68A64]/30 p-4 text-center">
+                  <span className="text-[11px] text-[#6B7280] block mb-1">
                     مبلغ برآوردی اضافه کار این ماه
                   </span>
-                  <div className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
+                  <div className="text-2xl sm:text-3xl font-black text-[#2E6F40] font-mono">
                     {toPersianDigits(stats.estimatedOvertimePay?.toLocaleString() || '۰')}
-                    <span className="text-xs font-normal text-emerald-300 mr-1.5">تومان</span>
+                    <span className="text-xs font-normal text-[#6B7280] mr-1.5">تومان</span>
                   </div>
                 </div>
 
-                <div className="space-y-2 text-slate-400 text-xs">
+                <div className="space-y-2 text-[#6B7280] text-xs">
                   <div className="flex items-center justify-between">
                     <span>نرخ دستمزد ساعتی پایه:</span>
-                    <span className="font-mono text-white">
+                    <span className="font-mono text-[#1F2933]">
                       {toPersianDigits(config.hourlyRateToman.toLocaleString())} تومان
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>ضریب اضافه کار عادی ({toPersianDigits(config.overtimeMultiplier || 1.4)}x):</span>
-                    <span className="font-mono text-indigo-300">
+                    <span className="font-mono text-[#1F2933]">
                       {toPersianDigits(
                         Math.round(
                           (stats.totalOvertimeMinutes / 60) *
@@ -239,7 +234,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span>ضریب اضافه کار تعطیلات ({toPersianDigits(config.holidayMultiplier || 1.8)}x):</span>
-                    <span className="font-mono text-cyan-300">
+                    <span className="font-mono text-[#1F2933]">
                       {toPersianDigits(
                         Math.round(
                           (stats.totalHolidayOvertimeMinutes / 60) *
@@ -253,16 +248,16 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-slate-400 space-y-2">
+              <div className="py-8 text-center text-xs text-[#6B7280] space-y-2">
                 <p>نرخ ساعتی در تنظیمات شیفت ثبت نشده است.</p>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-[#6B7280]">
                   برای مشاهده محاسبات ریالی، در بخش تنظیمات نرخ ساعتی پایه را وارد کنید.
                 </p>
               </div>
             )}
           </div>
 
-          <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-500">
+          <div className="pt-2 border-t border-[#D1D5DB] text-[11px] text-[#6B7280]">
             * مبالغ فوق صرفاً برآورد کارگاهی بر اساس ضرایب قانون کار بوده و ملاک نهایی فیش حقوقی می‌باشد.
           </div>
         </div>

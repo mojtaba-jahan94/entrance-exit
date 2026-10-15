@@ -29,6 +29,7 @@ interface ClockCardProps {
   onCheckOut: (time: string, breakMinutes: number) => void;
   onResetToday: () => void;
   onOpenEdit: () => void;
+  enableEffects?: boolean;
 }
 
 export const ClockCard: React.FC<ClockCardProps> = ({
@@ -38,6 +39,7 @@ export const ClockCard: React.FC<ClockCardProps> = ({
   onCheckOut,
   onResetToday,
   onOpenEdit,
+  enableEffects = true,
 }) => {
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [customInTime, setCustomInTime] = useState<string>('');
@@ -123,11 +125,13 @@ export const ClockCard: React.FC<ClockCardProps> = ({
 
     // Fire micro celebration confetti
     try {
-      confetti({
-        particleCount: 90,
-        spread: 75,
-        origin: { y: 0.6 },
-      });
+      if (enableEffects) {
+        confetti({
+          particleCount: 90,
+          spread: 75,
+          origin: { y: 0.6 },
+        });
+      }
     } catch {
       // ignore
     }

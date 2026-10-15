@@ -11,6 +11,7 @@ import {
   HardDrive,
   X,
   Sparkles,
+  Settings,
 } from 'lucide-react';
 import {
   getCurrentTimeString,
@@ -19,6 +20,7 @@ import {
   toPersianDigits,
 } from '../utils/jalali';
 import { AppTheme } from '../utils/theme';
+import { UserProfileInfo } from '../types';
 import { ThemeSelector } from './ThemeSelector';
 import { useAuth } from '../context/AuthContext';
 
@@ -43,6 +45,7 @@ interface NavbarProps {
   isWorkingNow?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  userProfile?: UserProfileInfo;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -58,6 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isWorkingNow,
   searchQuery = '',
   onSearchChange,
+  userProfile,
 }) => {
   const { user, logout, dbStatus, storageMode } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
@@ -94,15 +98,16 @@ export const Navbar: React.FC<NavbarProps> = ({
     return 'شب بخیر';
   }, []);
 
-  const displayName = user?.displayName || user?.username || 'همکار گرامی';
+  const displayName = userProfile?.employeeName?.trim() || user?.displayName || user?.username || 'همکار گرامی';
+  const roleTitle = userProfile?.roleTitle || 'کارشناس';
+  const avatarBg = userProfile?.avatarColor || '#A68A64';
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#D1D5DB] bg-white/95 backdrop-blur-md md:pr-20 transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-[#D1D5DB] bg-white/95 backdrop-blur-md transition-colors">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6">
         {/* Right Header Area: Greeting + Subtitle */}
         <div className="flex items-center gap-3">
-          {/* Mobile-only logo */}
-          <div className="md:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#A68A64] text-white shadow-md shadow-[#A68A64]/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#A68A64] text-white shadow-md shadow-[#A68A64]/20">
             <CalendarClock className="h-5 w-5" />
           </div>
 
@@ -128,10 +133,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Left Header Area: Search pill, Notification Bell, Live Time & Actions */}
+        {/* Left Header Area: Search pill, Notification Bell, Live Time, Theme & User */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Search Pill Input */}
-          <div className="relative hidden sm:block w-48 md:w-60">
+          <div className="relative hidden sm:block w-44 md:w-56">
             <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
               <Search className="h-4 w-4" />
             </div>
@@ -150,6 +155,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
+          </div>
+
+          {/* Theme Selector */}
+          <div className="hidden sm:block">
+            <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
           </div>
 
           {/* Notification Bell Circle */}
@@ -219,12 +229,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {/* Mobile User Profile Button with Menu */}
+          {/* User Profile Button with Menu */}
           {user && (
-            <div className="md:hidden relative" ref={userMenuRef}>
+            <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#A68A64] text-white font-bold text-xs ring-1 ring-white/20"
+                className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl text-white font-bold text-xs sm:text-sm ring-1 ring-black/10 shadow-sm hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: avatarBg }}
+                title={`حساب کاربری: ${displayName} (${roleTitle})`}
               >
                 {displayName.charAt(0).toUpperCase()}
               </button>
@@ -232,12 +244,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isUserMenuOpen && (
                 <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white border border-[#D1D5DB] shadow-2xl p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-3 py-2 border-b border-[#D1D5DB]">
-                    <p className="font-bold text-[#1F2933] truncate text-sm">{displayName}</p>
-                    <p className="text-[#6B7280] font-mono text-[11px] truncate dir-ltr text-right">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-bold text-[#1F2933] truncate text-sm">{displayName}</p>
+                      <span className="shrink-0 text-[10px] font-medium bg-[#F5F0E6] text-[#A68A64] px-2 py-0.5 rounded-full border border-[#A68A64]/30">
+                        {roleTitle}
+                      </span>
+                    </div>
+                    <p className="text-[#6B7280] font-mono text-[11px] truncate dir-ltr text-right mt-0.5">
                       @{user.username}
                     </p>
                   </div>
                   <div className="py-1 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        _onTabChange('settings');
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#1F2933] hover:bg-[#F5F0E6] transition-colors text-right"
+                    >
+                      <Settings className="h-4 w-4 text-[#A68A64]" />
+                      <span>تنظیمات سامانه</span>
+                    </button>
                     {onOpenStorageMode && (
                       <button
                         onClick={() => {

@@ -119,4 +119,18 @@ export interface SyncState {
   syncError: string | null;
 }
 
+export interface UserProfileInfo {
+  employeeName: string;
+  roleTitle: string;
+  personnelId: string;
+  department: string;
+  avatarColor?: string;
+}
+
+export interface UserPreferences {
+  defaultViewMode: 'table' | 'card';
+  enableNotifications: boolean;
+  enableSoundEffects: boolean;
+}
+
 

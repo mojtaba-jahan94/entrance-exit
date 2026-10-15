@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { X, Database, Download, Upload, AlertTriangle, Check, RefreshCw } from 'lucide-react';
+import { X, Database, Download, Upload, AlertTriangle, Check } from 'lucide-react';
 import { exportAllDataBackup, importDataBackup } from '../utils/storage';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,7 +28,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
       exportAllDataBackup(user?.id);
       setSuccessMessage('فایل پشتیبان با موفقیت دانلود شد.');
       setTimeout(() => setSuccessMessage(''), 4000);
-    } catch (e) {
+    } catch {
       setErrorMessage('خطا در دانلود فایل پشتیبان');
     }
   };
@@ -73,24 +73,24 @@ export const BackupModal: React.FC<BackupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-[28px] sm:rounded-[32px] border border-white/[0.1] bg-[#161a28] p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1F2933]/60 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-3xl border border-[#D1D5DB] bg-white p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto text-[#1F2933]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
+        <div className="flex items-center justify-between border-b border-[#D1D5DB] pb-3 sm:pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
+            <div className="rounded-2xl bg-[#F5F0E6] p-2 text-[#A68A64] border border-[#A68A64]/30">
               <Database className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">پشتیبان‌گیری و مدیریت داده‌ها</h3>
-              <p className="text-[11px] sm:text-xs text-slate-400">
-                انتقال، دانلود و بازیابی اطلاعات تردد {user ? `(حساب ${user.displayName})` : ''}
+              <h3 className="text-sm sm:text-base font-bold text-[#1F2933]">پشتیبان‌گیری و مدیریت داده‌ها</h3>
+              <p className="text-[11px] sm:text-xs text-[#6B7280]">
+                دانلود و بازیابی اطلاعات تردد {user ? `(حساب ${user.displayName})` : ''}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded-xl p-1.5 text-[#6B7280] hover:bg-[#F7F7F2] hover:text-[#1F2933] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -98,13 +98,13 @@ export const BackupModal: React.FC<BackupModalProps> = ({
 
         {/* Alerts */}
         {successMessage && (
-          <div className="mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-300 flex items-center gap-2">
+          <div className="mt-4 rounded-xl bg-[#F0FDF4] border border-[#2E6F40]/30 p-3 text-xs text-[#2E6F40] flex items-center gap-2">
             <Check className="h-4 w-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
         {errorMessage && (
-          <div className="mt-4 rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-300 flex items-center gap-2">
+          <div className="mt-4 rounded-xl bg-[#FEF2F2] border border-[#B91C1C]/30 p-3 text-xs text-[#B91C1C] flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -115,15 +115,15 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           {/* Download Backup */}
           <button
             onClick={handleExport}
-            className="w-full flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-4 hover:border-slate-700 hover:bg-slate-850 transition-all text-right group"
+            className="w-full flex items-center justify-between rounded-2xl border border-[#D1D5DB] bg-[#F7F7F2] p-4 hover:border-[#A68A64] hover:bg-[#F5F0E6] transition-all text-right group shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-indigo-500/10 p-2.5 text-indigo-400">
+              <div className="rounded-xl bg-white border border-[#D1D5DB] p-2.5 text-[#A68A64]">
                 <Download className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs font-bold text-white block">دانلود نسخه پشتیبان کامل</span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
+                <span className="text-xs font-bold text-[#1F2933] block">دانلود نسخه پشتیبان کامل</span>
+                <span className="text-[11px] text-[#6B7280] block mt-0.5">
                   ذخیره کلیه ترددها، مرخصی‌ها و تنظیمات در قالب فایل JSON
                 </span>
               </div>
@@ -140,15 +140,15 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-4 hover:border-slate-700 hover:bg-slate-850 transition-all text-right group"
+            className="w-full flex items-center justify-between rounded-2xl border border-[#D1D5DB] bg-[#F7F7F2] p-4 hover:border-[#A68A64] hover:bg-[#F5F0E6] transition-all text-right group shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-cyan-500/10 p-2.5 text-cyan-400">
+              <div className="rounded-xl bg-white border border-[#D1D5DB] p-2.5 text-[#A68A64]">
                 <Upload className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs font-bold text-white block">بازیابی از فایل پشتیبان</span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
+                <span className="text-xs font-bold text-[#1F2933] block">بازیابی از فایل پشتیبان</span>
+                <span className="text-[11px] text-[#6B7280] block mt-0.5">
                   بارگذاری اطلاعات از فایل پشتیبان ذخیره‌شده
                 </span>
               </div>
@@ -156,14 +156,14 @@ export const BackupModal: React.FC<BackupModalProps> = ({
           </button>
 
           {/* Reset All */}
-          <div className="pt-3 border-t border-slate-800/80">
+          <div className="pt-3 border-t border-[#D1D5DB]">
             <button
               onClick={handleReset}
-              className="w-full flex items-center justify-between rounded-2xl border border-rose-950/40 bg-rose-950/20 p-3 hover:bg-rose-950/40 transition-all text-right text-rose-300"
+              className="w-full flex items-center justify-between rounded-2xl border border-[#B91C1C]/30 bg-[#FEF2F2]/40 p-3 hover:bg-[#FEF2F2] transition-all text-right text-[#B91C1C]"
             >
               <div className="flex items-center gap-2.5">
-                <AlertTriangle className="h-4 w-4 text-rose-400" />
-                <span className="text-xs font-semibold">پاک‌سازی کلیه اطلاعات این حساب و شروع مجدد</span>
+                <AlertTriangle className="h-4 w-4 text-[#B91C1C]" />
+                <span className="text-xs font-bold">پاک‌سازی کلیه اطلاعات این حساب و شروع مجدد</span>
               </div>
             </button>
           </div>

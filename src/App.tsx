@@ -3,7 +3,7 @@ import {
   Calendar,
   TrendingUp,
 } from 'lucide-react';
-import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
+import { AttendanceRecord, ShiftConfig, LeaveRecord, UserProfileInfo, UserPreferences } from './types';
 import {
   getCurrentJalaliDate,
   getTodayJalaliString,
@@ -23,6 +23,8 @@ import {
   saveShiftConfig,
   getStoredLeaveRecords,
   saveLeaveRecords,
+  getStoredUserProfile,
+  getStoredUserPreferences,
   exportMonthToExcel,
 } from './utils/storage';
 import {
@@ -50,7 +52,7 @@ import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
 import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
-import { SettingsModal } from './components/SettingsModal';
+import { SettingsPage } from './components/SettingsPage';
 import { BackupModal } from './components/BackupModal';
 
 function DashboardApp() {
@@ -79,6 +81,10 @@ function DashboardApp() {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [config, setConfig] = useState<ShiftConfig>(DEFAULT_SHIFT_CONFIG);
+  const [userProfile, setUserProfile] = useState<UserProfileInfo>(() => getStoredUserProfile(userId));
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() =>
+    getStoredUserPreferences(userId)
+  );
 
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
@@ -92,7 +98,6 @@ function DashboardApp() {
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
@@ -133,6 +138,8 @@ function DashboardApp() {
     setRecords(initial.records);
     setLeaves(initial.leaves);
     setConfig(initial.config);
+    setUserProfile(getStoredUserProfile(userId));
+    setUserPreferences(getStoredUserPreferences(userId));
 
     // If user has cloud sync enabled, attempt to load cloud data if local was default or empty
     if (storageMode === 'cloud_encrypted' && initialFetchDone.current !== userId) {
@@ -398,9 +405,13 @@ function DashboardApp() {
     const storedRecs = getStoredAttendanceRecords(userId);
     const storedLeaves = getStoredLeaveRecords(userId);
     const storedCfg = getStoredShiftConfig(userId);
+    const storedProfile = getStoredUserProfile(userId);
+    const storedPrefs = getStoredUserPreferences(userId);
     setRecords(storedRecs);
     setLeaves(storedLeaves);
     setConfig(storedCfg);
+    setUserProfile(storedProfile);
+    setUserPreferences(storedPrefs);
     triggerAutoSync(storedRecs, storedLeaves, storedCfg);
   };
 
@@ -428,8 +439,7 @@ function DashboardApp() {
           setIsManualModalOpen(true);
         }}
         onOpenSettings={() => {
-          setActiveTab('settings');
-          setIsSettingsModalOpen(true);
+          handleTabChange('settings');
         }}
         currentTheme={currentTheme}
         onSelectTheme={handleSelectTheme}
@@ -450,8 +460,7 @@ function DashboardApp() {
           setIsManualModalOpen(true);
         }}
         onOpenSettings={() => {
-          setActiveTab('settings');
-          setIsSettingsModalOpen(true);
+          handleTabChange('settings');
         }}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
@@ -459,13 +468,14 @@ function DashboardApp() {
         isWorkingNow={isWorkingNow}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        userProfile={userProfile}
       />
 
-      {/* Main Content Area: md:pr-24 accounts for the fixed vertical dock on desktop, pb-28 md:pb-12 for mobile dock */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 md:pr-24 pb-28 md:pb-12 space-y-6">
+      {/* Main Content Area: pb-32 sm:pb-28 ensures bottom floating capsule dock never overlaps content */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 pb-32 sm:pb-28 space-y-6">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 tab-transition">
             {/* Live Clock Card */}
             <section aria-label="ثبت زنده تردد">
               <ClockCard
@@ -478,6 +488,7 @@ function DashboardApp() {
                   setEditingRecord(todayRecord || ({ date: todayStr } as any));
                   setIsManualModalOpen(true);
                 }}
+                enableEffects={userPreferences.enableSoundEffects}
               />
             </section>
 
@@ -576,7 +587,7 @@ function DashboardApp() {
 
         {/* Tab 2: Timesheet Table */}
         {activeTab === 'timesheet' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 tab-transition">
             <AttendanceTable
               records={records}
               selectedYear={selectedYear}
@@ -594,13 +605,14 @@ function DashboardApp() {
                 setIsManualModalOpen(true);
               }}
               onExportExcel={handleExportExcel}
+              initialViewMode={userPreferences.defaultViewMode}
             />
           </div>
         )}
 
         {/* Tab 3: Dedicated Full-page Calendar */}
         {activeTab === 'calendar' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 tab-transition">
             <PersianCalendar
               records={records}
               leaves={leaves}
@@ -625,7 +637,7 @@ function DashboardApp() {
 
         {/* Tab 4: Leaves Management */}
         {activeTab === 'leaves' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 tab-transition">
             <LeavesTab
               leaves={leaves.filter((l) =>
                 l.date.startsWith(`${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`)
@@ -648,7 +660,7 @@ function DashboardApp() {
 
         {/* Tab 5: Comprehensive Reports */}
         {activeTab === 'reports' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-6 tab-transition">
             <ReportsTab
               stats={monthlyStats}
               records={records}
@@ -660,50 +672,23 @@ function DashboardApp() {
           </div>
         )}
 
-        {/* Tab 6: Settings Page View */}
+        {/* Tab 6: Dedicated Full-page Settings */}
         {activeTab === 'settings' && (
-          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
-            <div className="rounded-[28px] border border-[#D1D5DB] bg-white p-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#D1D5DB]">
-                <div>
-                  <h2 className="text-lg font-bold text-[#1F2933]">تنظیمات شیفت و سامانه</h2>
-                  <p className="text-xs text-[#6B7280] mt-1">
-                    پیکربندی ساعات ورود/خروج شناور، کسر ناهار و قوانین پنج‌شنبه‌ها
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8F7553] text-white text-xs font-bold transition-all shadow-sm"
-                >
-                  ویرایش پیشرفته تنظیمات
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                <div className="p-4 rounded-2xl bg-[#F7F7F2] border border-[#D1D5DB]">
-                  <span className="text-xs text-[#6B7280] block mb-1">بازه ورود شناور</span>
-                  <span className="font-mono text-base font-bold text-[#1F2933]">
-                    {config.flexStartTimeMin} الی {config.flexStartTimeMax}
-                  </span>
-                </div>
-                <div className="p-4 rounded-2xl bg-[#F7F7F2] border border-[#D1D5DB]">
-                  <span className="text-xs text-[#6B7280] block mb-1">مدت موظفی روزانه</span>
-                  <span className="font-mono text-base font-bold text-[#1F2933]">
-                    {(config.requiredDailyMinutes / 60).toFixed(1)} ساعت ({config.defaultBreakMinutes} د ناهار)
-                  </span>
-                </div>
-                <div className="p-4 rounded-2xl bg-[#F7F7F2] border border-[#D1D5DB]">
-                  <span className="text-xs text-[#6B7280] block mb-1">وضعیت پنج‌شنبه‌ها</span>
-                  <span className="font-mono text-base font-bold text-[#1F2933]">
-                    {config.thursdayStatus === 'half_day'
-                      ? 'نیمه‌وقت (۴ ساعت)'
-                      : config.thursdayStatus === 'off'
-                      ? 'تعطیل'
-                      : 'روز کاری کامل'}
-                  </span>
-                </div>
-              </div>
-            </div>
+          <div className="tab-transition">
+            <SettingsPage
+              config={config}
+              onSaveConfig={handleSaveConfig}
+              currentTheme={currentTheme}
+              onSelectTheme={handleSelectTheme}
+              records={records}
+              leaves={leaves}
+              onDataRestored={handleDataRestored}
+              onResetAllData={handleResetAllData}
+              onOpenStorageMode={() => setIsStorageModalOpen(true)}
+              onOpenChangePassword={() => setIsChangePasswordOpen(true)}
+              onProfileChange={setUserProfile}
+              onPreferencesChange={setUserPreferences}
+            />
           </div>
         )}
       </main>
@@ -736,13 +721,6 @@ function DashboardApp() {
         todayRecord={todayRecord}
         shiftConfig={config}
         initialLeave={editingLeave}
-      />
-
-      <SettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        config={config}
-        onSaveConfig={handleSaveConfig}
       />
 
       <BackupModal

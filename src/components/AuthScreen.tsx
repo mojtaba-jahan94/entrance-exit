@@ -59,9 +59,9 @@ export const AuthScreen: React.FC = () => {
           displayName: displayName.trim(),
           password,
         });
-        setSuccessMsg('ثبت‌نام با موفقیت انجام شد! در حال انتقال...');
+        setSuccessMsg('ثبت‌نام با موفقیت انجام شد! در حال ورود به سامانه...');
       } catch (err: any) {
-        setErrorMsg(err.message || 'خطا در ثبت نام کاربر.');
+        setErrorMsg(err.message || 'خطا در ثبت‌نام کاربر.');
       }
     } else {
       try {
@@ -76,52 +76,51 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-[#F7F7F2] text-[#1F2933] overflow-hidden font-sans">
       {/* Background glowing ambiance */}
-      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -top-32 left-1/3 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-[#6B7280]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-md mx-auto z-10">
         {/* Brand / Logo Section */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 shadow-xl shadow-indigo-500/25 ring-2 ring-white/20 mb-4 animate-in zoom-in-95 duration-500">
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-[#A68A64] text-white shadow-md shadow-[#A68A64]/20 ring-1 ring-[#A68A64]/30 mb-4 animate-in zoom-in-95 duration-500">
             <CalendarClock className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+          <h1 className="text-2xl font-black tracking-tight text-[#1F2933] mb-1">
             سامانه یکپارچه مدیریت کارکرد و تردد
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-[#6B7280]">
             احراز هویت امن با استانداردهای نوین حفاظت از اطلاعات
           </p>
         </div>
 
         {/* Server Status Ribbon */}
         <div className="mb-4 flex items-center justify-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-[11px] font-medium shadow-sm">
-            <Server className="h-3.5 w-3.5 text-cyan-400" />
-            <span className="text-slate-400">وضعیت سامانه:</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#D1D5DB] text-[11px] font-medium shadow-sm">
+            <Server className="h-3.5 w-3.5 text-[#A68A64]" />
+            <span className="text-[#6B7280]">وضعیت سرور:</span>
             {dbStatus === 'connected' && (
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                سرور مرکزی فعال و متصل
+              <span className="flex items-center gap-1.5 text-[#2E6F40] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[#2E6F40] animate-pulse" />
+                سرور مرکزی متصل
               </span>
             )}
             {dbStatus === 'not_configured' && (
-              <span className="flex items-center gap-1.5 text-amber-400 font-semibold" title="پایگاه داده سرور در انتظار پیکربندی است">
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
-                در انتظار راه‌اندازی سرور مرکزی
+              <span className="flex items-center gap-1.5 text-[#D97706] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[#D97706]" />
+                در انتظار پیکربندی سرور
               </span>
             )}
             {dbStatus === 'error' && (
-              <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-rose-400" />
+              <span className="flex items-center gap-1.5 text-[#B91C1C] font-semibold">
+                <span className="h-2 w-2 rounded-full bg-[#B91C1C]" />
                 عدم اتصال به سرور مرکزی
               </span>
             )}
             {dbStatus === 'checking' && (
-              <span className="flex items-center gap-1.5 text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-slate-400 animate-ping" />
+              <span className="flex items-center gap-1.5 text-[#6B7280]">
+                <span className="h-2 w-2 rounded-full bg-[#6B7280] animate-ping" />
                 بررسی وضعیت اتصال...
               </span>
             )}
@@ -129,9 +128,9 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-[#161a28]/95 backdrop-blur-2xl border border-white/[0.1] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-white border border-[#D1D5DB] rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
           {/* Tabs */}
-          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-950/80 border border-slate-800/80 mb-6">
+          <div className="grid grid-cols-2 p-1 rounded-2xl bg-[#F7F7F2] border border-[#D1D5DB] mb-6">
             <button
               type="button"
               onClick={() => {
@@ -139,10 +138,10 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 mode === 'login'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#A68A64] text-white shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#1F2933]'
               }`}
             >
               <LogIn className="h-4 w-4" />
@@ -155,10 +154,10 @@ export const AuthScreen: React.FC = () => {
                 setErrorMsg(null);
                 setSuccessMsg(null);
               }}
-              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                 mode === 'register'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#A68A64] text-white shadow-sm'
+                  : 'text-[#6B7280] hover:text-[#1F2933]'
               }`}
             >
               <UserPlus className="h-4 w-4" />
@@ -168,14 +167,14 @@ export const AuthScreen: React.FC = () => {
 
           {/* Alerts */}
           {errorMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-[#FEF2F2] border border-[#B91C1C]/30 text-[#B91C1C] text-xs">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs">
+            <div className="mb-4 flex items-start gap-2.5 p-3 rounded-xl bg-[#F0FDF4] border border-[#2E6F40]/30 text-[#2E6F40] text-xs">
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
               <span>{successMsg}</span>
             </div>
@@ -185,11 +184,11 @@ export const AuthScreen: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] mb-1.5">
                   نام و نام خانوادگی
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#6B7280]">
                     <Sparkles className="h-4 w-4" />
                   </div>
                   <input
@@ -198,18 +197,18 @@ export const AuthScreen: React.FC = () => {
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="مثال: علی احمدی"
                     required
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                    className="w-full rounded-xl bg-[#F7F7F2] border border-[#D1D5DB] pr-10 pl-3.5 py-2.5 text-sm text-[#1F2933] placeholder-[#6B7280]/60 focus:outline-none focus:ring-1 focus:ring-[#A68A64] focus:border-[#A68A64] transition-all"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[#1F2933] mb-1.5">
                 نام کاربری
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#6B7280]">
                   <UserIcon className="h-4 w-4" />
                 </div>
                 <input
@@ -219,17 +218,17 @@ export const AuthScreen: React.FC = () => {
                   placeholder="مثال: user_admin"
                   dir="ltr"
                   required
-                  className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
+                  className="w-full rounded-xl bg-[#F7F7F2] border border-[#D1D5DB] pr-10 pl-3.5 py-2.5 text-sm text-[#1F2933] placeholder-[#6B7280]/60 focus:outline-none focus:ring-1 focus:ring-[#A68A64] focus:border-[#A68A64] transition-all font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-[#1F2933] mb-1.5">
                 رمز عبور
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#6B7280]">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -239,12 +238,12 @@ export const AuthScreen: React.FC = () => {
                   placeholder="حداقل ۶ کاراکتر"
                   dir="ltr"
                   required
-                  className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-10 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
+                  className="w-full rounded-xl bg-[#F7F7F2] border border-[#D1D5DB] pr-10 pl-10 py-2.5 text-sm text-[#1F2933] placeholder-[#6B7280]/60 focus:outline-none focus:ring-1 focus:ring-[#A68A64] focus:border-[#A68A64] transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                  className="absolute inset-y-0 left-0 pl-3 flex items-center text-[#6B7280] hover:text-[#1F2933] transition-colors"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -253,11 +252,11 @@ export const AuthScreen: React.FC = () => {
 
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] mb-1.5">
                   تکرار رمز عبور
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[#6B7280]">
                     <KeyRound className="h-4 w-4" />
                   </div>
                   <input
@@ -267,7 +266,7 @@ export const AuthScreen: React.FC = () => {
                     placeholder="تکرار همان رمز عبور"
                     dir="ltr"
                     required
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 pr-10 pl-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-mono"
+                    className="w-full rounded-xl bg-[#F7F7F2] border border-[#D1D5DB] pr-10 pl-3.5 py-2.5 text-sm text-[#1F2933] placeholder-[#6B7280]/60 focus:outline-none focus:ring-1 focus:ring-[#A68A64] focus:border-[#A68A64] transition-all font-mono"
                   />
                 </div>
               </div>
@@ -276,12 +275,12 @@ export const AuthScreen: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white py-3 px-4 text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#A68A64] hover:bg-[#8F7553] text-white py-3 px-4 text-sm font-bold shadow-sm transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>در حال اعتبارسنجی و اتصال به سرور...</span>
+                  <span>در حال اعتبارسنجی و ورود...</span>
                 </div>
               ) : mode === 'login' ? (
                 <>
@@ -298,10 +297,10 @@ export const AuthScreen: React.FC = () => {
           </form>
 
           {/* Security details footnote */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-start gap-2.5 text-[11px] text-slate-400 leading-relaxed">
-            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="mt-6 pt-5 border-t border-[#D1D5DB] flex items-start gap-2.5 text-[11px] text-[#6B7280] leading-relaxed">
+            <ShieldCheck className="h-4 w-4 text-[#2E6F40] shrink-0 mt-0.5" />
             <span>
-              امنیت کامل اطلاعات: کلمات عبور با الگوریتم‌های استاندارد چندمرحله‌ای رمزنگاری شده و نشست‌های کاربری به صورت امن محافظت می‌شوند. در این سامانه می‌توانید اطلاعات تردد خود را به صورت محرمانه روی مرورگر ذخیره کنید یا همگام‌سازی ابری رمزنگاری‌شده (AES-256) را فعال نمایید.
+              امنیت کامل اطلاعات: نشست‌های کاربری با استانداردهای رمزنگاری محافظت می‌شوند. داده‌ها در مرورگر اختصاصی شما نگهداری شده و امکان فعال‌سازی پشتیبان‌گیری ابری نیز مهیا است.
             </span>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { AttendanceRecord, ShiftConfig, LeaveRecord } from '../types';
+import { AttendanceRecord, ShiftConfig, LeaveRecord, UserProfileInfo, UserPreferences } from '../types';
 import { DEFAULT_SHIFT_CONFIG, calculateAttendanceMetrics } from './calculator';
 import {
   getCurrentJalaliDate,
@@ -339,6 +339,59 @@ export function exportMonthToExcel(
 }
 
 /**
+ * User Profile & Preferences storage helpers
+ */
+export function getStoredUserProfile(userId?: string): UserProfileInfo {
+  try {
+    const key = `shamsi_user_profile_${userId || 'default'}`;
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('Error reading user profile', e);
+  }
+  return {
+    employeeName: '',
+    roleTitle: 'کارشناس ارشد',
+    personnelId: '',
+    department: 'فنی و مهندسی',
+    avatarColor: '#A68A64',
+  };
+}
+
+export function saveStoredUserProfile(profile: UserProfileInfo, userId?: string): void {
+  try {
+    const key = `shamsi_user_profile_${userId || 'default'}`;
+    localStorage.setItem(key, JSON.stringify(profile));
+  } catch (e) {
+    console.error('Error saving user profile', e);
+  }
+}
+
+export function getStoredUserPreferences(userId?: string): UserPreferences {
+  try {
+    const key = `shamsi_user_preferences_${userId || 'default'}`;
+    const raw = localStorage.getItem(key);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('Error reading preferences', e);
+  }
+  return {
+    defaultViewMode: 'table',
+    enableNotifications: true,
+    enableSoundEffects: true,
+  };
+}
+
+export function saveStoredUserPreferences(prefs: UserPreferences, userId?: string): void {
+  try {
+    const key = `shamsi_user_preferences_${userId || 'default'}`;
+    localStorage.setItem(key, JSON.stringify(prefs));
+  } catch (e) {
+    console.error('Error saving preferences', e);
+  }
+}
+
+/**
  * Backup all data to a JSON file
  */
 export function exportAllDataBackup(userId?: string): void {
@@ -346,6 +399,8 @@ export function exportAllDataBackup(userId?: string): void {
     records: getStoredAttendanceRecords(userId),
     leaves: getStoredLeaveRecords(userId),
     config: getStoredShiftConfig(userId),
+    profile: getStoredUserProfile(userId),
+    preferences: getStoredUserPreferences(userId),
     userId: userId || null,
     exportedAt: new Date().toISOString(),
   };
@@ -374,9 +429,16 @@ export function importDataBackup(jsonString: string, userId?: string): boolean {
     if (parsed.config) {
       saveShiftConfig(parsed.config, userId);
     }
+    if (parsed.profile) {
+      saveStoredUserProfile(parsed.profile, userId);
+    }
+    if (parsed.preferences) {
+      saveStoredUserPreferences(parsed.preferences, userId);
+    }
     return true;
   } catch (e) {
     console.error('Failed to import backup', e);
     return false;
   }
 }
+

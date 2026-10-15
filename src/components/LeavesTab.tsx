@@ -5,13 +5,8 @@ import {
   Trash2,
   Edit2,
   Calendar,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  FileSpreadsheet,
-  Filter,
 } from 'lucide-react';
-import { LeaveRecord, LeaveType, ShiftConfig, AttendanceRecord } from '../types';
+import { LeaveRecord } from '../types';
 import {
   toPersianDigits,
   formatMinutesToPersianReadable,
@@ -37,7 +32,6 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
   onDeleteLeave,
   monthlyQuotaHours,
   monthlyQuotaDays = 2.5,
-  selectedMonthName,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
 
@@ -62,14 +56,14 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* 1. Header Banner & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-[#D1D5DB] p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-amber-500/20 p-3 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10">
+          <div className="rounded-2xl bg-[#F5F0E6] p-3 text-[#A68A64] border border-[#A68A64]/30 shadow-sm">
             <Coffee className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           <div>
-            <h2 className="text-base sm:text-xl font-bold text-white">کاردکس و مدیریت جامع مرخصی‌ها</h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            <h2 className="text-base sm:text-xl font-bold text-[#1F2933]">کاردکس و مدیریت جامع مرخصی‌ها</h2>
+            <p className="text-xs sm:text-sm text-[#6B7280] mt-0.5">
               محاسبه دقیق مرخصی‌های روزانه، ساعتی و استعلاجی بر اساس استانداردهای قانون کار
             </p>
           </div>
@@ -77,7 +71,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
 
         <button
           onClick={onOpenAddModal}
-          className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 rounded-xl bg-[#A68A64] hover:bg-[#8F7553] text-white font-bold px-4 py-2.5 text-xs sm:text-sm shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           <span>ثبت درخواست مرخصی جدید</span>
@@ -87,58 +81,58 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
       {/* 2. Quota Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {/* Total Monthly Quota */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <span className="text-xs text-slate-400 block mb-1">سهمیه قانونی ماه جاری</span>
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <span className="text-xs text-[#6B7280] block mb-1">سهمیه قانونی ماه جاری</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-white font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-[#1F2933] font-mono">
               {toPersianDigits(monthlyQuotaDays)}
             </span>
-            <span className="text-xs text-slate-300">روز کاری</span>
+            <span className="text-xs text-[#6B7280]">روز کاری</span>
           </div>
-          <p className="text-xs text-slate-400 font-mono mt-1">
+          <p className="text-xs text-[#6B7280] font-mono mt-1">
             معادل {toPersianDigits(monthlyQuotaHours)} ساعت کار مفید
           </p>
         </div>
 
         {/* Used Leaves */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <span className="text-xs text-slate-400 block mb-1">استفاده شده تا کنون</span>
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <span className="text-xs text-[#6B7280] block mb-1">استفاده شده تا کنون</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-[#D97706] font-mono">
               {toPersianDigits(usedDays)}
             </span>
-            <span className="text-xs text-amber-300">روز</span>
+            <span className="text-xs text-[#D97706]">روز</span>
           </div>
-          <p className="text-xs text-amber-400/90 font-mono mt-1">
+          <p className="text-xs text-[#D97706]/90 font-mono mt-1">
             ({formatMinutesToPersianReadable(totalUsedMinutes)})
           </p>
         </div>
 
         {/* Remaining Leaves */}
-        <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4.5 shadow-lg backdrop-blur-xl">
-          <span className="text-xs text-slate-400 block mb-1">مانده باقیمانده سهمیه</span>
+        <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4.5 shadow-sm">
+          <span className="text-xs text-[#6B7280] block mb-1">مانده باقی‌مانده سهمیه</span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
+            <span className="text-2xl sm:text-3xl font-black text-[#2E6F40] font-mono">
               {toPersianDigits(remainingDays)}
             </span>
-            <span className="text-xs text-emerald-300">روز</span>
+            <span className="text-xs text-[#2E6F40]">روز</span>
           </div>
-          <p className="text-xs text-emerald-400/90 font-mono mt-1">
+          <p className="text-xs text-[#2E6F40]/90 font-mono mt-1">
             ({formatMinutesToPersianReadable(remainingMinutes)})
           </p>
         </div>
       </div>
 
       {/* 3. Progress Bar */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#161a27] p-4 shadow-lg backdrop-blur-xl">
+      <div className="rounded-2xl border border-[#D1D5DB] bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between text-xs mb-2">
-          <span className="text-slate-300 font-medium">میزان مصرف سهمیه مرخصی این دوره</span>
-          <span className="font-mono font-bold text-amber-400">{toPersianDigits(usedPercent)}%</span>
+          <span className="text-[#1F2933] font-medium">میزان مصرف سهمیه مرخصی این دوره</span>
+          <span className="font-mono font-bold text-[#A68A64]">{toPersianDigits(usedPercent)}%</span>
         </div>
-        <div className="h-2.5 w-full rounded-full bg-[#111520] overflow-hidden">
+        <div className="h-2.5 w-full rounded-full bg-[#E5E7EB] overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-500 ${
-              usedPercent > 80 ? 'bg-rose-500' : usedPercent > 50 ? 'bg-amber-500' : 'bg-emerald-500'
+              usedPercent > 80 ? 'bg-[#B91C1C]' : usedPercent > 50 ? 'bg-[#D97706]' : 'bg-[#2E6F40]'
             }`}
             style={{ width: `${usedPercent}%` }}
           />
@@ -146,10 +140,10 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
       </div>
 
       {/* 4. Filter Chips & Leaves List */}
-      <div className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#161a27] p-4 sm:p-5 backdrop-blur-xl shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-amber-400" />
+      <div className="rounded-2xl sm:rounded-3xl border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#D1D5DB] pb-3">
+          <h3 className="text-sm sm:text-base font-bold text-[#1F2933] flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-[#A68A64]" />
             <span>سوابق مرخصی‌های ثبت‌شده ({toPersianDigits(leaves.length)} مورد)</span>
           </h3>
 
@@ -167,8 +161,8 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                 onClick={() => setFilterType(f.id)}
                 className={`px-3 py-1.5 rounded-xl shrink-0 transition-all font-medium ${
                   filterType === f.id
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20'
-                    : 'bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-[#A68A64] text-white font-bold shadow-sm'
+                    : 'bg-[#F7F7F2] text-[#6B7280] hover:text-[#1F2933] border border-[#D1D5DB]'
                 }`}
               >
                 {f.label}
@@ -180,7 +174,7 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
         {/* List of Leaves */}
         <div className="space-y-2.5">
           {filteredLeaves.length === 0 ? (
-            <div className="py-12 text-center text-xs sm:text-sm text-slate-500">
+            <div className="py-12 text-center text-xs sm:text-sm text-[#6B7280]">
               مرخصی‌ای با این فیلتر ثبت نشده است.
             </div>
           ) : (
@@ -190,19 +184,19 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
               return (
                 <div
                   key={l.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/50 p-3.5 sm:p-4 hover:border-slate-700 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-[#D1D5DB] bg-[#F7F7F2] p-3.5 sm:p-4 hover:border-[#A68A64]/50 hover:bg-[#F5F0E6]/30 transition-all shadow-sm"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400 shrink-0 border border-amber-500/20">
+                    <div className="rounded-xl bg-[#F5F0E6] p-2 text-[#A68A64] shrink-0 border border-[#A68A64]/20">
                       <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs sm:text-sm font-bold text-white">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-[#1F2933]">
                           {toPersianDigits(l.date)}
                         </span>
-                        <span className="text-[11px] text-slate-400">({weekday})</span>
-                        <span className="rounded-full bg-slate-800/90 px-2 py-0.5 text-[10px] text-amber-300 font-medium border border-slate-700">
+                        <span className="text-[11px] text-[#6B7280]">({weekday})</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-[#A68A64] font-medium border border-[#D1D5DB]">
                           {l.type === 'hourly'
                             ? `ساعتی (${formatMinutesToPersianReadable(durMinutes)})`
                             : l.type === 'half_day'
@@ -214,9 +208,9 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                             : 'روزانه کامل (۱ روز)'}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-400 mt-1 flex items-center gap-2 truncate">
+                      <div className="text-xs text-[#6B7280] mt-1 flex items-center gap-2 truncate">
                         {l.startTime && l.endTime && (
-                          <span className="font-mono text-amber-400/90 font-semibold bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20 text-[11px]">
+                          <span className="font-mono text-[#A68A64] font-semibold bg-[#F5F0E6] px-1.5 py-0.5 rounded border border-[#A68A64]/20 text-[11px]">
                             از {toPersianDigits(l.startTime)} تا {toPersianDigits(l.endTime)}
                           </span>
                         )}
@@ -225,25 +219,25 @@ export const LeavesTab: React.FC<LeavesTabProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#D1D5DB]">
                     <div className="text-left font-mono">
-                      <span className="text-sm sm:text-base font-bold text-amber-400">
+                      <span className="text-sm sm:text-base font-bold text-[#A68A64]">
                         {formatMinutesToTimeString(durMinutes)}
                       </span>
-                      <span className="text-[10px] text-slate-400 block">مدت معادل</span>
+                      <span className="text-[10px] text-[#6B7280] block">مدت معادل</span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => onEditLeave(l)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
+                        className="p-2 rounded-xl text-[#6B7280] hover:text-[#A68A64] hover:bg-white border border-transparent hover:border-[#D1D5DB] transition-colors"
                         title="ویرایش مرخصی"
                       >
                         <Edit2 className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onDeleteLeave(l.id)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+                        className="p-2 rounded-xl text-[#6B7280] hover:text-[#B91C1C] hover:bg-[#FEF2F2] border border-transparent hover:border-[#B91C1C]/20 transition-colors"
                         title="حذف مرخصی"
                       >
                         <Trash2 className="h-4 w-4" />
