@@ -1,14 +1,27 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Calendar,
   TrendingUp,
+  CalendarClock,
+  LogIn,
+  LogOut,
+  CheckCircle,
+  X,
+  RotateCcw,
+  AlertTriangle,
+  CloudOff,
+  RefreshCw,
 } from 'lucide-react';
-import { AttendanceRecord, ShiftConfig, LeaveRecord, UserProfileInfo, UserPreferences } from './types';
+import { AttendanceRecord, ShiftConfig, LeaveRecord } from './types';
 import {
   getCurrentJalaliDate,
   getTodayJalaliString,
+  getCurrentTimeString,
   PERSIAN_MONTH_NAMES,
+  toPersianDigits,
   getJalaliWeekdayIndex,
+  parseJalaliDate,
+  checkOfficialHoliday,
 } from './utils/jalali';
 import {
   calculateAttendanceMetrics,
@@ -23,68 +36,52 @@ import {
   saveShiftConfig,
   getStoredLeaveRecords,
   saveLeaveRecords,
-  getStoredUserProfile,
-  getStoredUserPreferences,
   exportMonthToExcel,
 } from './utils/storage';
 import {
-  getStoredTheme,
-  saveStoredTheme,
-  applyThemeToDOM,
-  AppTheme,
-} from './utils/theme';
+  useEffectiveTheme,
+  applyUISettingsToDOM,
+  getStoredUISettings,
+} from './utils/uiSettings';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LoadingProvider, usePageLoading } from './context/LoadingContext';
 import { AuthScreen } from './components/AuthScreen';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { StorageModeModal } from './components/StorageModeModal';
+import { LiquidMeshBackground } from './components/LiquidMeshBackground';
 
-import { Navbar } from './components/Navbar';
-import { BottomCapsuleDock, ActiveTab } from './components/BottomCapsuleDock';
+import { Navbar, ActiveTab } from './components/Navbar';
+import { BottomCapsuleDock } from './components/BottomCapsuleDock';
 import { ClockCard } from './components/ClockCard';
 import { StatsCards } from './components/StatsCards';
+import { ClockCardSkeleton, StatsCardsSkeleton } from './components/DashboardSkeletons';
 import { AttendanceTable } from './components/AttendanceTable';
 import { PersianCalendar } from './components/PersianCalendar';
 import { DashboardCharts } from './components/DashboardCharts';
 import { RecentActivityCard } from './components/RecentActivityCard';
 import { LeavesTab } from './components/LeavesTab';
 import { ReportsTab } from './components/ReportsTab';
+import { SettingsPage } from './components/SettingsPage';
 import { ManualEntryModal } from './components/ManualEntryModal';
 import { LeaveModal } from './components/LeaveModal';
-import { SettingsPage } from './components/SettingsPage';
 import { BackupModal } from './components/BackupModal';
 
 function DashboardApp() {
   const { user, storageMode, syncDataToCloud, loadDataFromCloud } = useAuth();
-  const { triggerTransition, withLoader } = usePageLoading();
   const userId = user?.id;
 
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const todayJalali = useMemo(() => getCurrentJalaliDate(), []);
 
-  // Theme State
-  const [currentTheme, setCurrentTheme] = useState<AppTheme>(getStoredTheme);
+  // Theme State via unified uiSettings
+  const effectiveTheme = useEffectiveTheme();
 
   // Active Tab State (dashboard, timesheet, leaves, reports)
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
-  // Tab switch handler with smooth liquid loader route transition
-  const handleTabChange = useCallback(
-    (newTab: ActiveTab) => {
-      if (newTab === activeTab) return;
-      triggerTransition(() => setActiveTab(newTab), 150);
-    },
-    [activeTab, triggerTransition]
-  );
-
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [leaves, setLeaves] = useState<LeaveRecord[]>([]);
   const [config, setConfig] = useState<ShiftConfig>(DEFAULT_SHIFT_CONFIG);
-  const [userProfile, setUserProfile] = useState<UserProfileInfo>(() => getStoredUserProfile(userId));
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>(() =>
-    getStoredUserPreferences(userId)
-  );
 
   const [selectedYear, setSelectedYear] = useState<number>(todayJalali.jy);
   const [selectedMonth, setSelectedMonth] = useState<number>(todayJalali.jm);
@@ -97,37 +94,47 @@ function DashboardApp() {
   const [isManualModalOpen, setIsManualModalOpen] = useState<boolean>(false);
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState<boolean>(false);
-  const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
+  const [_editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
 
-  // Initialize theme on mount
+  // Initialize UI settings on mount
   useEffect(() => {
-    applyThemeToDOM(currentTheme);
-  }, [currentTheme]);
+    applyUISettingsToDOM(getStoredUISettings());
+  }, []);
 
-  const handleSelectTheme = (theme: AppTheme) => {
-    setCurrentTheme(theme);
-    saveStoredTheme(theme);
-  };
+  // Dashboard & Sync States
+  const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
+  const [cloudSyncError, setCloudSyncError] = useState<string | null>(null);
+  const [isRetryingSync, setIsRetryingSync] = useState<boolean>(false);
+  // Sequential FIFO Promise queue for cloud synchronization
+  const syncQueueRef = React.useRef<Promise<void>>(Promise.resolve());
 
   // Auto-sync helper to cloud if user opted into cloud_encrypted
   const triggerAutoSync = useCallback(
     (updatedRecords: AttendanceRecord[], updatedLeaves: LeaveRecord[], updatedConfig: ShiftConfig) => {
       if (storageMode === 'cloud_encrypted') {
-        syncDataToCloud({
-          records: updatedRecords,
-          leaves: updatedLeaves,
-          config: updatedConfig,
-        }).catch((e) => console.warn('Auto cloud sync notice:', e));
+        // Enqueue onto FIFO Promise chain to strictly guarantee sequential execution
+        syncQueueRef.current = syncQueueRef.current
+          .catch(() => {})
+          .then(async () => {
+            try {
+              await syncDataToCloud({
+                records: updatedRecords,
+                leaves: updatedLeaves,
+                config: updatedConfig,
+              });
+              setCloudSyncError(null);
+            } catch (e) {
+              console.warn('Sequential cloud sync notice:', e);
+              setCloudSyncError('خطا در همگام‌سازی ابری. تغییرات شما به صورت امن در حافظه محلی ذخیره شده است.');
+            }
+          });
       }
     },
     [storageMode, syncDataToCloud]
   );
-
-  // Guard to ensure initial cloud fetch runs only once per user session
-  const initialFetchDone = useRef<string | null>(null);
 
   // Initialize and load data scoped to current user
   useEffect(() => {
@@ -138,15 +145,11 @@ function DashboardApp() {
     setRecords(initial.records);
     setLeaves(initial.leaves);
     setConfig(initial.config);
-    setUserProfile(getStoredUserProfile(userId));
-    setUserPreferences(getStoredUserPreferences(userId));
 
     // If user has cloud sync enabled, attempt to load cloud data if local was default or empty
-    if (storageMode === 'cloud_encrypted' && initialFetchDone.current !== userId) {
-      initialFetchDone.current = userId;
-      withLoader(async () => {
-        try {
-          const cloudData = await loadDataFromCloud();
+    if (storageMode === 'cloud_encrypted') {
+      loadDataFromCloud()
+        .then((cloudData) => {
           if (cloudData && cloudData.records && cloudData.records.length > 0) {
             setRecords(cloudData.records);
             saveAttendanceRecords(cloudData.records, userId);
@@ -159,12 +162,33 @@ function DashboardApp() {
               saveShiftConfig(cloudData.config, userId);
             }
           }
-        } catch (e) {
+          setCloudSyncError(null);
+        })
+        .catch((e) => {
           console.warn('Cloud initial load notice:', e);
-        }
-      }, 'در حال بارگذاری و همگام‌سازی اطلاعات ابری...');
+          setCloudSyncError('خطا در دریافت اطلاعات از سرور ابری. داده‌های محلی بارگذاری شدند.');
+        })
+        .finally(() => {
+          setIsDataLoading(false);
+        });
+    } else {
+      setIsDataLoading(false);
     }
-  }, [userId, storageMode, loadDataFromCloud, withLoader]);
+  }, [userId, storageMode]);
+
+  // Non-blocking retry handler for cloud sync
+  const handleRetryCloudSync = async () => {
+    setIsRetryingSync(true);
+    try {
+      await syncDataToCloud({ records, leaves, config });
+      setCloudSyncError(null);
+    } catch (err) {
+      console.warn('Retry sync failed:', err);
+      setCloudSyncError('تلاش مجدد ناموفق بود. اتصال به اینترنت را بررسی کنید؛ تغییرات محلی ایمن هستند.');
+    } finally {
+      setIsRetryingSync(false);
+    }
+  };
 
   // Manual trigger to push local data to encrypted cloud
   const handleTriggerSync = async () => {
@@ -173,29 +197,78 @@ function DashboardApp() {
 
   // Manual trigger to pull data from encrypted cloud
   const handleTriggerPull = async () => {
-    await withLoader(async () => {
-      const cloudData = await loadDataFromCloud();
-      if (cloudData) {
-        if (cloudData.records && Array.isArray(cloudData.records)) {
-          setRecords(cloudData.records);
-          saveAttendanceRecords(cloudData.records, userId);
-        }
-        if (cloudData.leaves && Array.isArray(cloudData.leaves)) {
-          setLeaves(cloudData.leaves);
-          saveLeaveRecords(cloudData.leaves, userId);
-        }
-        if (cloudData.config) {
-          setConfig(cloudData.config);
-          saveShiftConfig(cloudData.config, userId);
-        }
+    const cloudData = await loadDataFromCloud();
+    if (cloudData) {
+      if (cloudData.records && Array.isArray(cloudData.records)) {
+        setRecords(cloudData.records);
+        saveAttendanceRecords(cloudData.records, userId);
       }
-    }, 'در حال بارگذاری مجدد اطلاعات از سرور ابری...');
+      if (cloudData.leaves && Array.isArray(cloudData.leaves)) {
+        setLeaves(cloudData.leaves);
+        saveLeaveRecords(cloudData.leaves, userId);
+      }
+      if (cloudData.config) {
+        setConfig(cloudData.config);
+        saveShiftConfig(cloudData.config, userId);
+      }
+    }
   };
 
   // Today's record
   const todayRecord = useMemo(() => {
     return records.find((r) => r.date === todayStr) || null;
   }, [records, todayStr]);
+
+  // Detection for missing previous day check-out
+  const [dismissedMissingCheckoutDate, setDismissedMissingCheckoutDate] = useState<string | null>(null);
+
+  const unclosedPreviousRecord = useMemo(() => {
+    const unclosed = records
+      .filter((r) => {
+        // 1. Must be prior to today
+        if (r.date >= todayStr) return false;
+
+        // 2. Must have check-in (روزی که اصلاً ورودی ثبت نشده نباید نمایش داده شود)
+        if (!r.checkIn || !r.checkIn.trim()) return false;
+
+        // 3. Must be missing check-out
+        if (r.checkOut && r.checkOut.trim()) return false;
+
+        // 4. Must NOT be Friday (جمعه)
+        const weekday = getJalaliWeekdayIndex(r.date);
+        if (weekday === 6 || r.dayOfWeek === 6 || r.status === 'weekend') return false;
+
+        // 5. Must NOT be an official holiday (تعطیلات رسمی)
+        const { jy, jm, jd } = parseJalaliDate(r.date);
+        const holidayInfo = checkOfficialHoliday(jy, jm, jd);
+        if (holidayInfo.isHoliday || r.isHoliday || r.status === 'holiday') return false;
+
+        // 6. Must NOT be full day leave (روز مرخصی کامل)
+        const isThursday = weekday === 5;
+        const isThursdayHalfDay = isThursday && config.thursdayStatus === 'half_day';
+        const dayLeaves = leaves.filter((l) => l.date === r.date);
+        const hasFullDayLeave =
+          r.status === 'leave' ||
+          dayLeaves.some(
+            (l) =>
+              l.type === 'daily' ||
+              l.type === 'sick' ||
+              l.type === 'unpaid' ||
+              (isThursdayHalfDay && l.type === 'half_day')
+          );
+        if (hasFullDayLeave) return false;
+
+        return true;
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    return unclosed[0] || null;
+  }, [records, todayStr, leaves, config.thursdayStatus]);
+
+  const showMissingCheckoutBanner = Boolean(
+    unclosedPreviousRecord &&
+    dismissedMissingCheckoutDate !== unclosedPreviousRecord.date
+  );
 
   const isWorkingNow = Boolean(todayRecord && todayRecord.checkIn && !todayRecord.checkOut);
 
@@ -248,9 +321,50 @@ function DashboardApp() {
     return currentRecords;
   };
 
+  // Undo State & Handler (targets only the single record for the punch date)
+  interface UndoPunchState {
+    message: string;
+    targetDate: string;
+    previousRecordForDate: AttendanceRecord | null;
+    id: number;
+  }
+
+  const [undoState, setUndoState] = useState<UndoPunchState | null>(null);
+
+  useEffect(() => {
+    if (!undoState) return;
+    const timer = setTimeout(() => {
+      setUndoState(null);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [undoState]);
+
+  const handleUndoLastPunch = () => {
+    if (!undoState) return;
+    const { targetDate, previousRecordForDate } = undoState;
+    setRecords((currentRecords) => {
+      let updated: AttendanceRecord[];
+      if (!previousRecordForDate) {
+        // Record did not exist prior to punch: remove only this day's record
+        updated = currentRecords.filter((r) => r.date !== targetDate);
+      } else {
+        // Record existed: restore only this single day's previous record
+        const exists = currentRecords.some((r) => r.date === targetDate);
+        updated = exists
+          ? currentRecords.map((r) => (r.date === targetDate ? previousRecordForDate : r))
+          : [previousRecordForDate, ...currentRecords];
+      }
+      saveAttendanceRecords(updated, userId);
+      triggerAutoSync(updated, leaves, config);
+      return updated;
+    });
+    setUndoState(null);
+  };
+
   // 1. Clock in today
   const handleCheckIn = (time: string) => {
     let existing = records.find((r) => r.date === todayStr);
+    const prevSnapshotForToday = existing ? { ...existing } : null;
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
@@ -271,6 +385,13 @@ function DashboardApp() {
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
     triggerAutoSync(updatedList, leaves, config);
+
+    setUndoState({
+      message: `ورود ساعت ${toPersianDigits(time)} ثبت شد`,
+      targetDate: todayStr,
+      previousRecordForDate: prevSnapshotForToday,
+      id: Date.now(),
+    });
   };
 
   // 2. Clock out today
@@ -278,6 +399,7 @@ function DashboardApp() {
     let existing = records.find((r) => r.date === todayStr);
     if (!existing) return;
 
+    const prevSnapshotForToday = { ...existing };
     const dayLeaves = leaves.filter((l) => l.date === todayStr);
     const updatedRecord = calculateAttendanceMetrics(
       {
@@ -294,11 +416,47 @@ function DashboardApp() {
     setRecords(updatedList);
     saveAttendanceRecords(updatedList, userId);
     triggerAutoSync(updatedList, leaves, config);
+
+    setUndoState({
+      message: `خروج ساعت ${toPersianDigits(time)} ثبت شد`,
+      targetDate: todayStr,
+      previousRecordForDate: prevSnapshotForToday,
+      id: Date.now(),
+    });
+  };
+
+  // Mobile Thumb-Zone Punch Handler with Confirmation Guard for Checkout
+  const [checkoutConfirmActive, setCheckoutConfirmActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!checkoutConfirmActive) return;
+    const timer = setTimeout(() => {
+      setCheckoutConfirmActive(false);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [checkoutConfirmActive]);
+
+  const handleMobilePunch = () => {
+    const curTime = getCurrentTimeString(false);
+    if (!todayRecord?.checkIn) {
+      handleCheckIn(curTime);
+    } else if (todayRecord.checkIn && !todayRecord.checkOut) {
+      if (!checkoutConfirmActive) {
+        setCheckoutConfirmActive(true);
+      } else {
+        setCheckoutConfirmActive(false);
+        const defaultBreak = todayRecord.dayOfWeek === 5 ? 0 : (config.defaultBreakMinutes ?? 30);
+        handleCheckOut(curTime, defaultBreak);
+      }
+    }
   };
 
   // 3. Reset today
   const handleResetToday = () => {
     if (window.confirm('آیا از بازنشانی ثبت ورود/خروج امروز مطمئن هستید؟')) {
+      if (undoState && undoState.targetDate === todayStr) {
+        setUndoState(null);
+      }
       const updatedList = records.filter((r) => r.date !== todayStr);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
@@ -309,6 +467,10 @@ function DashboardApp() {
   // 4. Save manual record (create or edit)
   const handleSaveManualRecord = (data: Partial<AttendanceRecord>) => {
     if (!data.date) return;
+
+    if (undoState && data.date === undoState.targetDate) {
+      setUndoState(null);
+    }
 
     const dayLeaves = leaves.filter((l) => l.date === data.date);
     const calculated = calculateAttendanceMetrics(data as any, config, dayLeaves);
@@ -332,6 +494,10 @@ function DashboardApp() {
   // 5. Delete record
   const handleDeleteRecord = (id: string) => {
     if (window.confirm('آیا از حذف این تردد مطمئن هستید؟')) {
+      const targetRec = records.find((r) => r.id === id);
+      if (undoState && targetRec?.date === undoState.targetDate) {
+        setUndoState(null);
+      }
       const updatedList = records.filter((r) => r.id !== id);
       setRecords(updatedList);
       saveAttendanceRecords(updatedList, userId);
@@ -341,6 +507,9 @@ function DashboardApp() {
 
   // 6. Leaves management
   const handleAddLeave = (leaveData: Omit<LeaveRecord, 'id' | 'createdAt'>) => {
+    if (undoState && leaveData.date === undoState.targetDate) {
+      setUndoState(null);
+    }
     const newLeave: LeaveRecord = {
       ...leaveData,
       id: `leave_${Date.now()}`,
@@ -357,6 +526,9 @@ function DashboardApp() {
   };
 
   const handleUpdateLeave = (updatedLeave: LeaveRecord) => {
+    if (undoState && updatedLeave.date === undoState.targetDate) {
+      setUndoState(null);
+    }
     const updatedLeaves = leaves.map((l) => (l.id === updatedLeave.id ? updatedLeave : l));
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves, userId);
@@ -370,6 +542,9 @@ function DashboardApp() {
   const handleDeleteLeave = (id: string) => {
     const targetLeave = leaves.find((l) => l.id === id);
     const dateStr = targetLeave?.date;
+    if (undoState && dateStr === undoState.targetDate) {
+      setUndoState(null);
+    }
     const updatedLeaves = leaves.filter((l) => l.id !== id);
     setLeaves(updatedLeaves);
     saveLeaveRecords(updatedLeaves, userId);
@@ -405,13 +580,9 @@ function DashboardApp() {
     const storedRecs = getStoredAttendanceRecords(userId);
     const storedLeaves = getStoredLeaveRecords(userId);
     const storedCfg = getStoredShiftConfig(userId);
-    const storedProfile = getStoredUserProfile(userId);
-    const storedPrefs = getStoredUserPreferences(userId);
     setRecords(storedRecs);
     setLeaves(storedLeaves);
     setConfig(storedCfg);
-    setUserProfile(storedProfile);
-    setUserPreferences(storedPrefs);
     triggerAutoSync(storedRecs, storedLeaves, storedCfg);
   };
 
@@ -426,41 +597,17 @@ function DashboardApp() {
   };
 
   return (
-    <div
-      data-theme={currentTheme}
-      className="min-h-screen flex flex-col font-sans bg-[#F7F7F2] text-[#1F2933] transition-colors duration-300"
-    >
-      {/* Unified Nordic Navigation Dock (Desktop Vertical Sidebar + Mobile Floating Capsule) */}
-      <BottomCapsuleDock
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        onOpenManualEntry={() => {
-          setEditingRecord(null);
-          setIsManualModalOpen(true);
-        }}
-        onOpenSettings={() => {
-          handleTabChange('settings');
-        }}
-        currentTheme={currentTheme}
-        onSelectTheme={handleSelectTheme}
-        onOpenBackup={() => setIsBackupModalOpen(true)}
-        onOpenChangePassword={() => setIsChangePasswordOpen(true)}
-        onOpenStorageMode={() => setIsStorageModalOpen(true)}
-        isWorkingNow={isWorkingNow}
-      />
+    <div data-theme={effectiveTheme} className="relative min-h-screen flex flex-col font-sans transition-colors duration-300">
+      {/* Dynamic Fluid Mesh Background Engine */}
+      <LiquidMeshBackground />
 
-      {/* Nordic Clean Header */}
+      {/* Top Navigation Bar with Tabs & User Profile */}
       <Navbar
         activeTab={activeTab}
-        onTabChange={handleTabChange}
-        currentTheme={currentTheme}
-        onSelectTheme={handleSelectTheme}
+        onTabChange={setActiveTab}
         onOpenManualEntry={() => {
           setEditingRecord(null);
           setIsManualModalOpen(true);
-        }}
-        onOpenSettings={() => {
-          handleTabChange('settings');
         }}
         onOpenBackup={() => setIsBackupModalOpen(true)}
         onOpenChangePassword={() => setIsChangePasswordOpen(true)}
@@ -468,59 +615,152 @@ function DashboardApp() {
         isWorkingNow={isWorkingNow}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        userProfile={userProfile}
       />
 
-      {/* Main Content Area: pb-32 sm:pb-28 ensures bottom floating capsule dock never overlaps content */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 pb-32 sm:pb-28 space-y-6">
+      {/* Main Content Area: padded at bottom for the bottom floating dock */}
+      <main className="flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 py-4 sm:py-6 pb-28 sm:pb-24">
         {/* Tab 1: Dashboard */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-4 sm:space-y-6 tab-transition">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+            {/* Warning Banner: Missing Previous Day Check-Out */}
+            {showMissingCheckoutBanner && unclosedPreviousRecord && (
+              <aside
+                role="alert"
+                aria-label="هشدار خروج ثبت نشده روز گذشته"
+                className="rounded-[24px] border border-[var(--semantic-warning)]/40 bg-[var(--surface-2)]/90 backdrop-blur-xl p-3.5 sm:p-4 text-text shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-3 duration-300"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="rounded-xl bg-[var(--semantic-warning)]/15 p-2 text-[var(--semantic-warning)] border border-[var(--semantic-warning)]/30 shrink-0 shadow-sm">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--semantic-warning)]">
+                      خروج روز {toPersianDigits(unclosedPreviousRecord.date)} ثبت نشده است
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-muted font-medium mt-0.5">
+                      ورود در ساعت <strong className="font-mono text-text">{toPersianDigits(unclosedPreviousRecord.checkIn || '')}</strong> ثبت شده اما خروج آن ثبت نشده است.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingRecord(unclosedPreviousRecord);
+                      setIsManualModalOpen(true);
+                    }}
+                    className="liquid-pill-btn-primary px-4 py-2 text-xs active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
+                  >
+                    <span>تکمیل دستی</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedMissingCheckoutDate(unclosedPreviousRecord.date)}
+                    className="text-muted hover:text-text p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
+                    title="بستن موقت"
+                    aria-label="بستن موقت هشدار"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </aside>
+            )}
+
+            {/* Cloud Sync Error Banner with Non-Blocking Retry */}
+            {cloudSyncError && (
+              <aside
+                role="status"
+                aria-live="polite"
+                className="rounded-[24px] border border-[var(--semantic-danger)]/40 bg-[var(--surface-2)]/90 backdrop-blur-xl p-3.5 sm:p-4 text-text shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="rounded-xl bg-[var(--semantic-danger)]/15 p-2 text-[var(--semantic-danger)] border border-[var(--semantic-danger)]/30 shrink-0 shadow-sm">
+                    <CloudOff className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs sm:text-sm font-bold text-[var(--semantic-danger)]">
+                      عدم همگام‌سازی با فضای ابری
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-muted font-medium mt-0.5">
+                      {cloudSyncError}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRetryCloudSync}
+                    disabled={isRetryingSync}
+                    className="rounded-full bg-[var(--semantic-danger)]/20 hover:bg-[var(--semantic-danger)]/30 text-[var(--semantic-danger)] border border-[var(--semantic-danger)]/40 font-bold px-4 py-2 text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--focus)] disabled:opacity-60"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isRetryingSync ? 'animate-spin' : ''}`} />
+                    <span>{isRetryingSync ? 'در حال ارسال...' : 'تلاش مجدد'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCloudSyncError(null)}
+                    className="text-muted hover:text-text p-2 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
+                    title="بستن پیام خطا"
+                    aria-label="بستن پیام خطا"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </aside>
+            )}
+
             {/* Live Clock Card */}
             <section aria-label="ثبت زنده تردد">
-              <ClockCard
-                todayRecord={todayRecord}
-                config={config}
-                onCheckIn={handleCheckIn}
-                onCheckOut={handleCheckOut}
-                onResetToday={handleResetToday}
-                onOpenEdit={() => {
-                  setEditingRecord(todayRecord || ({ date: todayStr } as any));
-                  setIsManualModalOpen(true);
-                }}
-                enableEffects={userPreferences.enableSoundEffects}
-              />
+              {isDataLoading ? (
+                <ClockCardSkeleton />
+              ) : (
+                <ClockCard
+                  todayRecord={todayRecord}
+                  config={config}
+                  onCheckIn={handleCheckIn}
+                  onCheckOut={handleCheckOut}
+                  onResetToday={handleResetToday}
+                  onOpenEdit={() => {
+                    setEditingRecord(todayRecord || ({ date: todayStr } as any));
+                    setIsManualModalOpen(true);
+                  }}
+                />
+              )}
             </section>
 
             {/* Quick KPI Stats Summary */}
             <section aria-label="خلاصه آماری ماه جاری">
-              <StatsCards
-                stats={monthlyStats}
-                monthName={selectedMonthName}
-                year={selectedYear}
-              />
+              {isDataLoading ? (
+                <StatsCardsSkeleton />
+              ) : (
+                <StatsCards
+                  stats={monthlyStats}
+                  monthName={selectedMonthName}
+                  year={selectedYear}
+                />
+              )}
             </section>
 
-            {/* Smart Solar Hijri Calendar & Charts switcher */}
+            {/* Smart Solar Hijri Calendar (Prominent Centerpiece replacing charts) */}
             <section aria-label="تقویم شمسی هوشمند و برنامه کاری">
               <div className="flex items-center justify-between mb-2 px-1">
                 <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-[#A68A64] animate-pulse" />
-                  <span className="text-xs sm:text-sm font-bold text-[#1F2933]">
-                    {dashboardView === 'calendar'
-                      ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی'
-                      : 'نمودارهای آماری کارکرد'}
+                  <div className="h-2.5 w-2.5 rounded-full bg-[var(--accent)] animate-pulse shadow-sm" />
+                  <span className="text-xs sm:text-sm font-bold text-text">
+                    {dashboardView === 'calendar' ? 'تقویم هوشمند شمسی ماه جاری با تعطیلات رسمی' : 'نمودارهای آماری کارکرد'}
                   </span>
                 </div>
 
                 {/* View switcher between Calendar and Charts */}
-                <div className="flex items-center gap-1 rounded-2xl border border-[#D1D5DB] bg-white p-1 shadow-sm text-xs">
+                <div className="flex items-center gap-1 rounded-full border border-[var(--border-strong)] bg-[var(--surface-2)] backdrop-blur-xl p-1 shadow-inner text-xs">
                   <button
                     onClick={() => setDashboardView('calendar')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold transition-all ${
                       dashboardView === 'calendar'
-                        ? 'bg-[#A68A64] text-white shadow-sm'
-                        : 'text-[#6B7280] hover:text-[#1F2933]'
+                        ? 'liquid-pill-btn-primary shadow-md'
+                        : 'text-muted hover:text-text hover:bg-[var(--surface)]'
                     }`}
                   >
                     <Calendar className="h-3.5 w-3.5" />
@@ -528,10 +768,10 @@ function DashboardApp() {
                   </button>
                   <button
                     onClick={() => setDashboardView('charts')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold transition-all ${
                       dashboardView === 'charts'
-                        ? 'bg-[#A68A64] text-white shadow-sm'
-                        : 'text-[#6B7280] hover:text-[#1F2933]'
+                        ? 'liquid-pill-btn-primary shadow-md'
+                        : 'text-muted hover:text-text hover:bg-[var(--surface)]'
                     }`}
                   >
                     <TrendingUp className="h-3.5 w-3.5" />
@@ -587,7 +827,7 @@ function DashboardApp() {
 
         {/* Tab 2: Timesheet Table */}
         {activeTab === 'timesheet' && (
-          <div className="space-y-4 sm:space-y-6 tab-transition">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <AttendanceTable
               records={records}
               selectedYear={selectedYear}
@@ -605,39 +845,13 @@ function DashboardApp() {
                 setIsManualModalOpen(true);
               }}
               onExportExcel={handleExportExcel}
-              initialViewMode={userPreferences.defaultViewMode}
             />
           </div>
         )}
 
-        {/* Tab 3: Dedicated Full-page Calendar */}
-        {activeTab === 'calendar' && (
-          <div className="space-y-4 sm:space-y-6 tab-transition">
-            <PersianCalendar
-              records={records}
-              leaves={leaves}
-              config={config}
-              selectedYear={selectedYear}
-              selectedMonth={selectedMonth}
-              onYearChange={setSelectedYear}
-              onMonthChange={setSelectedMonth}
-              onOpenManualEntryForDate={(dateStr) => {
-                const existing = records.find((r) => r.date === dateStr);
-                setEditingRecord(existing || ({ date: dateStr } as any));
-                setIsManualModalOpen(true);
-              }}
-              onOpenLeaveForDate={(dateStr) => {
-                setEditingLeave({ date: dateStr } as any);
-                setIsLeaveModalOpen(true);
-              }}
-              onDeleteRecord={handleDeleteRecord}
-            />
-          </div>
-        )}
-
-        {/* Tab 4: Leaves Management */}
+        {/* Tab 3: Leaves Management */}
         {activeTab === 'leaves' && (
-          <div className="space-y-4 sm:space-y-6 tab-transition">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <LeavesTab
               leaves={leaves.filter((l) =>
                 l.date.startsWith(`${selectedYear}/${selectedMonth < 10 ? '0' + selectedMonth : selectedMonth}/`)
@@ -658,9 +872,9 @@ function DashboardApp() {
           </div>
         )}
 
-        {/* Tab 5: Comprehensive Reports */}
+        {/* Tab 4: Comprehensive Reports */}
         {activeTab === 'reports' && (
-          <div className="space-y-4 sm:space-y-6 tab-transition">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
             <ReportsTab
               stats={monthlyStats}
               records={records}
@@ -672,26 +886,142 @@ function DashboardApp() {
           </div>
         )}
 
-        {/* Tab 6: Dedicated Full-page Settings */}
+        {/* Tab 5: Professional Independent Settings Page */}
         {activeTab === 'settings' && (
-          <div className="tab-transition">
+          <div className="animate-in fade-in duration-200">
             <SettingsPage
               config={config}
               onSaveConfig={handleSaveConfig}
-              currentTheme={currentTheme}
-              onSelectTheme={handleSelectTheme}
+              onBackToDashboard={() => setActiveTab('dashboard')}
               records={records}
               leaves={leaves}
               onDataRestored={handleDataRestored}
               onResetAllData={handleResetAllData}
-              onOpenStorageMode={() => setIsStorageModalOpen(true)}
-              onOpenChangePassword={() => setIsChangePasswordOpen(true)}
-              onProfileChange={setUserProfile}
-              onPreferencesChange={setUserPreferences}
+              onExportExcel={handleExportExcel}
+              onTriggerSync={handleTriggerSync}
+              onTriggerPull={handleTriggerPull}
             />
           </div>
         )}
       </main>
+
+      {/* Mobile Floating Thumb-Zone Punch Bar (< 768px, positioned with fixed gap above bottom dock) */}
+      {activeTab === 'dashboard' && (
+        <aside
+          aria-label="ثبت سریع تردد"
+          className="md:hidden fixed bottom-[4.75rem] inset-x-0 z-30 px-3 py-1.5 pointer-events-none print:hidden"
+        >
+          <div className="mx-auto max-w-sm pointer-events-auto">
+            {!todayRecord?.checkIn ? (
+              /* State A: Ready to Check In (Single-tap immediate punch) */
+              <button
+                type="button"
+                onClick={handleMobilePunch}
+                className="liquid-pill-btn-primary w-full min-h-[48px] h-12 rounded-full px-5 text-sm font-black shadow-xl flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
+              >
+                <LogIn className="h-5 w-5 shrink-0" />
+                <span>ثبت ورود</span>
+                <span className="text-xs font-mono font-medium opacity-90">
+                  ({toPersianDigits(getCurrentTimeString(false))})
+                </span>
+              </button>
+            ) : !todayRecord.checkOut ? (
+              /* State B: Checked In (Checkout flow with confirmation guard) */
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleMobilePunch}
+                  className={`flex-1 min-h-[48px] h-12 rounded-full px-4 text-xs sm:text-sm font-black shadow-xl border backdrop-blur-xl flex items-center justify-center gap-2 active:scale-[0.97] transition-all ${
+                    checkoutConfirmActive
+                      ? 'bg-[var(--semantic-danger)] text-[var(--accent-contrast)] border-[var(--border-strong)] shadow-lg animate-pulse'
+                      : 'bg-[var(--surface-2)] text-text border-[var(--border-strong)] hover:border-[var(--accent)] shadow-md'
+                  }`}
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  <span>
+                    {checkoutConfirmActive ? 'تأیید ثبت خروج؟ لمس مجدد' : 'ثبت خروج'}
+                  </span>
+                </button>
+
+                {checkoutConfirmActive && (
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutConfirmActive(false)}
+                    className="min-h-[48px] h-12 min-w-[48px] px-3.5 rounded-full bg-[var(--surface-2)] text-muted hover:text-text border border-[var(--border-strong)] backdrop-blur-xl text-xs font-bold active:scale-95 transition-all flex items-center justify-center"
+                    aria-label="انصراف از خروج"
+                    title="انصراف"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* State C: Both punches completed (Disabled state) */
+              <button
+                type="button"
+                disabled
+                className="w-full min-h-[48px] h-12 rounded-full bg-[var(--surface-2)] text-[var(--semantic-success)] border border-[var(--semantic-success)]/40 backdrop-blur-xl px-5 text-xs font-bold flex items-center justify-center gap-2 opacity-80 cursor-not-allowed shadow-md"
+              >
+                <CheckCircle className="h-4 w-4 text-[var(--semantic-success)] shrink-0" />
+                <span>حضور امروز کامل شد</span>
+              </button>
+            )}
+          </div>
+        </aside>
+      )}
+
+      {/* Floating Capsule Bottom Dock (Unified desktop & mobile navigation) */}
+      <BottomCapsuleDock
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
+
+      {/* 8-Second Accessible Undo Toast Snackbar */}
+      {undoState && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-36 md:bottom-24 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-md animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto print:hidden"
+        >
+          <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-2)]/95 border border-[var(--border-strong)] p-3 sm:p-3.5 shadow-2xl backdrop-blur-2xl flex items-center justify-between gap-3 text-text">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="rounded-xl bg-[var(--semantic-success)]/15 p-1.5 text-[var(--semantic-success)] border border-[var(--semantic-success)]/30 shrink-0">
+                <CheckCircle className="h-4 w-4 text-[var(--semantic-success)]" />
+              </div>
+              <span className="text-xs sm:text-sm font-semibold truncate text-text">
+                {undoState.message}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleUndoLastPunch}
+                className="liquid-pill-btn-primary px-3.5 py-1.5 text-xs transition-all shadow-md active:scale-95 flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>بازگردانی</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUndoState(null)}
+                className="text-muted hover:text-text p-1 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--focus)]"
+                aria-label="بستن اعلان"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Visual 8-second progress line */}
+            <div className="absolute bottom-0 inset-x-0 h-1 bg-[var(--border-strong)]/30 overflow-hidden">
+              <div
+                key={undoState.id}
+                className="h-full bg-[var(--accent)] animate-shrink-8s"
+              />
+            </div>
+          </div>
+        </aside>
+      )}
 
       {/* Modals */}
       <ManualEntryModal
@@ -702,6 +1032,9 @@ function DashboardApp() {
         }}
         onSave={handleSaveManualRecord}
         initialRecord={editingRecord}
+        existingRecords={records}
+        leaves={leaves}
+        config={config}
       />
 
       <LeaveModal
@@ -720,7 +1053,6 @@ function DashboardApp() {
         monthlyQuotaDays={config.monthlyLeaveDays || 2.5}
         todayRecord={todayRecord}
         shiftConfig={config}
-        initialLeave={editingLeave}
       />
 
       <BackupModal
@@ -740,6 +1072,10 @@ function DashboardApp() {
         onClose={() => setIsStorageModalOpen(false)}
         onTriggerSync={handleTriggerSync}
         onTriggerPull={handleTriggerPull}
+        onOpenBackup={() => {
+          setIsStorageModalOpen(false);
+          setIsBackupModalOpen(true);
+        }}
       />
     </div>
   );
@@ -749,7 +1085,23 @@ function AppWithAuth() {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return null;
+    return (
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-4 text-text overflow-hidden">
+        <LiquidMeshBackground />
+        <div className="relative liquid-glass p-8 rounded-[32px] flex flex-col items-center max-w-sm w-full text-center shadow-2xl border border-[var(--border-strong)]">
+          <div className="relative flex items-center justify-center mb-5">
+            <div className="h-16 w-16 rounded-2xl bg-[var(--accent)] text-[var(--accent-contrast)] flex items-center justify-center shadow-xl border border-[var(--border-strong)]">
+              <CalendarClock className="h-8 w-8 animate-pulse" />
+            </div>
+          </div>
+          <h3 className="text-base font-bold text-text mb-2">سامانه مدیریت هوشمند تردد</h3>
+          <div className="flex items-center gap-2 text-xs text-muted font-medium">
+            <span className="h-4 w-4 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" />
+            <span>در حال بررسی امنیت و بارگذاری داده‌ها...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -762,9 +1114,7 @@ function AppWithAuth() {
 export function App() {
   return (
     <AuthProvider>
-      <LoadingProvider>
-        <AppWithAuth />
-      </LoadingProvider>
+      <AppWithAuth />
     </AuthProvider>
   );
 }

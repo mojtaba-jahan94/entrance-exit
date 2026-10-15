@@ -1,9 +1,10 @@
 import React from 'react';
 import {
   Clock,
-  Scale,
+  TrendingUp,
   AlertCircle,
   Coffee,
+  Scale,
   Banknote,
 } from 'lucide-react';
 import { MonthlyStats } from '../types';
@@ -12,6 +13,7 @@ import {
   formatMinutesToTimeString,
   formatMinutesToPersianReadable,
 } from '../utils/jalali';
+import { LiquidGlassCard } from './LiquidGlassCard';
 
 interface StatsCardsProps {
   stats: MonthlyStats;
@@ -19,7 +21,7 @@ interface StatsCardsProps {
   year: number;
 }
 
-export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year: _year }) => {
+export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year }) => {
   const workedHours = (stats.totalWorkedMinutes / 60).toFixed(1);
   const requiredHours = (stats.totalRequiredMinutes / 60).toFixed(1);
   const totalMonthHours = stats.totalMonthRequiredMinutes
@@ -40,130 +42,141 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year: 
   const hasDelayOrEarly = totalDelayAndEarlyMins > 0;
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {/* Bento Grid: 2 columns on mobile, 4 columns on large screens */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* 1. کارکرد مفید ماه (Warm Wood Accent) */}
-        <div className="relative overflow-hidden rounded-[24px] border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#A68A64] flex flex-col justify-between">
+    <div className="space-y-2.5 sm:space-y-3">
+      {/* Bento Grid: 2 columns on mobile, 4 columns on large screens (Secondary priority) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {/* 1. کارکرد مفید ماه */}
+        <LiquidGlassCard
+          glowColor="rgba(166, 138, 100, 0.08)"
+          className="rounded-[22px] p-3.5 sm:p-4 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-[#6B7280] truncate">
-              کارکرد ماه {monthName}
-            </span>
-            <div className="rounded-xl bg-[#F5F0E6] p-2 text-[#A68A64] border border-[#A68A64]/30 shrink-0">
-              <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs font-semibold text-[var(--text)] truncate">کارکرد ماه {monthName}</span>
+            <div className="rounded-xl bg-[var(--accent)]/20 p-1.5 text-[var(--accent)] border border-[var(--accent)]/30 backdrop-blur-md shrink-0 shadow-sm">
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-1 sm:gap-2">
-            <span className="text-2xl sm:text-3xl font-black text-[#1F2933] font-mono tabular-nums">
+          <div className="mt-2.5 flex items-baseline gap-1 sm:gap-1.5">
+            <span className="text-xl sm:text-2xl font-black text-[var(--text)] font-mono tracking-tight">
               {toPersianDigits(workedHours)}
             </span>
-            <span className="text-[10px] sm:text-xs text-[#6B7280] truncate">
+            <span className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium truncate">
               ساعت از {toPersianDigits(requiredHours)}
             </span>
           </div>
 
           {/* Progress Bar & Sub-row */}
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#6B7280] mb-1">
+          <div className="mt-2.5">
+            <div className="flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] mb-1 font-semibold">
               <span>تحقق موظفی</span>
-              <span className="font-bold text-[#A68A64] font-mono">{toPersianDigits(stats.completionRate)}٪</span>
+              <span className="font-bold text-[var(--accent)] font-mono">{toPersianDigits(stats.completionRate)}٪</span>
             </div>
-            <div className="h-2 w-full rounded-full bg-[#F7F7F2] border border-[#D1D5DB]/60 overflow-hidden">
+            <div className="h-1.5 w-full rounded-full bg-[var(--surface-2)] overflow-hidden p-0.5 border border-[var(--border)]">
               <div
-                className="h-full rounded-full bg-[#A68A64] transition-all duration-500"
+                className="h-full rounded-full bg-[var(--accent)] transition-all duration-700 shadow-sm"
                 style={{ width: `${Math.min(100, stats.completionRate)}%` }}
               />
             </div>
             {stats.totalMonthRequiredMinutes && (
-              <div className="mt-2 flex items-center justify-between text-[10px] text-[#6B7280] border-t border-[#D1D5DB]/60 pt-1.5">
+              <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-[var(--text-muted)] border-t border-[var(--border)] pt-1.5 font-medium">
                 <span>کل موظفی تقویمی:</span>
-                <span className="font-mono text-[#1F2933] font-medium">{toPersianDigits(totalMonthHours)} ساعت</span>
+                <span className="font-mono text-[var(--text)] font-semibold">{toPersianDigits(totalMonthHours)} ساعت</span>
               </div>
             )}
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 2. تراز اضافه کاری و کارکرد خالص (Semantic Green / Red / Neutral) */}
-        <div className="relative overflow-hidden rounded-[24px] border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#A68A64] flex flex-col justify-between">
+        {/* 2. تراز اضافه کاری و کارکرد خالص */}
+        <LiquidGlassCard
+          glowColor="rgba(166, 138, 100, 0.08)"
+          className="rounded-[22px] p-3.5 sm:p-4 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-[#6B7280] truncate">تراز کارکرد</span>
+            <span className="text-xs font-semibold text-[var(--text)] truncate">تراز اضافه کار</span>
             <div
-              className={`rounded-xl p-2 border shrink-0 ${
+              className={`rounded-xl p-1.5 border shrink-0 backdrop-blur-md shadow-sm ${
                 isNetPositive
-                  ? 'bg-emerald-50 text-[#2E6F40] border-[#2E6F40]/30'
+                  ? 'bg-[var(--semantic-success)]/20 text-[var(--semantic-success)] border-[var(--semantic-success)]/35'
                   : isNetZero
-                  ? 'bg-[#F7F7F2] text-[#6B7280] border-[#D1D5DB]'
-                  : 'bg-rose-50 text-[#B91C1C] border-rose-200'
+                  ? 'bg-[var(--surface-2)] text-[var(--text-muted)] border-[var(--border)]'
+                  : 'bg-[var(--semantic-danger)]/20 text-[var(--semantic-danger)] border-[var(--semantic-danger)]/35'
               }`}
             >
-              <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-1 sm:gap-2">
+          <div className="mt-2.5 flex items-baseline gap-1 sm:gap-1.5">
             <span
-              className={`text-2xl sm:text-3xl font-black font-mono tabular-nums ${
-                isNetPositive ? 'text-[#2E6F40]' : isNetZero ? 'text-[#1F2933]' : 'text-[#B91C1C]'
+              className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${
+                isNetPositive ? 'text-[var(--semantic-success)]' : isNetZero ? 'text-[var(--text)]' : 'text-[var(--semantic-danger)]'
               }`}
             >
-              {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}
-              {toPersianDigits(netBalanceHours)}
+              <bdi dir="ltr">
+                {isNetPositive ? '+' : stats.netBalanceMinutes < 0 ? '-' : ''}{toPersianDigits(netBalanceHours)}
+              </bdi>
             </span>
-            <span className="text-[10px] sm:text-xs text-[#6B7280] truncate">
+            <span className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium truncate">
               {isNetPositive ? 'ساعت مازاد' : isNetZero ? 'ساعت (سر‌به‌سر)' : 'ساعت کسری'}
             </span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-[10px] sm:text-xs text-[#6B7280] border-t border-[#D1D5DB]/60 pt-2">
-            <span className="flex items-center gap-1 truncate text-[#2E6F40] font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#2E6F40] shrink-0" />
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2">
+            <span className="flex items-center gap-1.5 truncate text-[var(--semantic-success)] font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--semantic-success)] shrink-0 shadow-sm" />
               اضافه: {toPersianDigits(totalOvertimeHours)}س
             </span>
             <span
-              className={`flex items-center gap-1 truncate font-medium ${
-                hasDeficit ? 'text-[#B91C1C]' : 'text-[#6B7280]'
+              className={`flex items-center gap-1.5 truncate font-bold ${
+                hasDeficit ? 'text-[var(--semantic-danger)]' : 'text-[var(--text-muted)] font-medium'
               }`}
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                  hasDeficit ? 'bg-[#B91C1C]' : 'bg-[#D1D5DB]'
+                  hasDeficit ? 'bg-[var(--semantic-danger)] shadow-sm' : 'bg-[var(--border-strong)]'
                 }`}
               />
               کسر کار: {toPersianDigits(deficitHours)}س
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 3. تاخیر و تعجیل (Semantic Amber / Green) */}
-        <div className="relative overflow-hidden rounded-[24px] border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#A68A64] flex flex-col justify-between">
+        {/* 3. تاخیر و تعجیل */}
+        <LiquidGlassCard
+          glowColor="rgba(166, 138, 100, 0.08)"
+          className="rounded-[22px] p-3.5 sm:p-4 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-[#6B7280] truncate">تاخیر و تعجیل</span>
+            <span className="text-xs font-semibold text-[var(--text)] truncate">تاخیر و تعجیل</span>
             <div
-              className={`rounded-xl p-2 border shrink-0 ${
+              className={`rounded-xl p-1.5 border shrink-0 backdrop-blur-md shadow-sm ${
                 hasDelayOrEarly
-                  ? 'bg-amber-50 text-[#D97706] border-amber-200'
-                  : 'bg-emerald-50 text-[#2E6F40] border-[#2E6F40]/30'
+                  ? 'bg-[var(--semantic-warning)]/20 text-[var(--semantic-warning)] border-[var(--semantic-warning)]/35'
+                  : 'bg-[var(--semantic-success)]/20 text-[var(--semantic-success)] border-[var(--semantic-success)]/35'
               }`}
             >
-              <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              <AlertCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-1 sm:gap-2">
+          <div className="mt-2.5 flex items-baseline gap-1 sm:gap-1.5">
             <span
-              className={`text-2xl sm:text-3xl font-black font-mono tabular-nums ${
-                hasDelayOrEarly ? 'text-[#D97706]' : 'text-[#2E6F40]'
+              className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${
+                hasDelayOrEarly ? 'text-[var(--semantic-warning)]' : 'text-[var(--semantic-success)]'
               }`}
             >
               {toPersianDigits(totalDelayAndEarlyMins)}
             </span>
-            <span className="text-[10px] sm:text-xs text-[#6B7280] truncate">
+            <span className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium truncate">
               {hasDelayOrEarly ? 'دقیقه مجموع' : 'دقیقه (بدون تاخیر)'}
             </span>
             {totalDelayAndEarlyMins >= 60 && (
               <span
-                className="text-[10px] sm:text-xs text-[#6B7280] font-mono truncate"
+                className="text-[11px] text-[var(--text-muted)] font-mono font-medium truncate"
                 title={formatMinutesToPersianReadable(totalDelayAndEarlyMins)}
               >
                 ({toPersianDigits(formatMinutesToTimeString(totalDelayAndEarlyMins))})
@@ -171,40 +184,40 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year: 
             )}
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-[10px] sm:text-xs text-[#6B7280] border-t border-[#D1D5DB]/60 pt-2">
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2">
             <span
-              className={`truncate ${
-                stats.totalDelayMinutes > 0 ? 'text-[#D97706] font-medium' : 'text-[#6B7280]'
-              }`}
+              className={`truncate ${stats.totalDelayMinutes > 0 ? 'text-[var(--semantic-warning)] font-bold' : 'text-[var(--text-muted)] font-medium'}`}
             >
               تاخیر: {toPersianDigits(stats.totalDelayMinutes)}د
             </span>
             <span
-              className={`truncate ${
-                stats.totalEarlyLeaveMinutes > 0 ? 'text-[#D97706] font-medium' : 'text-[#6B7280]'
-              }`}
+              className={`truncate ${stats.totalEarlyLeaveMinutes > 0 ? 'text-[var(--semantic-warning)] font-bold' : 'text-[var(--text-muted)] font-medium'}`}
             >
               تعجیل: {toPersianDigits(stats.totalEarlyLeaveMinutes)}د
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
 
-        {/* 4. کاردکس مرخصی (Warm Wood Coffee) */}
-        <div className="relative overflow-hidden rounded-[24px] border border-[#D1D5DB] bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#A68A64] flex flex-col justify-between">
+        {/* 4. کاردکس مرخصی */}
+        <LiquidGlassCard
+          glowColor="rgba(166, 138, 100, 0.08)"
+          className="rounded-[22px] p-3.5 sm:p-4 flex flex-col justify-between"
+        >
+          <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent" />
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-semibold text-[#6B7280] truncate">مانده مرخصی</span>
-            <div className="rounded-xl bg-[#F5F0E6] p-2 text-[#A68A64] border border-[#A68A64]/30 shrink-0">
-              <Coffee className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs font-semibold text-[var(--text)] truncate">مانده مرخصی</span>
+            <div className="rounded-xl bg-[var(--accent)]/20 p-1.5 text-[var(--accent)] border border-[var(--accent)]/35 backdrop-blur-md shrink-0 shadow-sm">
+              <Coffee className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-1 sm:gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-[#1F2933] font-mono tabular-nums">
+          <div className="mt-2.5 flex items-baseline gap-1 sm:gap-1.5">
+            <span className="text-xl sm:text-2xl font-black text-[var(--accent)] font-mono tracking-tight">
               {toPersianDigits(stats.remainingLeaveDays.toFixed(1))}
             </span>
-            <span className="text-[10px] sm:text-xs text-[#6B7280] font-semibold">روز</span>
+            <span className="text-[11px] sm:text-xs text-[var(--text)] font-bold">روز</span>
             <span
-              className="text-[9px] sm:text-xs text-[#6B7280] font-mono truncate"
+              className="text-[11px] text-[var(--text-muted)] font-mono font-medium truncate"
               title={
                 stats.remainingLeaveMinutes !== undefined
                   ? formatMinutesToPersianReadable(stats.remainingLeaveMinutes)
@@ -219,29 +232,32 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats, monthName, year: 
             </span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-[10px] sm:text-xs text-[#6B7280] border-t border-[#D1D5DB]/60 pt-2">
+          <div className="mt-2.5 flex items-center justify-between text-[11px] sm:text-xs text-[var(--text-muted)] border-t border-[var(--border)] pt-2 font-medium">
             <span className="truncate">مصرف: {toPersianDigits(stats.totalLeaveDays.toFixed(1))} روز</span>
-            <span className="text-[#2E6F40] font-medium truncate">
+            <span className="text-[var(--semantic-success)] font-bold truncate">
               حضور: {toPersianDigits(stats.presentDaysCount)} روز
             </span>
           </div>
-        </div>
+        </LiquidGlassCard>
       </div>
 
-      {/* Optional Financial Summary Banner in Warm Wood Tint */}
+      {/* Optional Financial Summary Banner if salary estimate active */}
       {stats.estimatedOvertimePay !== undefined && stats.estimatedOvertimePay > 0 && (
-        <div className="flex items-center justify-between rounded-2xl bg-[#F5F0E6] p-3.5 border border-[#A68A64]/30 text-xs text-[#1F2933] shadow-sm">
-          <div className="flex items-center gap-2 text-[#1F2933]">
-            <Banknote className="h-4 w-4 text-[#A68A64]" />
-            <span className="font-medium">برآورد ارزش اضافه کاری این ماه (بر اساس نرخ تنظیمی شما):</span>
+        <LiquidGlassCard
+          variant="subtle"
+          className="rounded-[24px] p-4 flex items-center justify-between border-[var(--semantic-success)]/40 text-xs shadow-lg"
+        >
+          <div className="flex items-center gap-2.5 text-[var(--semantic-success)] font-medium">
+            <div className="rounded-xl bg-[var(--semantic-success)]/20 p-1.5 border border-[var(--semantic-success)]/30">
+              <Banknote className="h-4 w-4" />
+            </div>
+            <span>برآورد ارزش ریالی اضافه کاری این ماه (بر اساس نرخ تنظیمی شما):</span>
           </div>
-          <div className="font-mono text-sm sm:text-base font-bold text-[#2E6F40]">
+          <div className="font-mono text-base font-black text-[var(--semantic-success)]">
             {toPersianDigits(stats.estimatedOvertimePay.toLocaleString())} تومان
           </div>
-        </div>
+        </LiquidGlassCard>
       )}
     </div>
   );
 };
-
-export default StatsCards;

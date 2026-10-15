@@ -91,9 +91,13 @@ export interface MonthlyStats {
   presentDaysCount: number;
   absentDaysCount: number;
   leaveDaysCount: number;
+  workingDaysCount: number; // تعداد روزهای کاری موظف در ماه
+  monthTotalDays: number; // کل روزهای تقویمی ماه
   completionRate: number; // Percentage 0 - 100
   estimatedOvertimePay?: number; // برآورد ریالی اضافه کار (در صورت تعیین دستمزد)
 }
+
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
 
 export interface User {
   id: string;
@@ -117,20 +121,6 @@ export interface SyncState {
   lastSyncedAt: string | null;
   isSyncing: boolean;
   syncError: string | null;
-}
-
-export interface UserProfileInfo {
-  employeeName: string;
-  roleTitle: string;
-  personnelId: string;
-  department: string;
-  avatarColor?: string;
-}
-
-export interface UserPreferences {
-  defaultViewMode: 'table' | 'card';
-  enableNotifications: boolean;
-  enableSoundEffects: boolean;
 }
 
 

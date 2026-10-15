@@ -1,14 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   CalendarClock,
+  LayoutDashboard,
+  Table as TableIcon,
+  Coffee,
+  TrendingUp,
+  PlusCircle,
+  Database,
   Search,
   Bell,
   LogOut,
   KeyRound,
   ShieldCheck,
-  Database,
-  Lock,
   HardDrive,
+  Lock,
   X,
   Sparkles,
   Settings,
@@ -19,49 +24,32 @@ import {
   getJalaliWeekdayName,
   toPersianDigits,
 } from '../utils/jalali';
-import { AppTheme } from '../utils/theme';
-import { UserProfileInfo } from '../types';
-import { ThemeSelector } from './ThemeSelector';
 import { useAuth } from '../context/AuthContext';
 
-export type ActiveTab =
-  | 'dashboard'
-  | 'timesheet'
-  | 'calendar'
-  | 'leaves'
-  | 'reports'
-  | 'settings';
+export type ActiveTab = 'dashboard' | 'timesheet' | 'leaves' | 'reports' | 'settings';
 
 interface NavbarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
-  currentTheme: AppTheme;
-  onSelectTheme: (theme: AppTheme) => void;
   onOpenManualEntry: () => void;
-  onOpenSettings: () => void;
   onOpenBackup: () => void;
   onOpenChangePassword?: () => void;
   onOpenStorageMode?: () => void;
   isWorkingNow?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
-  userProfile?: UserProfileInfo;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  activeTab: _activeTab,
-  onTabChange: _onTabChange,
-  currentTheme,
-  onSelectTheme,
-  onOpenManualEntry: _onOpenManualEntry,
-  onOpenSettings: _onOpenSettings,
+  activeTab,
+  onTabChange,
+  onOpenManualEntry,
   onOpenBackup,
   onOpenChangePassword,
   onOpenStorageMode,
   isWorkingNow,
   searchQuery = '',
   onSearchChange,
-  userProfile,
 }) => {
   const { user, logout, dbStatus, storageMode } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
@@ -69,9 +57,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showNotificationToast, setShowNotificationToast] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const todayStr = getTodayJalaliString();
-  const weekdayName = getJalaliWeekdayName(todayStr);
+  const todayStr = useMemo(() => getTodayJalaliString(), []);
+  const weekdayName = useMemo(() => getJalaliWeekdayName(todayStr), [todayStr]);
 
+  // Live second clock update
   useEffect(() => {
     const timer = setInterval(() => {
       setLiveTime(getCurrentTimeString(true));
@@ -90,111 +79,163 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const greeting = React.useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return 'صبح بخیر';
-    if (hour >= 12 && hour < 17) return 'ظهر بخیر';
-    if (hour >= 17 && hour < 21) return 'عصر بخیر';
-    return 'شب بخیر';
-  }, []);
+  const displayName = user?.displayName || user?.username || 'همکار گرامی';
 
-  const displayName = userProfile?.employeeName?.trim() || user?.displayName || user?.username || 'همکار گرامی';
-  const roleTitle = userProfile?.roleTitle || 'کارشناس';
-  const avatarBg = userProfile?.avatarColor || '#A68A64';
+  // Dynamic header metadata based on activeTab
+  const pageMeta = useMemo(() => {
+    switch (activeTab) {
+      case 'dashboard':
+        return {
+          title: 'پیشخوان و تقویم هوشمند',
+          subtitle: `${weekdayName}، ${toPersianDigits(todayStr)}`,
+          icon: <LayoutDashboard className="h-5 w-5" />,
+        };
+      case 'timesheet':
+        return {
+          title: 'کارنامه تردد ماهانه',
+          subtitle: 'مشاهده، ویرایش و خروجی اکسل کارکرد',
+          icon: <TableIcon className="h-5 w-5" />,
+        };
+      case 'leaves':
+        return {
+          title: 'مدیریت مرخصی‌ها',
+          subtitle: 'کاردکس استحقاقی، استعلاجی و ساعتی',
+          icon: <Coffee className="h-5 w-5" />,
+        };
+      case 'reports':
+        return {
+          title: 'گزارشات و تحلیل آماری',
+          subtitle: 'شاخص‌های کلیدی، ساعات کاری و اضافه‌کار',
+          icon: <TrendingUp className="h-5 w-5" />,
+        };
+      case 'settings':
+        return {
+          title: 'مرکز تنظیمات و پیکربندی',
+          subtitle: 'قوانین کار، شیفت، مرخصی، مالی و شخصی‌سازی',
+          icon: <Settings className="h-5 w-5" />,
+        };
+    }
+  }, [activeTab, weekdayName, todayStr]);
+
+  const isAnyMenuOpen = isUserMenuOpen || showNotificationToast;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#D1D5DB] bg-white/95 backdrop-blur-md transition-colors">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-3 sm:px-6">
-        {/* Right Header Area: Greeting + Subtitle */}
+    <header
+      className={`sticky top-0 w-full border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-2xl shadow-sm print:hidden transition-all duration-200 ${
+        isAnyMenuOpen ? 'z-50' : 'z-20'
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2.5 sm:px-6">
+        {/* Right Header Area: Brand / Current Page Title */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#A68A64] text-white shadow-md shadow-[#A68A64]/20">
+          <button
+            type="button"
+            onClick={() => onTabChange('dashboard')}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-[var(--accent)] shadow-sm border border-[var(--border-strong)] transition-all hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--focus)]"
+            title="سامانه مدیریت هوشمند تردد"
+            aria-label="رفتن به پیشخوان"
+          >
             <CalendarClock className="h-5 w-5" />
-          </div>
+          </button>
 
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-xl font-black tracking-tight text-[#1F2933] flex items-center gap-1.5">
-                <span>{greeting}، {displayName}!</span>
+              <h1 className="text-sm sm:text-base font-black tracking-tight text-text flex items-center gap-1.5">
+                <span>{pageMeta.title}</span>
               </h1>
               {isWorkingNow && (
-                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#2E6F40]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#2E6F40] border border-[#2E6F40]/25">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2E6F40] animate-ping" />
+                <span className="badge-success inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold rounded-full">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--semantic-success)] animate-ping" />
                   حضور فعال
                 </span>
               )}
             </div>
-            <p className="text-[11px] sm:text-xs text-[#6B7280] mt-0.5 flex items-center gap-2">
-              <span>برنامه کاری و تقویم تردد شما</span>
-              <span className="hidden sm:inline-block h-1 w-1 rounded-full bg-[#D1D5DB]" />
-              <span className="hidden sm:inline font-mono text-[#A68A64] font-medium">
-                {weekdayName}، {toPersianDigits(todayStr)}
-              </span>
+            <p className="text-[11px] text-muted mt-0.5 flex items-center gap-2 font-medium">
+              <span>{pageMeta.subtitle}</span>
             </p>
           </div>
         </div>
 
-        {/* Left Header Area: Search pill, Notification Bell, Live Time, Theme & User */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Left Header Area: Search pill, Notification Bell, Live Time, Quick Add & User Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {/* Search Pill Input */}
-          <div className="relative hidden sm:block w-44 md:w-56">
-            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
-              <Search className="h-4 w-4" />
+          <div className="relative hidden md:block w-48 lg:w-60">
+            <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">
+              <Search className="h-3.5 w-3.5" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              placeholder="جستجو در فعالیت‌ها..."
-              className="w-full rounded-2xl border border-[#D1D5DB] bg-[#F7F7F2] pr-9 pl-8 py-2 text-xs text-[#1F2933] placeholder-[#6B7280] focus:border-[#A68A64] focus:outline-none focus:ring-2 focus:ring-[#A68A64]/20 transition-all"
+              placeholder="جستجو در روزها و تردد..."
+              className="liquid-input w-full rounded-full pr-9 pl-7 py-1.5 text-xs text-text placeholder:text-muted shadow-inner"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => onSearchChange?.('')}
-                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#1F2933]"
+                aria-label="پاک کردن جستجو"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-text"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </button>
             )}
           </div>
 
-          {/* Theme Selector */}
-          <div className="hidden sm:block">
-            <ThemeSelector currentTheme={currentTheme} onSelectTheme={onSelectTheme} />
-          </div>
+          {/* Quick Manual Entry Add Button */}
+          <button
+            type="button"
+            onClick={onOpenManualEntry}
+            title="ثبت دستی تردد جدید"
+            aria-label="ثبت دستی تردد جدید"
+            className="flex items-center gap-1.5 h-9 px-3 rounded-full bg-[var(--surface-2)] text-text hover:border-[var(--accent)] border border-[var(--border)] text-xs font-bold transition-all active:scale-95 shadow-sm"
+          >
+            <PlusCircle className="h-4 w-4 text-[var(--accent)]" />
+            <span className="hidden sm:inline">ثبت تردد</span>
+          </button>
 
-          {/* Notification Bell Circle */}
+          {/* Notification Bell */}
           <div className="relative">
             <button
+              type="button"
               onClick={() => setShowNotificationToast(!showNotificationToast)}
               title="اعلان‌ها"
-              className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl border border-[#D1D5DB] bg-white hover:bg-[#F5F0E6] text-[#1F2933] transition-all shadow-sm"
+              aria-label="اعلان‌های سامانه"
+              aria-expanded={showNotificationToast}
+              className="liquid-pill-btn relative flex h-9 w-9 items-center justify-center text-text"
             >
-              <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-[#6B7280]" />
-              <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-[#A68A64] ring-2 ring-white" />
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[var(--accent)] ring-2 ring-[var(--surface)]" />
             </button>
 
             {/* Notification Popover */}
             {showNotificationToast && (
-              <div className="absolute left-0 mt-2 w-72 sm:w-80 rounded-2xl border border-[#D1D5DB] bg-white p-3 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between border-b border-[#D1D5DB] pb-2 mb-2">
-                  <span className="font-bold text-[#1F2933] flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[#A68A64]" />
+              <div
+                role="region"
+                aria-label="پنجره اعلان‌ها"
+                className="absolute left-0 mt-2 w-72 sm:w-80 rounded-[24px] bg-[var(--surface)] border border-[var(--border-strong)] p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150 max-h-[calc(100vh-5rem)] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-2">
+                  <span className="font-bold text-text flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-[var(--accent)]" />
                     اعلان‌های سامانه
                   </span>
                   <button
+                    type="button"
                     onClick={() => setShowNotificationToast(false)}
-                    className="text-[#6B7280] hover:text-[#1F2933]"
+                    aria-label="بستن اعلان‌ها"
+                    className="text-muted hover:text-text"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
                 <div className="space-y-2">
-                  <div className="rounded-xl bg-[#F5F0E6] p-2.5 border border-[#D1D5DB]">
-                    <span className="font-semibold text-[#1F2933] block text-xs">
-                      تم نوردیک و تقویم هوشمند فعال است
+                  <div className="rounded-2xl bg-[var(--surface-2)] p-3 border border-[var(--border)]">
+                    <span className="font-semibold text-[var(--accent)] block text-xs">
+                      تقویم شمسی هوشمند فعال است
                     </span>
-                    <p className="text-[11px] text-[#6B7280] mt-1 leading-relaxed">
-                      کلیه محاسبات شیفت شناور، تعطیلات رسمی و مرخصی‌ها با استاندارد اسکاندیناوی آماده استفاده هستند.
+                    <p className="text-[11px] text-muted mt-1 leading-relaxed">
+                      کلیه تعطیلات رسمی ایران به همراه جزئیات حضور و مرخصی‌ها در تقویم لحاظ شده‌اند.
                     </p>
                   </div>
                 </div>
@@ -202,113 +243,129 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Live Clock Pill */}
-          <div className="hidden sm:flex items-center gap-2 rounded-2xl border border-[#D1D5DB] bg-[#F7F7F2] px-3 py-1.5 font-mono text-xs shadow-inner">
-            <span className="h-2 w-2 rounded-full bg-[#2E6F40] animate-pulse" />
-            <span className="font-bold text-[#1F2933] tracking-wider">
+          {/* Live Digital Clock Pill */}
+          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 font-mono text-xs shadow-inner">
+            <span className="h-2 w-2 rounded-full bg-[var(--semantic-success)] animate-pulse" />
+            <span className="font-bold text-[var(--accent)] tracking-wider">
               {toPersianDigits(liveTime)}
             </span>
           </div>
 
-          {/* Storage Mode Icon Button */}
+          {/* Cloud Storage Mode Button */}
           {onOpenStorageMode && (
             <button
+              type="button"
               onClick={onOpenStorageMode}
-              className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl border transition-all ${
+              className={`liquid-pill-btn flex h-9 w-9 items-center justify-center ${
                 storageMode === 'cloud_encrypted'
-                  ? 'border-[#2E6F40]/30 bg-[#2E6F40]/10 text-[#2E6F40] hover:bg-[#2E6F40]/20'
-                  : 'border-[#D1D5DB] bg-white text-[#6B7280] hover:text-[#1F2933] hover:bg-[#F5F0E6]'
+                  ? 'border-[var(--accent)] bg-[var(--surface-2)] text-[var(--accent)]'
+                  : 'text-muted'
               }`}
               title={storageMode === 'cloud_encrypted' ? 'فضای ابری رمزنگاری‌شده فعال است' : 'ذخیره در مرورگر'}
+              aria-label={storageMode === 'cloud_encrypted' ? 'تنظیمات فضای ابری رمزنگاری‌شده' : 'تنظیمات حالت ذخیره‌سازی'}
             >
               {storageMode === 'cloud_encrypted' ? (
-                <Lock className="h-4 w-4 text-[#2E6F40]" />
+                <Lock className="h-4 w-4 text-[var(--accent)]" />
               ) : (
-                <HardDrive className="h-4 w-4 text-[#6B7280]" />
+                <HardDrive className="h-4 w-4 text-muted" />
               )}
             </button>
           )}
 
-          {/* User Profile Button with Menu */}
+          {/* User Profile Avatar with Dropdown */}
           {user && (
             <div className="relative" ref={userMenuRef}>
               <button
+                type="button"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl text-white font-bold text-xs sm:text-sm ring-1 ring-black/10 shadow-sm hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: avatarBg }}
-                title={`حساب کاربری: ${displayName} (${roleTitle})`}
+                title={`حساب کاربری: ${displayName}`}
+                aria-label={`حساب کاربری: ${displayName}`}
+                aria-expanded={isUserMenuOpen}
+                className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-[var(--surface-2)] text-[var(--accent)] border border-[var(--border-strong)] font-bold text-xs shadow-sm ring-1 ring-[var(--border)] hover:ring-[var(--focus)] transition-all"
               >
                 {displayName.charAt(0).toUpperCase()}
+                <span
+                  className={`absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--surface)] ${
+                    isWorkingNow
+                      ? 'bg-[var(--semantic-success)] animate-pulse'
+                      : dbStatus === 'connected'
+                      ? 'bg-[var(--semantic-info)]'
+                      : 'bg-[var(--semantic-warning)]'
+                  }`}
+                />
               </button>
 
+              {/* User Dropdown */}
               {isUserMenuOpen && (
-                <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white border border-[#D1D5DB] shadow-2xl p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-2 border-b border-[#D1D5DB]">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-bold text-[#1F2933] truncate text-sm">{displayName}</p>
-                      <span className="shrink-0 text-[10px] font-medium bg-[#F5F0E6] text-[#A68A64] px-2 py-0.5 rounded-full border border-[#A68A64]/30">
-                        {roleTitle}
-                      </span>
-                    </div>
-                    <p className="text-[#6B7280] font-mono text-[11px] truncate dir-ltr text-right mt-0.5">
+                <div className="absolute left-0 mt-2 w-64 rounded-[26px] bg-[var(--surface)] border border-[var(--border-strong)] p-2.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-150 shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-[var(--border)]">
+                    <p className="font-bold text-text truncate text-sm">{displayName}</p>
+                    <p className="text-muted font-mono text-[11px] truncate dir-ltr text-right">
                       @{user.username}
                     </p>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-[var(--semantic-success)]">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      <span>اتصال امن به سامانه</span>
+                    </div>
                   </div>
+
                   <div className="py-1 space-y-0.5">
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
-                        _onTabChange('settings');
+                        onTabChange('settings');
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#1F2933] hover:bg-[#F5F0E6] transition-colors text-right"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted hover:text-text hover:bg-[var(--surface-2)] transition-colors text-right font-medium"
                     >
-                      <Settings className="h-4 w-4 text-[#A68A64]" />
-                      <span>تنظیمات سامانه</span>
+                      <Settings className="h-4 w-4 text-[var(--accent)]" />
+                      <span>تنظیمات سیستم و قوانین</span>
                     </button>
+
                     {onOpenStorageMode && (
                       <button
                         onClick={() => {
                           setIsUserMenuOpen(false);
                           onOpenStorageMode();
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#1F2933] hover:bg-[#F5F0E6] transition-colors text-right"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted hover:text-text hover:bg-[var(--surface-2)] transition-colors text-right"
                       >
-                        <ShieldCheck className="h-4 w-4 text-[#A68A64]" />
+                        <ShieldCheck className="h-4 w-4 text-[var(--accent)]" />
                         <span>فضای ابری و امنیت</span>
                       </button>
                     )}
+
                     {onOpenChangePassword && (
                       <button
                         onClick={() => {
                           setIsUserMenuOpen(false);
                           onOpenChangePassword();
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#1F2933] hover:bg-[#F5F0E6] transition-colors text-right"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted hover:text-text hover:bg-[var(--surface-2)] transition-colors text-right"
                       >
-                        <KeyRound className="h-4 w-4 text-[#6B7280]" />
+                        <KeyRound className="h-4 w-4 text-[var(--accent)]" />
                         <span>تغییر رمز عبور</span>
                       </button>
                     )}
-                    {onOpenBackup && (
-                      <button
-                        onClick={() => {
-                          setIsUserMenuOpen(false);
-                          onOpenBackup();
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#1F2933] hover:bg-[#F5F0E6] transition-colors text-right"
-                      >
-                        <Database className="h-4 w-4 text-[#6B7280]" />
-                        <span>پشتیبان‌گیری داده‌ها</span>
-                      </button>
-                    )}
+
+                    <button
+                      onClick={() => {
+                        setIsUserMenuOpen(false);
+                        onOpenBackup();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-muted hover:text-text hover:bg-[var(--surface-2)] transition-colors text-right"
+                    >
+                      <Database className="h-4 w-4 text-[var(--accent)]" />
+                      <span>پشتیبان‌گیری داده‌ها</span>
+                    </button>
                   </div>
-                  <div className="pt-1 border-t border-[#D1D5DB]">
+
+                  <div className="pt-1 border-t border-[var(--border)]">
                     <button
                       onClick={() => {
                         setIsUserMenuOpen(false);
                         logout();
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#B91C1C] hover:bg-rose-50 transition-colors text-right font-semibold"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--semantic-danger)] hover:bg-[var(--semantic-danger)]/15 transition-colors text-right font-semibold"
                     >
                       <LogOut className="h-4 w-4" />
                       <span>خروج از حساب</span>
@@ -323,5 +380,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-
-export default Navbar;

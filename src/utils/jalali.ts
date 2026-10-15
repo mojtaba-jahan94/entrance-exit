@@ -247,8 +247,7 @@ export function parseJalaliDate(dateStr: string): { jy: number; jm: number; jd: 
 }
 
 /**
- * Converts Jalali date string to Gregorian Date object.
- * Uses 12:00:00 (noon) to guarantee safety from daylight-saving midnight day-shift bugs.
+ * Converts Jalali date string to Gregorian Date object
  */
 export function jalaliToGregorianDate(dateStr: string): Date {
   const { jy, jm, jd } = parseJalaliDate(dateStr);
@@ -307,9 +306,13 @@ export function checkOfficialHoliday(jy: number, jm: number, jd: number): { isHo
   }
 
   // 3. Check known lunar holidays for the year
-  const key = `${jy}/${jm}/${jd}`;
-  if (KNOWN_LUNAR_HOLIDAYS[key]) {
-    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[key] };
+  const keyUnpadded = `${jy}/${jm}/${jd}`;
+  const keyPadded = `${jy}/${jm < 10 ? '0' + jm : jm}/${jd < 10 ? '0' + jd : jd}`;
+  if (KNOWN_LUNAR_HOLIDAYS[keyUnpadded]) {
+    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[keyUnpadded] };
+  }
+  if (KNOWN_LUNAR_HOLIDAYS[keyPadded]) {
+    return { isHoliday: true, title: KNOWN_LUNAR_HOLIDAYS[keyPadded] };
   }
 
   return { isHoliday: false };
@@ -449,15 +452,10 @@ export function getJalaliMonthGrid(jy: number, jm: number): JalaliCalendarCell[]
 /**
  * Formats minutes into standard Persian duration string: e.g. "۸ ساعت و ۳۰ دقیقه" or "08:30"
  */
-export function formatMinutesToTimeString(
-  totalMinutes: number,
-  showSign = false,
-  wrap24h = false
-): string {
-  const sign = totalMinutes < 0 ? '-' : showSign && totalMinutes > 0 ? '+' : '';
+export function formatMinutesToTimeString(totalMinutes: number, showSign = false): string {
+  const sign = totalMinutes < 0 ? '-' : (showSign && totalMinutes > 0 ? '+' : '');
   const absMinutes = Math.abs(Math.round(totalMinutes));
-  const rawHours = Math.floor(absMinutes / 60);
-  const hours = wrap24h ? rawHours % 24 : rawHours;
+  const hours = Math.floor(absMinutes / 60);
   const mins = absMinutes % 60;
   const hStr = hours < 10 ? `0${hours}` : `${hours}`;
   const mStr = mins < 10 ? `0${mins}` : `${mins}`;
