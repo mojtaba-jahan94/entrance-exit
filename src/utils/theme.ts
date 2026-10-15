@@ -1,4 +1,4 @@
-export type AppTheme = 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
+export type AppTheme = 'nordic' | 'obsidian' | 'emerald' | 'sunset' | 'espresso' | 'light';
 
 export interface ThemeConfig {
   id: AppTheme;
@@ -13,9 +13,19 @@ export interface ThemeConfig {
 
 export const APP_THEMES: ThemeConfig[] = [
   {
+    id: 'nordic',
+    name: 'Nordic Minimalism',
+    persianName: 'نوردیک مینیمال (پیش‌فرض)',
+    description: 'پالت اصیل نوردیک با زغال چوب، کرم برفی، خاکستری فیورد و چوب گرم',
+    previewBg: '#F7F7F2',
+    previewCard: '#FFFFFF',
+    previewAccent: '#A68A64',
+    isDark: false,
+  },
+  {
     id: 'obsidian',
     name: 'Obsidian Aurora',
-    persianName: 'شفق نوکتورن (پیش‌فرض)',
+    persianName: 'شفق نوکتورن',
     description: 'تم لوکس تیره با هاله‌های سرمه‌ای و اکسنت‌های فیروزه‌ای و نیلی',
     previewBg: '#090b14',
     previewCard: '#121526',
@@ -25,7 +35,7 @@ export const APP_THEMES: ThemeConfig[] = [
   {
     id: 'emerald',
     name: 'Nordic Forest',
-    persianName: 'زمرد نوردیک',
+    persianName: 'زمرد جنگلی',
     description: 'تم آرامش‌بخش جنگلی با رنگ سبز زمردی و نعنایی متالیک',
     previewBg: '#06130d',
     previewCard: '#0d1e16',
@@ -75,7 +85,7 @@ export function getStoredTheme(): AppTheme {
   } catch {
     // Ignore storage errors
   }
-  return 'obsidian';
+  return 'nordic';
 }
 
 export function saveStoredTheme(theme: AppTheme): void {
@@ -97,7 +107,8 @@ export function applyThemeToDOM(theme: AppTheme): void {
   if (rootEl) {
     rootEl.setAttribute('data-theme', theme);
   }
-  if (theme === 'light') {
+  const isLightTheme = theme === 'nordic' || theme === 'light';
+  if (isLightTheme) {
     root.classList.remove('dark');
     root.classList.add('light');
     if (document.body) {

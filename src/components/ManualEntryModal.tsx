@@ -10,6 +10,7 @@ import {
   getJalaliWeekdayIndex,
   toPersianDigits,
   timeStringToMinutes,
+  getDaysInJalaliMonth,
 } from '../utils/jalali';
 
 interface ManualEntryModalProps {
@@ -36,8 +37,18 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
   const [breakMinutes, setBreakMinutes] = useState<number>(30);
   const [status, setStatus] = useState<DayStatus>('present');
   const [note, setNote] = useState<string>('');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const dateStr = formatJalaliDate(year, month, day);
+  const maxDays = getDaysInJalaliMonth(year, month);
+  const availableYears = [curY - 3, curY - 2, curY - 1, curY, curY + 1, curY + 2, curY + 3];
+
+  useEffect(() => {
+    if (day > maxDays) {
+      setDay(maxDays);
+    }
+  }, [year, month, maxDays, day]);
+
+  const dateStr = formatJalaliDate(year, month, Math.min(day, maxDays));
   const weekdayIdx = getJalaliWeekdayIndex(dateStr);
   const weekdayName = PERSIAN_WEEKDAY_NAMES[weekdayIdx] || '';
   const isThursday = weekdayIdx === 5;
@@ -53,6 +64,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       setBreakMinutes(initialRecord.breakMinutes !== undefined ? initialRecord.breakMinutes : 30);
       setStatus(initialRecord.status || 'present');
       setNote(initialRecord.note || '');
+      setValidationError(null);
     } else {
       const today = getCurrentJalaliDate();
       setYear(today.jy);
@@ -63,6 +75,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       setBreakMinutes(isThursday ? 0 : 30);
       setStatus('present');
       setNote('');
+      setValidationError(null);
     }
   }, [initialRecord, isOpen, isThursday]);
 
@@ -71,11 +84,19 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
   // Live calculation for preview
   const inMins = checkIn ? timeStringToMinutes(checkIn) : 0;
   const outMins = checkOut ? timeStringToMinutes(checkOut) : 0;
+  const isTimeOrderInvalid = Boolean(checkIn && checkOut && outMins <= inMins);
   const rawPresence = Math.max(0, outMins - inMins);
   const netWorked = Math.max(0, rawPresence - breakMinutes);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (checkIn && checkOut && timeStringToMinutes(checkOut) <= timeStringToMinutes(checkIn)) {
+      setValidationError('ساعت خروج باید بعد از ساعت ورود باشد.');
+      return;
+    }
+
+    setValidationError(null);
     onSave({
       id: initialRecord?.id,
       date: dateStr,
@@ -128,7 +149,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 onChange={(e) => setDay(parseInt(e.target.value, 10))}
                 className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none"
               >
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                {Array.from({ length: maxDays }, (_, i) => i + 1).map((d) => (
                   <option key={d} value={d}>
                     روز {toPersianDigits(d)}
                   </option>
@@ -154,7 +175,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 onChange={(e) => setYear(parseInt(e.target.value, 10))}
                 className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-white focus:border-indigo-500 focus:outline-none font-mono"
               >
-                {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+                {availableYears.map((yr) => (
                   <option key={yr} value={yr}>
                     {toPersianDigits(yr)}
                   </option>
@@ -162,6 +183,14 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               </select>
             </div>
           </div>
+
+          {/* Validation Error Banner */}
+          {(validationError || isTimeOrderInvalid) && (
+            <div className="flex items-center gap-2 rounded-2xl bg-rose-500/10 border border-rose-500/30 p-2.5 text-xs text-rose-300">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+              <span>{validationError || 'هشدار: ساعت خروج نمی‌تواند قبل از ساعت ورود یا همزمان با آن باشد.'}</span>
+            </div>
+          )}
 
           {/* Time Check-In & Check-Out */}
           <div className="grid grid-cols-2 gap-3">
@@ -173,7 +202,10 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <input
                   type="time"
                   value={checkIn}
-                  onChange={(e) => setCheckIn(e.target.value)}
+                  onChange={(e) => {
+                    setCheckIn(e.target.value);
+                    setValidationError(null);
+                  }}
                   className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none text-center"
                 />
               </div>
@@ -187,8 +219,15 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <input
                   type="time"
                   value={checkOut}
-                  onChange={(e) => setCheckOut(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm font-mono text-white focus:border-indigo-500 focus:outline-none text-center"
+                  onChange={(e) => {
+                    setCheckOut(e.target.value);
+                    setValidationError(null);
+                  }}
+                  className={`w-full rounded-xl border bg-slate-950 px-3 py-2 text-sm font-mono text-white focus:outline-none text-center ${
+                    isTimeOrderInvalid
+                      ? 'border-rose-500 text-rose-200'
+                      : 'border-slate-800 focus:border-indigo-500'
+                  }`}
                 />
               </div>
             </div>

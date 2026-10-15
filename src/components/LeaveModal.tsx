@@ -20,6 +20,7 @@ import {
   formatMinutesToTimeString,
   formatMinutesToPersianReadable,
   getJalaliWeekdayIndex,
+  getDaysInJalaliMonth,
 } from '../utils/jalali';
 import { getLeaveDurationMinutes } from '../utils/calculator';
 
@@ -34,6 +35,7 @@ interface LeaveModalProps {
   monthlyQuotaDays?: number;
   todayRecord?: AttendanceRecord | null;
   shiftConfig?: ShiftConfig;
+  initialLeave?: LeaveRecord | null;
 }
 
 export const LeaveModal: React.FC<LeaveModalProps> = ({
@@ -47,6 +49,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   monthlyQuotaDays = 2.5,
   todayRecord,
   shiftConfig,
+  initialLeave,
 }) => {
   const { jy: curY, jm: curM, jd: curD } = getCurrentJalaliDate();
 
@@ -58,14 +61,21 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   const [year, setYear] = useState<number>(curY);
   const [type, setType] = useState<LeaveType>('hourly');
 
+  const maxDays = getDaysInJalaliMonth(year, month);
+  const availableYears = [curY - 3, curY - 2, curY - 1, curY, curY + 1, curY + 2, curY + 3];
+
+  React.useEffect(() => {
+    if (day > maxDays) {
+      setDay(maxDays);
+    }
+  }, [year, month, maxDays, day]);
+
   // Clock-based duration state (hours and minutes)
   const [durationHours, setDurationHours] = useState<number>(1);
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [startTime, setStartTime] = useState<string>('08:30');
   const [endTime, setEndTime] = useState<string>('10:00');
   const [reason, setReason] = useState<string>('');
-
-  if (!isOpen) return null;
 
   // Exact clock calculation of total used and remaining minutes
   const approvedLeaves = leaves.filter((l) => l.approved !== false);
@@ -222,6 +232,15 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     setReason('');
   };
 
+  React.useEffect(() => {
+    if (isOpen && initialLeave) {
+      handleStartEdit(initialLeave);
+    } else if (isOpen && !initialLeave) {
+      setIsAdding(false);
+      setEditingLeaveId(null);
+    }
+  }, [isOpen, initialLeave]);
+
   const selectedDateStr = formatJalaliDate(year, month, day);
   const selectedWeekdayIdx = getJalaliWeekdayIndex(selectedDateStr);
   const isSelectedThursday = selectedWeekdayIdx === 5;
@@ -279,6 +298,8 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
     setEditingLeaveId(null);
     setReason('');
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 sm:p-4 backdrop-blur-md animate-in fade-in duration-200">
@@ -379,7 +400,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                   onChange={(e) => setDay(parseInt(e.target.value, 10))}
                   className="rounded-xl border border-slate-800 bg-slate-900 px-2 py-1.5 text-xs text-white"
                 >
-                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  {Array.from({ length: maxDays }, (_, i) => i + 1).map((d) => (
                     <option key={d} value={d}>
                       روز {toPersianDigits(d)}
                     </option>
@@ -401,7 +422,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                   onChange={(e) => setYear(parseInt(e.target.value, 10))}
                   className="rounded-xl border border-slate-800 bg-slate-900 px-2 py-1.5 text-xs text-white font-mono"
                 >
-                  {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+                  {availableYears.map((yr) => (
                     <option key={yr} value={yr}>
                       {toPersianDigits(yr)}
                     </option>

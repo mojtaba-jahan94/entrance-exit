@@ -247,12 +247,13 @@ export function parseJalaliDate(dateStr: string): { jy: number; jm: number; jd: 
 }
 
 /**
- * Converts Jalali date string to Gregorian Date object
+ * Converts Jalali date string to Gregorian Date object.
+ * Uses 12:00:00 (noon) to guarantee safety from daylight-saving midnight day-shift bugs.
  */
 export function jalaliToGregorianDate(dateStr: string): Date {
   const { jy, jm, jd } = parseJalaliDate(dateStr);
   const { gy, gm, gd } = jalaali.toGregorian(jy, jm, jd);
-  return new Date(gy, gm - 1, gd);
+  return new Date(gy, gm - 1, gd, 12, 0, 0);
 }
 
 /**
@@ -448,10 +449,15 @@ export function getJalaliMonthGrid(jy: number, jm: number): JalaliCalendarCell[]
 /**
  * Formats minutes into standard Persian duration string: e.g. "۸ ساعت و ۳۰ دقیقه" or "08:30"
  */
-export function formatMinutesToTimeString(totalMinutes: number, showSign = false): string {
-  const sign = totalMinutes < 0 ? '-' : (showSign && totalMinutes > 0 ? '+' : '');
+export function formatMinutesToTimeString(
+  totalMinutes: number,
+  showSign = false,
+  wrap24h = false
+): string {
+  const sign = totalMinutes < 0 ? '-' : showSign && totalMinutes > 0 ? '+' : '';
   const absMinutes = Math.abs(Math.round(totalMinutes));
-  const hours = Math.floor(absMinutes / 60);
+  const rawHours = Math.floor(absMinutes / 60);
+  const hours = wrap24h ? rawHours % 24 : rawHours;
   const mins = absMinutes % 60;
   const hStr = hours < 10 ? `0${hours}` : `${hours}`;
   const mStr = mins < 10 ? `0${mins}` : `${mins}`;

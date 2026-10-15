@@ -1,18 +1,14 @@
 import React from 'react';
 import {
   Clock,
-  ArrowRight,
   CheckCircle2,
-  AlertTriangle,
   Coffee,
-  Calendar,
   ChevronLeft,
 } from 'lucide-react';
 import { AttendanceRecord } from '../types';
 import {
   toPersianDigits,
   getJalaliWeekdayName,
-  formatMinutesToPersianReadable,
   formatMinutesToTimeString,
 } from '../utils/jalali';
 
@@ -33,30 +29,30 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
     .slice(0, 5);
 
   return (
-    <div className="rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-5 backdrop-blur-2xl shadow-xl">
-      <div className="flex items-center justify-between border-b border-white/[0.06] pb-3 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="rounded-xl bg-blue-500/10 p-2 text-blue-400 border border-blue-500/20">
+    <div className="rounded-[28px] border border-[#D1D5DB] bg-white p-5 sm:p-6 shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#D1D5DB] pb-3.5 mb-3.5">
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-xl bg-[#F5F0E6] p-2 text-[#A68A64] border border-[#A68A64]/30">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-white">آخرین وضعیت ترددهای ثبت‌شده</h3>
-            <p className="text-[10px] sm:text-xs text-slate-400">مرور سریع روزهای کاری اخیر</p>
+            <h3 className="text-xs sm:text-sm font-bold text-[#1F2933]">آخرین وضعیت ترددهای ثبت‌شده</h3>
+            <p className="text-[10px] sm:text-xs text-[#6B7280]">مرور سریع روزهای کاری اخیر</p>
           </div>
         </div>
 
         <button
           onClick={onNavigateToTimesheet}
-          className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold group transition-all"
+          className="flex items-center gap-1 text-xs text-[#A68A64] hover:text-[#8F7553] font-semibold group transition-all"
         >
           <span>مشاهده کل ترددها</span>
           <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
         </button>
       </div>
 
-      <div className="divide-y divide-slate-800/60">
+      <div className="divide-y divide-[#D1D5DB]/60">
         {recentRecords.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500">
+          <div className="py-8 text-center text-xs text-[#6B7280]">
             هنوز رکوردی برای نمایش وجود ندارد.
           </div>
         ) : (
@@ -66,27 +62,27 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
               <div
                 key={r.id || r.date}
                 onClick={() => onEditRecord(r)}
-                className="py-2.5 sm:py-3 flex items-center justify-between gap-2 hover:bg-slate-800/30 px-2 rounded-xl transition-colors cursor-pointer group"
+                className="py-2.5 sm:py-3 flex items-center justify-between gap-2 hover:bg-[#F5F0E6]/50 px-2 rounded-xl transition-colors cursor-pointer group"
               >
                 {/* Date & Weekday */}
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="flex flex-col">
-                    <span className="font-mono text-xs sm:text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#1F2933] group-hover:text-[#A68A64] transition-colors tabular-nums">
                       {toPersianDigits(r.date)}
                     </span>
-                    <span className="text-[10px] text-slate-400">{weekday}</span>
+                    <span className="text-[10px] text-[#6B7280]">{weekday}</span>
                   </div>
                 </div>
 
                 {/* Times (Check In / Check Out) */}
                 <div className="flex items-center gap-2 font-mono text-xs">
-                  <div className="bg-slate-950/70 border border-slate-800 px-2 py-1 rounded-lg text-emerald-400 text-center">
-                    <span className="text-[9px] text-slate-500 block">ورود</span>
+                  <div className="bg-[#F7F7F2] border border-[#D1D5DB] px-2.5 py-1 rounded-lg text-[#2E6F40] text-center font-bold">
+                    <span className="text-[9px] text-[#6B7280] block font-normal">ورود</span>
                     <span>{r.checkIn ? toPersianDigits(r.checkIn) : '--:--'}</span>
                   </div>
-                  <span className="text-slate-600">-</span>
-                  <div className="bg-slate-950/70 border border-slate-800 px-2 py-1 rounded-lg text-rose-400 text-center">
-                    <span className="text-[9px] text-slate-500 block">خروج</span>
+                  <span className="text-[#D1D5DB] font-bold">-</span>
+                  <div className="bg-[#F7F7F2] border border-[#D1D5DB] px-2.5 py-1 rounded-lg text-[#B91C1C] text-center font-bold">
+                    <span className="text-[9px] text-[#6B7280] block font-normal">خروج</span>
                     <span>{r.checkOut ? toPersianDigits(r.checkOut) : '--:--'}</span>
                   </div>
                 </div>
@@ -94,29 +90,29 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
                 {/* Status Badges */}
                 <div className="flex items-center gap-1.5 shrink-0">
                   {r.status === 'present' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-[#2E6F40] border border-[#2E6F40]/30">
                       <CheckCircle2 className="h-3 w-3" />
                       <span className="hidden xs:inline">حاضر</span>
                     </span>
                   )}
                   {r.status === 'leave' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400 border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#F5F0E6] px-2.5 py-0.5 text-[10px] font-semibold text-[#A68A64] border border-[#A68A64]/30">
                       <Coffee className="h-3 w-3" />
                       مرخصی
                     </span>
                   )}
                   {r.delayMinutes > 0 && (
-                    <span className="rounded-lg bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-300 border border-rose-500/20">
+                    <span className="rounded-lg bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-[#B91C1C] border border-rose-200">
                       تاخیر: {toPersianDigits(r.delayMinutes)}د
                     </span>
                   )}
                   {r.leaveMinutes !== undefined && r.leaveMinutes > 0 && (
-                    <span className="rounded-lg bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-300 border border-amber-500/20">
+                    <span className="rounded-lg bg-[#F5F0E6] px-2 py-0.5 text-[10px] font-medium text-[#A68A64] border border-[#A68A64]/30">
                       مرخصی: {r.leaveMinutes >= 60 ? toPersianDigits(formatMinutesToTimeString(r.leaveMinutes)) : `${toPersianDigits(r.leaveMinutes)}د`}
                     </span>
                   )}
                   {r.overtimeMinutes > 0 && (
-                    <span className="rounded-lg bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-300 border border-indigo-500/20">
+                    <span className="rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-[#2E6F40] border border-[#2E6F40]/30">
                       + اضافه کار
                     </span>
                   )}
@@ -129,3 +125,5 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
     </div>
   );
 };
+
+export default RecentActivityCard;

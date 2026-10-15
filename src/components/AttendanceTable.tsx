@@ -5,15 +5,10 @@ import {
   ChevronRight,
   ChevronLeft,
   Calendar,
-  Filter,
   Edit2,
   Trash2,
   Clock,
-  AlertCircle,
-  Plus,
   CheckCircle2,
-  AlertTriangle,
-  MinusCircle,
   Search,
   LayoutGrid,
   Table as TableIcon,
@@ -31,12 +26,12 @@ interface AttendanceTableProps {
   records: AttendanceRecord[];
   selectedYear: number;
   selectedMonth: number;
-  config: ShiftConfig;
+  config?: ShiftConfig;
   onYearChange: (year: number) => void;
   onMonthChange: (month: number) => void;
   onEditRecord: (record: AttendanceRecord) => void;
   onDeleteRecord: (id: string) => void;
-  onAddNewForDate: (date: string) => void;
+  onAddNewForDate?: (date: string) => void;
   onExportExcel: () => void;
 }
 
@@ -44,12 +39,12 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   records,
   selectedYear,
   selectedMonth,
-  config,
+  config: _config,
   onYearChange,
   onMonthChange,
   onEditRecord,
   onDeleteRecord,
-  onAddNewForDate,
+  onAddNewForDate: _onAddNewForDate,
   onExportExcel,
 }) => {
   const [filterType, setFilterType] = useState<string>('all');
@@ -126,8 +121,6 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
     window.print();
   };
 
-  const monthName = PERSIAN_MONTH_NAMES[selectedMonth - 1] || '';
-
   return (
     <div className="rounded-[26px] sm:rounded-[32px] border border-white/[0.08] bg-[#141824]/90 p-4 sm:p-6 shadow-2xl backdrop-blur-2xl">
       {/* Table Header Controls */}
@@ -137,9 +130,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           {/* Month & Year Selectors */}
           <div className="flex items-center rounded-2xl bg-slate-950/70 border border-slate-800 p-1">
             <button
-              onClick={handleNextMonth}
+              onClick={handlePrevMonth}
               className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="ماه بعد"
+              title="ماه قبل"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -163,7 +156,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
               className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-indigo-400 focus:outline-none cursor-pointer font-mono"
             >
-              {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+              {[selectedYear - 3, selectedYear - 2, selectedYear - 1, selectedYear, selectedYear + 1, selectedYear + 2].map((yr) => (
                 <option key={yr} value={yr} className="bg-slate-900 text-white">
                   {toPersianDigits(yr)}
                 </option>
@@ -171,9 +164,9 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
             </select>
 
             <button
-              onClick={handlePrevMonth}
+              onClick={handleNextMonth}
               className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="ماه قبل"
+              title="ماه بعد"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -222,58 +215,72 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Smooth Horizontal Scrollable Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs no-scrollbar">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
-              filterType === 'all'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'bg-slate-950/50 text-slate-400 hover:text-white border border-slate-800/80'
-            }`}
-          >
-            همه روزها ({toPersianDigits(monthRecords.length)})
-          </button>
-          <button
-            onClick={() => setFilterType('delays')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
-              filterType === 'delays'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-rose-400 border border-slate-800/80'
-            }`}
-          >
-            تاخیر / تعجیل
-          </button>
-          <button
-            onClick={() => setFilterType('overtime')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
-              filterType === 'overtime'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-emerald-400 border border-slate-800/80'
-            }`}
-          >
-            اضافه کاری
-          </button>
-          <button
-            onClick={() => setFilterType('thursdays')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
-              filterType === 'thursdays'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-cyan-400 border border-slate-800/80'
-            }`}
-          >
-            پنج‌شنبه‌ها
-          </button>
-          <button
-            onClick={() => setFilterType('leaves')}
-            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
-              filterType === 'leaves'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold'
-                : 'bg-slate-950/50 text-slate-400 hover:text-amber-400 border border-slate-800/80'
-            }`}
-          >
-            مرخصی‌ها
-          </button>
+        {/* Row 2: Smooth Horizontal Scrollable Filter Chips & Search */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs no-scrollbar">
+            <button
+              onClick={() => setFilterType('all')}
+              className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+                filterType === 'all'
+                  ? 'bg-indigo-600 text-white font-semibold shadow-sm'
+                  : 'bg-slate-950/50 text-slate-400 hover:text-white border border-slate-800/80'
+              }`}
+            >
+              همه روزها ({toPersianDigits(monthRecords.length)})
+            </button>
+            <button
+              onClick={() => setFilterType('delays')}
+              className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+                filterType === 'delays'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 font-semibold'
+                  : 'bg-slate-950/50 text-slate-400 hover:text-rose-400 border border-slate-800/80'
+              }`}
+            >
+              تاخیر / تعجیل
+            </button>
+            <button
+              onClick={() => setFilterType('overtime')}
+              className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+                filterType === 'overtime'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
+                  : 'bg-slate-950/50 text-slate-400 hover:text-emerald-400 border border-slate-800/80'
+              }`}
+            >
+              اضافه کاری
+            </button>
+            <button
+              onClick={() => setFilterType('thursdays')}
+              className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+                filterType === 'thursdays'
+                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold'
+                  : 'bg-slate-950/50 text-slate-400 hover:text-cyan-400 border border-slate-800/80'
+              }`}
+            >
+              پنج‌شنبه‌ها
+            </button>
+            <button
+              onClick={() => setFilterType('leaves')}
+              className={`px-3 py-1.5 rounded-xl shrink-0 transition-all ${
+                filterType === 'leaves'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold'
+                  : 'bg-slate-950/50 text-slate-400 hover:text-amber-400 border border-slate-800/80'
+              }`}
+            >
+              مرخصی‌ها
+            </button>
+          </div>
+
+          {/* Quick Search */}
+          <div className="relative flex items-center shrink-0">
+            <Search className="absolute right-2.5 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="جستجو یادداشت یا تاریخ..."
+              className="w-full sm:w-44 bg-slate-950/70 border border-slate-800 rounded-xl pr-8 pl-3 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+          </div>
         </div>
       </div>
 

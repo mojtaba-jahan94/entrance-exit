@@ -1,9 +1,36 @@
 @import "tailwindcss";
 @import "./components/PageLoader.css";
 
+@theme {
+  --color-nordic-charcoal: #1F2933;
+  --color-fjord-gray: #6B7280;
+  --color-cloud-gray: #D1D5DB;
+  --color-snow-cream: #F7F7F2;
+  --color-warm-wood: #A68A64;
+  --color-warm-wood-hover: #8F7553;
+  --color-warm-wood-tint: #F5F0E6;
+  --color-status-success: #2E6F40;
+  --color-status-danger: #B91C1C;
+  --color-status-warning: #D97706;
+}
+
 @layer base {
   :root {
     --font-vazir: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    
+    /* Nordic Color Palette Tokens */
+    --nordic-charcoal: #1F2933;
+    --fjord-gray: #6B7280;
+    --cloud-gray: #D1D5DB;
+    --snow-cream: #F7F7F2;
+    --warm-wood: #A68A64;
+    --warm-wood-hover: #8F7553;
+    --warm-wood-tint: #F5F0E6;
+
+    /* Semantic Status Tokens */
+    --status-success: #2E6F40;
+    --status-danger: #B91C1C;
+    --status-warning: #D97706;
   }
 
   * {
@@ -17,6 +44,185 @@
     text-align: right;
     transition: background 0.3s ease, color 0.3s ease;
   }
+}
+
+/* ======================================================== */
+/* 0. NORDIC MINIMALISM (پالت اصیل نوردیک - تم پیش‌فرض پروژه) */
+/* ======================================================== */
+:root,
+[data-theme="nordic"],
+body[data-theme="nordic"] {
+  --theme-bg-gradient: none;
+  --theme-bg: #F7F7F2;
+  --theme-card-bg: #ffffff;
+  --theme-surface-bg: #F7F7F2;
+  --theme-border: #D1D5DB;
+  --theme-border-highlight: #A68A64;
+  --theme-accent: #A68A64;
+  --theme-accent-hover: #8F7553;
+  --theme-accent-tint: #F5F0E6;
+  --theme-text: #1F2933;
+  --theme-text-muted: #6B7280;
+  --theme-status-success: #2E6F40;
+  --theme-status-danger: #B91C1C;
+  --theme-status-warning: #D97706;
+}
+
+[data-theme="nordic"] body,
+body[data-theme="nordic"],
+[data-theme="nordic"] #root > div {
+  background-color: #F7F7F2 !important;
+  background-image: none !important;
+  color: #1F2933 !important;
+}
+
+/* Surfaces & Cards in Nordic */
+[data-theme="nordic"] .bg-\[\#141824\]\/90,
+[data-theme="nordic"] .bg-\[\#161a27\],
+[data-theme="nordic"] .bg-\[\#161a28\],
+[data-theme="nordic"] .bg-\[\#161b2c\],
+[data-theme="nordic"] .bg-slate-900,
+[data-theme="nordic"] .bg-slate-900\/50,
+[data-theme="nordic"] .bg-slate-900\/60,
+[data-theme="nordic"] .bg-slate-900\/70,
+[data-theme="nordic"] .bg-slate-900\/80,
+[data-theme="nordic"] .bg-slate-900\/90,
+[data-theme="nordic"] .bg-slate-850 {
+  background-color: #FFFFFF !important;
+  border-color: #D1D5DB !important;
+  box-shadow: 0 4px 18px -2px rgba(31, 41, 51, 0.05) !important;
+}
+
+[data-theme="nordic"] .bg-slate-950,
+[data-theme="nordic"] .bg-slate-950\/40,
+[data-theme="nordic"] .bg-slate-950\/50,
+[data-theme="nordic"] .bg-slate-950\/60,
+[data-theme="nordic"] .bg-slate-950\/70,
+[data-theme="nordic"] .bg-slate-950\/80,
+[data-theme="nordic"] .bg-slate-950\/85,
+[data-theme="nordic"] .bg-slate-950\/90,
+[data-theme="nordic"] .bg-slate-950\/95,
+[data-theme="nordic"] .bg-\[\#1b2030\],
+[data-theme="nordic"] .bg-\[\#121622\],
+[data-theme="nordic"] .bg-\[\#111520\] {
+  background-color: #F7F7F2 !important;
+  border-color: #D1D5DB !important;
+}
+
+/* Sidebar & Header Surfaces (Nordic Charcoal Dark Accents) */
+[data-theme="nordic"] aside {
+  background-color: #1F2933 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="nordic"] aside nav {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-theme="nordic"] header {
+  background-color: rgba(247, 247, 242, 0.92) !important;
+  border-color: #D1D5DB !important;
+}
+
+/* Typography in Nordic */
+[data-theme="nordic"] .text-white,
+[data-theme="nordic"] .text-slate-100,
+[data-theme="nordic"] .text-slate-200 {
+  color: #1F2933 !important;
+}
+
+[data-theme="nordic"] .text-slate-300,
+[data-theme="nordic"] .text-slate-400 {
+  color: #6B7280 !important;
+}
+
+[data-theme="nordic"] .text-slate-500,
+[data-theme="nordic"] .text-slate-600 {
+  color: #9CA3AF !important;
+}
+
+/* Warm Wood Accent Buttons & Highlights */
+[data-theme="nordic"] .bg-\[\#2f68fd\],
+[data-theme="nordic"] .bg-indigo-600,
+[data-theme="nordic"] .bg-blue-600 {
+  background-color: #A68A64 !important;
+  color: #FFFFFF !important;
+}
+
+[data-theme="nordic"] .hover\:bg-\[\#2554d4\]:hover,
+[data-theme="nordic"] .hover\:bg-indigo-500:hover,
+[data-theme="nordic"] .hover\:bg-blue-500:hover {
+  background-color: #8F7553 !important;
+}
+
+[data-theme="nordic"] .text-indigo-400,
+[data-theme="nordic"] .text-blue-400,
+[data-theme="nordic"] .text-cyan-400 {
+  color: #A68A64 !important;
+}
+
+[data-theme="nordic"] .border-indigo-500,
+[data-theme="nordic"] .border-blue-500,
+[data-theme="nordic"] .border-slate-800,
+[data-theme="nordic"] .border-slate-700,
+[data-theme="nordic"] .border-white\/\[0\.08\],
+[data-theme="nordic"] .border-white\/\[0\.1\] {
+  border-color: #D1D5DB !important;
+}
+
+/* Semantic Status Colors in Nordic */
+[data-theme="nordic"] .text-emerald-400,
+[data-theme="nordic"] .text-emerald-300 {
+  color: #2E6F40 !important;
+}
+
+[data-theme="nordic"] .bg-emerald-500\/10,
+[data-theme="nordic"] .bg-emerald-500\/15,
+[data-theme="nordic"] .bg-emerald-500\/20 {
+  background-color: rgba(46, 111, 64, 0.12) !important;
+  color: #2E6F40 !important;
+  border-color: rgba(46, 111, 64, 0.25) !important;
+}
+
+[data-theme="nordic"] .text-rose-400,
+[data-theme="nordic"] .text-rose-300 {
+  color: #B91C1C !important;
+}
+
+[data-theme="nordic"] .bg-rose-500\/10,
+[data-theme="nordic"] .bg-rose-500\/15,
+[data-theme="nordic"] .bg-rose-500\/20 {
+  background-color: rgba(185, 28, 28, 0.12) !important;
+  color: #B91C1C !important;
+  border-color: rgba(185, 28, 28, 0.25) !important;
+}
+
+[data-theme="nordic"] .text-amber-400,
+[data-theme="nordic"] .text-amber-300 {
+  color: #D97706 !important;
+}
+
+[data-theme="nordic"] .bg-amber-500\/10,
+[data-theme="nordic"] .bg-amber-500\/15,
+[data-theme="nordic"] .bg-amber-500\/20 {
+  background-color: rgba(217, 119, 6, 0.12) !important;
+  color: #D97706 !important;
+  border-color: rgba(217, 119, 6, 0.25) !important;
+}
+
+/* Inputs & Form Controls in Nordic */
+[data-theme="nordic"] select,
+[data-theme="nordic"] input:not([type="checkbox"]) {
+  background-color: #FFFFFF !important;
+  color: #1F2933 !important;
+  border-color: #D1D5DB !important;
+}
+
+[data-theme="nordic"] select:focus,
+[data-theme="nordic"] input:not([type="checkbox"]):focus {
+  border-color: #A68A64 !important;
+  box-shadow: 0 0 0 2px rgba(166, 138, 100, 0.25) !important;
 }
 
 /* ======================================================== */

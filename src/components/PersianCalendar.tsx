@@ -4,20 +4,13 @@ import {
   ChevronRight,
   ChevronLeft,
   Clock,
-  Sparkles,
   Coffee,
-  CheckCircle2,
-  AlertTriangle,
   Plus,
   Edit3,
   Trash2,
   Briefcase,
   Sun,
   Flame,
-  ArrowUpRight,
-  ArrowDownLeft,
-  Info,
-  CalendarCheck,
   Zap,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, LeaveRecord } from '../types';
@@ -30,11 +23,8 @@ import {
   getTodayJalaliString,
   formatJalaliDate,
   formatMinutesToTimeString,
-  formatMinutesToPersianReadable,
-  timeStringToMinutes,
   parseJalaliDate,
   getJalaliWeekdayName,
-  JalaliCalendarCell,
 } from '../utils/jalali';
 
 interface PersianCalendarProps {
@@ -65,8 +55,11 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
-  // Available year choices for quick selector
-  const availableYears = [1401, 1402, 1403, 1404, 1405, 1406];
+  // Available year choices for quick selector (dynamic range)
+  const availableYears = useMemo(
+    () => [selectedYear - 3, selectedYear - 2, selectedYear - 1, selectedYear, selectedYear + 1, selectedYear + 2],
+    [selectedYear]
+  );
 
   // Grid of cells for current selected month
   const calendarCells = useMemo(() => {

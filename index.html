@@ -15,9 +15,9 @@
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('entrance_exit_app_theme') || 'obsidian';
+          var saved = localStorage.getItem('entrance_exit_app_theme') || 'nordic';
           document.documentElement.setAttribute('data-theme', saved);
-          if (saved !== 'light') {
+          if (saved !== 'light' && saved !== 'nordic') {
             document.documentElement.classList.add('dark');
           } else {
             document.documentElement.classList.add('light');
