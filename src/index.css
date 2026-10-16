@@ -1,0 +1,468 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-glass: var(--surface-glass);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-focus: var(--focus);
+
+  --color-nordic-charcoal: #1F2933;
+  --color-fjord-gray: #6B7280;
+  --color-cloud-gray: #D1D5DB;
+  --color-snow-cream: #F7F7F2;
+  --color-warm-wood: #A68A64;
+
+  --color-semantic-success: var(--semantic-success);
+  --color-semantic-warning: var(--semantic-warning);
+  --color-semantic-danger: var(--semantic-danger);
+  --color-semantic-info: var(--semantic-info);
+}
+
+@layer base {
+  :root,
+  [data-theme="dark"],
+  body[data-theme="dark"] {
+    --font-vazir: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Nordic Dark Mode */
+    --bg: #1F2933;
+    --surface: #2A333D;
+    --surface-2: #343E47;
+    --surface-glass: rgba(31, 41, 51, 0.85);
+    --border: rgba(209, 213, 219, 0.14);
+    --border-strong: #81888F;
+    --text: #F7F7F2;
+    --text-muted: #D1D5DB;
+    --accent: #B9A486;
+    --accent-contrast: #1F2933;
+    --focus: #B9A486;
+
+    /* Verified Semantic Colors (WCAG >= 4.5:1 text, >= 3:1 graphical) */
+    --semantic-success: #85C99F;
+    --semantic-warning: #F0B961;
+    --semantic-danger: #ED9A94;
+    --semantic-info: #A5BFE0;
+  }
+
+  [data-theme="light"],
+  body[data-theme="light"] {
+    /* Nordic Light Mode */
+    --bg: #F7F7F2;
+    --surface: #FDFDFB;
+    --surface-2: #F0F1EE;
+    --surface-glass: rgba(247, 247, 242, 0.90);
+    --border: #D1D5DB;
+    --border-strong: #6B7280;
+    --text: #1F2933;
+    --text-muted: #636B78;
+    --accent: #776853;
+    --accent-contrast: #FFFFFF;
+    --focus: #776853;
+
+    /* Verified Semantic Colors (WCAG >= 4.5:1 text, >= 3:1 graphical) */
+    --semantic-success: #22553A;
+    --semantic-warning: #875104;
+    --semantic-danger: #8C2224;
+    --semantic-info: #23446D;
+  }
+
+  * {
+    font-family: var(--font-vazir);
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    direction: rtl;
+    text-align: right;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+}
+
+/* ======================================================== */
+/* 🌟 SUBTLE NORDIC MESH BACKGROUND ANIMATIONS             */
+/* ======================================================== */
+@keyframes liquid-blob-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(40px, -30px) scale(1.06);
+  }
+  66% {
+    transform: translate(-30px, 35px) scale(0.96);
+  }
+}
+
+@keyframes liquid-blob-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-45px, 35px) scale(1.08) rotate(60deg);
+  }
+  66% {
+    transform: translate(30px, -30px) scale(0.95) rotate(120deg);
+  }
+}
+
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+.animate-shrink-8s {
+  animation: shrinkWidth 8s linear forwards;
+}
+
+/* ======================================================== */
+/* 💎 CALMED LIQUID GLASS SYSTEM CLASSES (NORDIC ADAPTED)   */
+/* ======================================================== */
+
+/* Primary Physical Liquid Glass Card */
+.liquid-glass {
+  background: var(--surface-glass);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+              0 14px 35px -8px rgba(0, 0, 0, 0.25);
+  border-radius: 24px;
+}
+
+/* Secondary / Nested Sub-surface Glass */
+.liquid-glass-subtle {
+  background: var(--surface-2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+              0 8px 20px -6px rgba(0, 0, 0, 0.18);
+  border-radius: 18px;
+}
+
+/* Liquid Glass Modals */
+.liquid-glass-modal {
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--border-strong);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+              0 24px 50px -12px rgba(0, 0, 0, 0.45);
+  border-radius: 28px;
+}
+
+/* ⚡ LOW EFFECTS MODE & ACCESSIBILITY OPTIMIZATIONS */
+[data-effects="low"] .liquid-glass,
+body[data-effects="low"] .liquid-glass {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: var(--surface);
+}
+
+[data-effects="low"] .liquid-glass-subtle,
+body[data-effects="low"] .liquid-glass-subtle {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: var(--surface-2);
+}
+
+[data-effects="low"] .liquid-glass-modal,
+body[data-effects="low"] .liquid-glass-modal {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: var(--surface-glass);
+}
+
+[data-effects="low"] .liquid-pill-btn,
+body[data-effects="low"] .liquid-pill-btn,
+[data-effects="low"] .liquid-input,
+body[data-effects="low"] .liquid-input {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(1px)) {
+  .liquid-glass {
+    background: var(--surface);
+  }
+  .liquid-glass-subtle {
+    background: var(--surface-2);
+  }
+  .liquid-glass-modal {
+    background: var(--bg);
+  }
+  .liquid-pill-btn,
+  .liquid-input {
+    background: var(--surface-2);
+  }
+}
+
+/* Translucent Liquid Pill Button (Default / Neutral) */
+.liquid-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-pill-btn:hover {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.liquid-pill-btn:active {
+  transform: scale(0.97);
+}
+
+/* Accent Action Pill Button */
+.liquid-pill-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: 0 6px 16px -3px rgba(166, 138, 100, 0.35);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-pill-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.liquid-pill-btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Danger Pill Button */
+.liquid-pill-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--semantic-danger);
+  border: 1px solid var(--semantic-danger);
+  box-shadow: 0 6px 16px -3px rgba(192, 92, 84, 0.35);
+  color: #FFFFFF;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-pill-btn-danger:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.liquid-pill-btn-danger:active {
+  transform: scale(0.97);
+}
+
+/* Translucent Liquid Inputs & Selects */
+.liquid-input {
+  background: var(--surface-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  color: var(--text);
+  padding: 0.65rem 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.liquid-input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.25);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Hide scrollbar for tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ======================================================== */
+/* 🛑 REDUCED MOTION PREFERENCES (ACCESSIBILITY WCAG 2.2)    */
+/* ======================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .liquid-glass,
+  .liquid-glass-subtle,
+  .liquid-glass-modal {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .liquid-pill-btn,
+  .liquid-pill-btn-primary,
+  .liquid-pill-btn-danger {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ======================================================== */
+/* 🎯 ACCESSIBLE FOCUS INDICATORS (WCAG 2.4.7 / 2.4.11)     */
+/* ======================================================== */
+:focus-visible {
+  outline: 2px solid var(--focus) !important;
+  outline-offset: 2px !important;
+}
+
+/* ======================================================== */
+/* 🏷️ ACCESSIBLE SEMANTIC BADGES & CHIPS                     */
+/* ======================================================== */
+.badge-success {
+  background: var(--surface-2);
+  color: var(--semantic-success);
+  border: 1px solid color-mix(in srgb, var(--semantic-success) 45%, transparent);
+}
+
+.badge-warning {
+  background: var(--surface-2);
+  color: var(--semantic-warning);
+  border: 1px solid color-mix(in srgb, var(--semantic-warning) 45%, transparent);
+}
+
+.badge-danger {
+  background: var(--surface-2);
+  color: var(--semantic-danger);
+  border: 1px solid color-mix(in srgb, var(--semantic-danger) 45%, transparent);
+}
+
+.badge-info {
+  background: var(--surface-2);
+  color: var(--semantic-info);
+  border: 1px solid color-mix(in srgb, var(--semantic-info) 45%, transparent);
+}
+
+.badge-neutral {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.badge-accent {
+  background: var(--surface-2);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ======================================================== */
+/* 🖨️ PRINT STYLES                                          */
+/* ======================================================== */
+@media print {
+  body, #root, [data-theme], [data-theme="dark"], [data-theme="light"] {
+    background: #FFFFFF !important;
+    color: #1F2933 !important;
+  }
+
+  .liquid-glass,
+  .liquid-glass-subtle,
+  .liquid-glass-modal {
+    background: #FFFFFF !important;
+    border: 1px solid #D1D5DB !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #1F2933 !important;
+  }
+
+  .badge-success,
+  .badge-warning,
+  .badge-danger,
+  .badge-info,
+  .badge-neutral,
+  .badge-accent {
+    background: transparent !important;
+    border: 1px solid #6B7280 !important;
+    color: #1F2933 !important;
+  }
+
+  /* Force dark text for print on all textual nodes */
+  h1, h2, h3, h4, h5, h6, p, span, td, th, bdi, strong {
+    color: #1F2933 !important;
+    text-shadow: none !important;
+  }
+
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th, td {
+    border: 1px solid #D1D5DB !important;
+    background: #FFFFFF !important;
+  }
+}
