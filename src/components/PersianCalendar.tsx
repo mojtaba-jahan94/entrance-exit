@@ -334,22 +334,22 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       }
                     }}
                     onDoubleClick={() => onOpenManualEntryForDate(cell.dateStr)}
-                    className={`group relative flex flex-col justify-between min-h-[78px] sm:min-h-[96px] p-1.5 sm:p-2.5 rounded-2xl cursor-pointer transition-all duration-200 select-none ${
+                    className={`group relative flex flex-col justify-between min-h-[48px] sm:min-h-[90px] p-1.5 sm:p-3 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 select-none ${
                       cell.isCurrentMonth ? '' : 'opacity-30 hover:opacity-70'
                     } ${
                       isSelected
-                        ? 'liquid-pill-btn-primary rounded-2xl text-accent-contrast shadow-lg ring-2 ring-accent scale-[1.03] z-20'
+                        ? 'liquid-pill-btn-primary rounded-xl sm:rounded-2xl text-accent-contrast shadow-lg ring-2 ring-accent scale-[1.03] z-20'
                         : cell.isToday
-                        ? 'rounded-2xl border-2 border-accent bg-accent/15 backdrop-blur-md shadow-md'
+                        ? 'rounded-xl sm:rounded-2xl border-2 border-accent bg-accent/15 backdrop-blur-md shadow-md'
                         : cell.isHoliday
-                        ? 'rounded-2xl border border-semantic-danger/30 bg-semantic-danger/10 backdrop-blur-md hover:bg-semantic-danger/20 hover:border-semantic-danger/40'
-                        : 'rounded-2xl border border-border bg-surface backdrop-blur-md hover:bg-surface-2 hover:border-border-strong'
+                        ? 'rounded-xl sm:rounded-2xl border border-semantic-danger/30 bg-semantic-danger/10 backdrop-blur-md hover:bg-semantic-danger/20 hover:border-semantic-danger/40'
+                        : 'rounded-xl sm:rounded-2xl border border-border bg-surface backdrop-blur-md hover:bg-surface-2 hover:border-border-strong'
                     }`}
                   >
                     {/* Top Row: Day Number + Status / Today Badge */}
                     <div className="flex items-start justify-between">
                       <span
-                        className={`text-sm sm:text-base font-black font-mono tracking-tight ${
+                        className={`text-xs sm:text-base font-black font-mono tracking-tight ${
                           isSelected
                             ? 'text-accent-contrast'
                             : cell.isHoliday
@@ -363,31 +363,60 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       {/* Small Quick Status Indicator / Today Ring */}
                       <div className="flex items-center gap-1">
                         {cell.isToday && !isSelected && (
-                          <span className="h-2 w-2 rounded-full bg-accent ring-2 ring-accent/40 animate-pulse shadow-sm" />
+                          <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-accent ring-2 ring-accent/40 animate-pulse shadow-sm" />
                         )}
                         {isWorkingLive && (
                           <span
-                            className="h-2 w-2 rounded-full bg-semantic-info ring-2 ring-semantic-info/40 animate-ping shadow-sm"
+                            className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-semantic-info ring-2 ring-semantic-info/40 animate-ping shadow-sm"
                             title="در حال کار"
                           />
                         )}
-                        {/* Quick hover add button */}
+                        {/* Quick hover add button (Desktop only) */}
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenManualEntryForDate(cell.dateStr);
                           }}
                           title="ثبت تردد برای این روز"
                           aria-label={`ثبت تردد برای ${toPersianDigits(cell.jd)} ${PERSIAN_MONTH_NAMES[selectedMonth - 1]}`}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-lg bg-surface-2 hover:bg-surface text-text"
+                          className="hidden sm:block opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded-lg bg-surface-2 hover:bg-surface text-text"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
 
-                    {/* Middle Row: Holiday Pill or Status Pill */}
-                    <div className="my-1 space-y-1">
+                    {/* Mobile Status Dots Indicator */}
+                    <div className="flex sm:hidden items-center justify-center gap-1 mt-1">
+                      {rec?.checkIn && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"
+                          title="ورود ثبت شده"
+                        />
+                      )}
+                      {rec?.checkOut && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"
+                          title="خروج ثبت شده"
+                        />
+                      )}
+                      {dayLeaves.length > 0 && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"
+                          title="مرخصی"
+                        />
+                      )}
+                      {cell.isHoliday && !rec?.checkIn && (
+                        <span
+                          className="w-1.5 h-1.5 rounded-full bg-rose-400/80 shrink-0"
+                          title={cell.holidayTitle || 'تعطیل رسمی'}
+                        />
+                      )}
+                    </div>
+
+                    {/* Middle Row: Holiday Pill or Status Pill (Desktop only) */}
+                    <div className="hidden sm:block my-1 space-y-1">
                       {/* Holiday Badge */}
                       {cell.isHoliday && cell.holidayTitle && (
                         <div
@@ -430,8 +459,8 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                       )}
                     </div>
 
-                    {/* Bottom Status Row (accessible indicators with text + pattern) */}
-                    <div className="flex items-center gap-1 text-[8px] flex-wrap">
+                    {/* Bottom Status Row (Desktop only) */}
+                    <div className="hidden sm:flex items-center gap-1 text-[8px] flex-wrap">
                       {rec?.checkIn && (
                         <span
                           className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded font-sans leading-none ${
@@ -477,10 +506,162 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                 );
               })}
             </div>
+
+            {/* Mobile-Only Selected Day Detail Card (Master-Detail Pattern) */}
+            <div className="sm:hidden mt-4 p-4 rounded-xl border border-border bg-surface/90 backdrop-blur-md shadow-lg space-y-3 animate-in fade-in duration-200">
+              {/* Header: Date + Status Badges */}
+              <div className="flex items-center justify-between border-b border-border pb-2.5">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-accent">جزئیات روز انتخاب‌شده</span>
+                    {selectedDate === todayStr && (
+                      <span className="rounded-full badge-accent text-[9px] font-bold px-1.5 py-0.2">
+                        امروز
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-text mt-0.5">
+                    {selectedDayWeekday}، {toPersianDigits(selectedDate)}
+                  </h4>
+                </div>
+
+                {/* Status Pill Badge */}
+                <div className="shrink-0">
+                  {selectedDayHoliday.isHoliday ? (
+                    <span className="badge-danger px-2 py-1 text-[10px] font-bold rounded-lg inline-flex items-center gap-1">
+                      <Sun className="h-3 w-3" />
+                      <span>{selectedDayHoliday.title || 'تعطیل'}</span>
+                    </span>
+                  ) : selectedDayRecord?.status === 'in_progress' ? (
+                    <span className="badge-info px-2 py-1 text-[10px] font-bold rounded-lg inline-flex items-center gap-1 animate-pulse">
+                      <span className="h-1.5 w-1.5 rounded-full bg-semantic-info" />
+                      <span>در حال کار</span>
+                    </span>
+                  ) : selectedDayRecord?.checkIn && selectedDayRecord?.checkOut ? (
+                    <span className="badge-success px-2 py-1 text-[10px] font-bold rounded-lg inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-semantic-success" />
+                      <span>حاضر</span>
+                    </span>
+                  ) : selectedDayLeaves.length > 0 ? (
+                    <span className="badge-warning px-2 py-1 text-[10px] font-bold rounded-lg inline-flex items-center gap-1">
+                      <Coffee className="h-3 w-3" />
+                      <span>مرخصی</span>
+                    </span>
+                  ) : (
+                    <span className="badge-neutral px-2 py-1 text-[10px] font-bold rounded-lg">
+                      بدون تردد
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Entry & Exit Times Grid */}
+              <div className="grid grid-cols-2 gap-2 text-center font-mono">
+                <div className="rounded-xl bg-surface-2 border border-border p-2">
+                  <span className="text-[10px] text-muted block mb-0.5 font-sans">ساعت ورود</span>
+                  <span className="text-xs sm:text-sm font-bold text-semantic-success">
+                    {selectedDayRecord?.checkIn
+                      ? toPersianDigits(selectedDayRecord.checkIn)
+                      : 'ثبت‌نشده'}
+                  </span>
+                </div>
+                <div className="rounded-xl bg-surface-2 border border-border p-2">
+                  <span className="text-[10px] text-muted block mb-0.5 font-sans">ساعت خروج</span>
+                  <span className="text-xs sm:text-sm font-bold text-semantic-danger">
+                    {selectedDayRecord?.checkOut
+                      ? toPersianDigits(selectedDayRecord.checkOut)
+                      : selectedDayRecord?.checkIn
+                      ? 'در حال کار'
+                      : 'ثبت‌نشده'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Key Metrics Row (if record exists) */}
+              {selectedDayRecord && (
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono bg-surface-2/60 p-2 rounded-xl border border-border">
+                  <div>
+                    <span className="text-[9px] text-muted block font-sans">کارکرد مفید</span>
+                    <span className="font-bold text-text">
+                      {toPersianDigits(formatMinutesToTimeString(selectedDayRecord.workedMinutes))}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-muted block font-sans">اضافه‌کار</span>
+                    <span className="font-bold text-semantic-success">
+                      {selectedDayRecord.overtimeMinutes > 0
+                        ? `+${toPersianDigits(formatMinutesToTimeString(selectedDayRecord.overtimeMinutes))}`
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-muted block font-sans">کسر کار</span>
+                    <span className="font-bold text-semantic-danger">
+                      {selectedDayRecord.deficitMinutes > 0
+                        ? `-${toPersianDigits(formatMinutesToTimeString(selectedDayRecord.deficitMinutes))}`
+                        : '—'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Leaves & Notes (if any) */}
+              {selectedDayLeaves.length > 0 && (
+                <div className="space-y-1 pt-1">
+                  {selectedDayLeaves.map((l) => (
+                    <div key={l.id} className="rounded-lg bg-surface-2 p-2 text-xs border border-border flex items-center justify-between">
+                      <span className="text-semantic-warning flex items-center gap-1 font-semibold text-[11px]">
+                        <Coffee className="h-3 w-3" />
+                        <span>{l.type === 'hourly' ? 'مرخصی ساعتی' : 'مرخصی روزانه'}</span>
+                      </span>
+                      <span className="font-mono text-muted text-[10px]">
+                        {toPersianDigits(l.hours)} ساعت
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selectedDayRecord?.note && (
+                <p className="text-[10px] text-muted bg-surface-2 p-2 rounded-lg italic border border-border">
+                  {selectedDayRecord.note}
+                </p>
+              )}
+
+              {/* Quick Action Buttons */}
+              <div className="pt-2 border-t border-border flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenManualEntryForDate(selectedDate)}
+                  className="liquid-pill-btn-primary flex-1 py-2 px-3 text-xs font-bold shadow-md flex items-center justify-center gap-1"
+                >
+                  <Edit3 className="h-3.5 w-3.5" />
+                  <span>{selectedDayRecord ? 'ویرایش تردد' : 'ثبت تردد'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenLeaveForDate(selectedDate)}
+                  className="liquid-pill-btn py-2 px-3 text-xs text-semantic-warning flex items-center justify-center gap-1"
+                >
+                  <Coffee className="h-3.5 w-3.5" />
+                  <span>مرخصی</span>
+                </button>
+                {selectedDayRecord && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteRecord(selectedDayRecord.id)}
+                    aria-label="حذف تردد این روز"
+                    className="liquid-pill-btn-danger p-2 text-xs"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Right Panel: "Scheduled" / روز و رویدادهای انتخاب شده */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col justify-between rounded-[28px] liquid-glass-subtle p-4 sm:p-5 border border-[var(--border)] shadow-xl">
+          {/* Right Panel: "Scheduled" / روز و رویدادهای انتخاب شده (Desktop / Tablet) */}
+          <div className="hidden sm:flex lg:col-span-4 xl:col-span-4 flex-col justify-between rounded-[28px] liquid-glass-subtle p-4 sm:p-5 border border-[var(--border)] shadow-xl">
             {/* Header: Scheduled + Date + Day Chevrons */}
             <div>
               <div className="flex items-center justify-between border-b border-border pb-3 mb-4">

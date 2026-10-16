@@ -8,14 +8,12 @@ import {
   PlusCircle,
   Database,
   Search,
-  Bell,
   LogOut,
   KeyRound,
   ShieldCheck,
   HardDrive,
   Lock,
   X,
-  Sparkles,
   Settings,
   AlertTriangle,
 } from 'lucide-react';
@@ -55,7 +53,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, logout, dbStatus, storageMode, hasConflict, setIsConflictModalOpen } = useAuth();
   const [liveTime, setLiveTime] = useState<string>(getCurrentTimeString(true));
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [showNotificationToast, setShowNotificationToast] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const todayStr = useMemo(() => getTodayJalaliString(), []);
@@ -118,7 +115,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   }, [activeTab, weekdayName, todayStr]);
 
-  const isAnyMenuOpen = isUserMenuOpen || showNotificationToast;
+  const isAnyMenuOpen = isUserMenuOpen;
 
   return (
     <header
@@ -195,54 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline">ثبت تردد</span>
           </button>
 
-          {/* Notification Bell */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowNotificationToast(!showNotificationToast)}
-              title="اعلان‌ها"
-              aria-label="اعلان‌های سامانه"
-              aria-expanded={showNotificationToast}
-              className="liquid-pill-btn relative flex h-9 w-9 items-center justify-center text-text"
-            >
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[var(--accent)] ring-2 ring-[var(--surface)]" />
-            </button>
 
-            {/* Notification Popover */}
-            {showNotificationToast && (
-              <div
-                role="region"
-                aria-label="پنجره اعلان‌ها"
-                className="absolute left-0 mt-2 w-72 sm:w-80 rounded-[24px] bg-[var(--surface)] border border-[var(--border-strong)] p-3.5 shadow-2xl z-50 text-xs animate-in fade-in zoom-in-95 duration-150 max-h-[calc(100vh-5rem)] overflow-y-auto"
-              >
-                <div className="flex items-center justify-between border-b border-[var(--border)] pb-2 mb-2">
-                  <span className="font-bold text-text flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[var(--accent)]" />
-                    اعلان‌های سامانه
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setShowNotificationToast(false)}
-                    aria-label="بستن اعلان‌ها"
-                    className="text-muted hover:text-text"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  <div className="rounded-2xl bg-[var(--surface-2)] p-3 border border-[var(--border)]">
-                    <span className="font-semibold text-[var(--accent)] block text-xs">
-                      تقویم شمسی هوشمند فعال است
-                    </span>
-                    <p className="text-[11px] text-muted mt-1 leading-relaxed">
-                      کلیه تعطیلات رسمی ایران به همراه جزئیات حضور و مرخصی‌ها در تقویم لحاظ شده‌اند.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Live Digital Clock Pill */}
           <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-2)] px-3 py-1.5 font-mono text-xs shadow-inner">
