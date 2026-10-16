@@ -26,6 +26,10 @@ import {
   formatMinutesToTimeString,
   parseJalaliDate,
   getJalaliWeekdayName,
+  getCurrentJalaliDate,
+  jalaliToGregorianDate,
+  gregorianToJalaliString,
+  JalaliCalendarCell,
 } from '../utils/jalali';
 
 interface PersianCalendarProps {
@@ -56,8 +60,35 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
   const todayStr = useMemo(() => getTodayJalaliString(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
-  // Available year choices for quick selector
-  const availableYears = [1401, 1402, 1403, 1404, 1405, 1406];
+  // Available year choices for quick selector (ensuring selectedYear is always present)
+  const availableYears = useMemo(() => {
+    const minYear = Math.min(1400, selectedYear - 2);
+    const maxYear = Math.max(1410, selectedYear + 2);
+    const years: number[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [selectedYear]);
+
+  // Synchronize selectedDate when selectedYear or selectedMonth changes
+  const [prevYear, setPrevYear] = useState<number>(selectedYear);
+  const [prevMonth, setPrevMonth] = useState<number>(selectedMonth);
+
+  if (prevYear !== selectedYear || prevMonth !== selectedMonth) {
+    setPrevYear(selectedYear);
+    setPrevMonth(selectedMonth);
+    const parsed = parseJalaliDate(selectedDate);
+    // If selectedDate does not match incoming selectedYear & selectedMonth, update cleanly
+    if (!parsed || parsed.jy !== selectedYear || parsed.jm !== selectedMonth) {
+      const today = getCurrentJalaliDate();
+      if (selectedYear === today.jy && selectedMonth === today.jm) {
+        setSelectedDate(todayStr);
+      } else {
+        setSelectedDate(formatJalaliDate(selectedYear, selectedMonth, 1));
+      }
+    }
+  }
 
   // Grid of cells for current selected month
   const calendarCells = useMemo(() => {
@@ -148,27 +179,27 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
     }
   };
 
-  // Navigate day in Scheduled sidebar
+  // Navigate day in Scheduled sidebar (properly transitions month & year across boundaries)
   const handleShiftSelectedDay = (offsetDays: number) => {
-    // Find in calendarCells or shift
-    const currentIndex = calendarCells.findIndex((c) => c.dateStr === selectedDate);
-    if (currentIndex !== -1) {
-      const targetIndex = currentIndex + offsetDays;
-      if (targetIndex >= 0 && targetIndex < calendarCells.length) {
-        const target = calendarCells[targetIndex];
-        setSelectedDate(target.dateStr);
-        if (!target.isCurrentMonth) {
-          onYearChange(target.jy);
-          onMonthChange(target.jm);
-        }
-        return;
-      }
-    }
-    // Fallback if not in grid
     const parsed = parseJalaliDate(selectedDate);
-    if (parsed) {
-      const newD = Math.max(1, Math.min(30, parsed.jd + offsetDays));
-      setSelectedDate(formatJalaliDate(parsed.jy, parsed.jm, newD));
+    if (!parsed) return;
+    const gDate = jalaliToGregorianDate(selectedDate);
+    gDate.setDate(gDate.getDate() + offsetDays);
+    const nextJalaliStr = gregorianToJalaliString(gDate);
+    setSelectedDate(nextJalaliStr);
+    const nextParsed = parseJalaliDate(nextJalaliStr);
+    if (nextParsed && (nextParsed.jy !== selectedYear || nextParsed.jm !== selectedMonth)) {
+      onYearChange(nextParsed.jy);
+      onMonthChange(nextParsed.jm);
+    }
+  };
+
+  // Select a day cell (transitions month & year if a padding day from another month is clicked)
+  const handleSelectCell = (cell: JalaliCalendarCell) => {
+    setSelectedDate(cell.dateStr);
+    if (!cell.isCurrentMonth) {
+      onYearChange(cell.jy);
+      onMonthChange(cell.jm);
     }
   };
 
@@ -212,7 +243,7 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
               <div className="relative">
                 <select
                   value={selectedYear}
-                  onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
+                  onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
                   className="liquid-input appearance-none cursor-pointer rounded-2xl px-3 py-2 pl-7 text-sm sm:text-base font-bold font-mono text-text shadow-inner focus:outline-none"
                 >
                   {availableYears.map((y) => (
@@ -326,11 +357,11 @@ export const PersianCalendar: React.FC<PersianCalendarProps> = ({
                     role="button"
                     tabIndex={cell.isCurrentMonth ? 0 : -1}
                     aria-label={`روز ${toPersianDigits(cell.jd)} ${PERSIAN_MONTH_NAMES[selectedMonth - 1]}${cell.isHoliday ? '، تعطیل: ' + cell.holidayTitle : ''}${rec ? '، کارکرد: ' + toPersianDigits(formatMinutesToTimeString(rec.workedMinutes)) : ''}${rec?.deficitMinutes ? '، دارای کسری' : ''}${rec?.overtimeMinutes ? '، دارای اضافه کار' : ''}${cell.isToday ? '، امروز' : ''}`}
-                    onClick={() => setSelectedDate(cell.dateStr)}
+                    onClick={() => handleSelectCell(cell)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
-                        setSelectedDate(cell.dateStr);
+                        handleSelectCell(cell);
                       }
                     }}
                     onDoubleClick={() => onOpenManualEntryForDate(cell.dateStr)}

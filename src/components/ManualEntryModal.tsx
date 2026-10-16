@@ -92,6 +92,17 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
     return jalaali.jalaaliMonthLength(year, month);
   }, [year, month]);
 
+  // Dynamic available years list guaranteeing selected year is present
+  const availableYears = useMemo(() => {
+    const minYear = Math.min(1400, year - 2);
+    const maxYear = Math.max(1410, year + 2);
+    const years: number[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [year]);
+
   // Adjust day if selected month has fewer days
   useEffect(() => {
     if (day > daysInCurrentMonth) {
@@ -630,7 +641,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                     errors.date ? 'border-[var(--semantic-danger)] focus:border-[var(--semantic-danger)]' : ''
                   }`}
                 >
-                  {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+                  {availableYears.map((yr) => (
                     <option key={yr} value={yr} className="bg-[var(--surface)] text-[var(--text-main)]">
                       {toPersianDigits(yr)}
                     </option>

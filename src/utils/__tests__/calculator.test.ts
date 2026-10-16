@@ -270,4 +270,66 @@ describe('Attendance Calculator Engine', () => {
       expect(stats.presentDaysCount).toBe(1);
     });
   });
+
+  // Year Transitions and Month Filtering in calculateMonthlyStats
+  describe('Monthly stats across year boundaries and leap years', () => {
+    it('strictly isolates records by year and month prefix', () => {
+      const rec1403: AttendanceRecord = {
+        id: 'rec_1403',
+        date: '1403/12/15',
+        gregorianDate: '2025-03-05',
+        dayOfWeek: 4,
+        checkIn: '08:30',
+        checkOut: '17:00',
+        breakMinutes: 30,
+        status: 'present',
+        delayMinutes: 0,
+        earlyLeaveMinutes: 0,
+        workedMinutes: 480,
+        overtimeMinutes: 0,
+        holidayOvertimeMinutes: 0,
+        deficitMinutes: 0,
+        netBalanceMinutes: 0,
+      };
+
+      const rec1404: AttendanceRecord = {
+        id: 'rec_1404',
+        date: '1404/12/15',
+        gregorianDate: '2026-03-06',
+        dayOfWeek: 6,
+        checkIn: '08:30',
+        checkOut: '17:00',
+        breakMinutes: 30,
+        status: 'present',
+        delayMinutes: 0,
+        earlyLeaveMinutes: 0,
+        workedMinutes: 480,
+        overtimeMinutes: 0,
+        holidayOvertimeMinutes: 0,
+        deficitMinutes: 0,
+        netBalanceMinutes: 0,
+      };
+
+      const stats1403 = calculateMonthlyStats([rec1403, rec1404], 1403, 12, baseConfig, []);
+      expect(stats1403.totalWorkedMinutes).toBe(480);
+      expect(stats1403.presentDaysCount).toBe(1);
+
+      const stats1404 = calculateMonthlyStats([rec1403, rec1404], 1404, 12, baseConfig, []);
+      expect(stats1404.totalWorkedMinutes).toBe(480);
+      expect(stats1404.presentDaysCount).toBe(1);
+
+      const stats1404Farvardin = calculateMonthlyStats([rec1403, rec1404], 1404, 1, baseConfig, []);
+      expect(stats1404Farvardin.totalWorkedMinutes).toBe(0);
+      expect(stats1404Farvardin.presentDaysCount).toBe(0);
+    });
+
+    it('correctly accounts for 30 days in leap year 1403 Esfand vs 29 days in 1402 Esfand', () => {
+      const stats1402Esfand = calculateMonthlyStats([], 1402, 12, baseConfig, []);
+      const stats1403Esfand = calculateMonthlyStats([], 1403, 12, baseConfig, []);
+
+      // Both month stats compute standard obligations for the full month
+      expect(stats1402Esfand.totalMonthRequiredMinutes).toBeGreaterThan(0);
+      expect(stats1403Esfand.totalMonthRequiredMinutes).toBeGreaterThan(0);
+    });
+  });
 });

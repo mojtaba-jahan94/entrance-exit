@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Coffee,
@@ -61,6 +61,17 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
   const [month, setMonth] = useState<number>(curM);
   const [year, setYear] = useState<number>(curY);
   const [type, setType] = useState<LeaveType>('hourly');
+
+  // Dynamic available years list guaranteeing selected year is present
+  const availableYears = useMemo(() => {
+    const minYear = Math.min(1400, year - 2);
+    const maxYear = Math.max(1410, year + 2);
+    const years: number[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [year]);
 
   // Clock-based duration state (hours and minutes)
   const [durationHours, setDurationHours] = useState<number>(1);
@@ -443,7 +454,7 @@ export const LeaveModal: React.FC<LeaveModalProps> = ({
                   onChange={(e) => setYear(parseInt(e.target.value, 10))}
                   className="liquid-input px-2.5 py-1.5 text-xs text-[var(--text-main)] font-mono"
                 >
-                  {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+                  {availableYears.map((yr) => (
                     <option key={yr} value={yr} className="bg-[var(--surface)] text-[var(--text-main)]">
                       {toPersianDigits(yr)}
                     </option>

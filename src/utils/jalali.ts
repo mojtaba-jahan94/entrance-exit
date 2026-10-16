@@ -299,12 +299,16 @@ export function getDaysInJalaliMonth(jy: number, jm: number): number {
   return jalaali.jalaaliMonthLength(jy, jm);
 }
 
+// Track warned years beyond 1407 to prevent console spam on grid renders
+export const warnedLunarHolidayYears = new Set<number>();
+
 /**
  * Checks if a date is a known official holiday (fixed solar + lunar)
  */
 export function checkOfficialHoliday(jy: number, jm: number, jd: number): { isHoliday: boolean; title?: string } {
-  // BUG-07: Log warning if queried year is beyond verified lunar calendar table
-  if (jy > 1407) {
+  // BUG-07: Log warning if queried year is beyond verified lunar calendar table (once per year)
+  if (jy > 1407 && !warnedLunarHolidayYears.has(jy)) {
+    warnedLunarHolidayYears.add(jy);
     console.warn(
       `[Jalali Holiday Warning] داده‌های تقویمی تعطیلات رسمی متغیر قمری فقط تا پایان سال ۱۴۰۷ تعریف شده‌اند. برای سال ${jy} فقط تعطیلات ثابت شمسی بررسی می‌شوند.`
     );

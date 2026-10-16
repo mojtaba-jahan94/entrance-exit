@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   FileSpreadsheet,
   Printer,
@@ -59,6 +59,17 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, _setSearchQuery] = useState<string>('');
   const todayStr = getTodayJalaliString();
+
+  // Dynamic available years list guaranteeing selectedYear is present
+  const availableYears = useMemo(() => {
+    const minYear = Math.min(1400, selectedYear - 2);
+    const maxYear = Math.max(1410, selectedYear + 2);
+    const years: number[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [selectedYear]);
 
   // 1. Reactive matchMedia listener for mobile card/table view switching
   const [userViewOverride, setUserViewOverride] = useState<'cards' | 'table' | null>(null);
@@ -325,7 +336,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
               className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-accent focus:outline-none cursor-pointer font-mono"
               aria-label="انتخاب سال"
             >
-              {[1402, 1403, 1404, 1405, 1406].map((yr) => (
+              {availableYears.map((yr) => (
                 <option key={yr} value={yr} className="bg-bg text-text">
                   {toPersianDigits(yr)}
                 </option>
