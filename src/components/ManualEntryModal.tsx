@@ -144,16 +144,27 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
     const targetWeekday = getJalaliWeekdayIndex(targetDateStr);
     const targetIsThursday = targetWeekday === 5;
 
-    const initIn = initialRecord?.checkIn || '08:30';
-    const initOut = initialRecord?.checkOut || (targetIsThursday ? '13:00' : '17:00');
+    // Check if initialRecord represents an existing record (or has an id, or checkIn defined)
+    // Also check if existingRecords already has a record for targetDateStr
+    const existingRec =
+      initialRecord?.id || initialRecord?.checkIn !== undefined
+        ? initialRecord
+        : existingRecords.find((r) => r.date === targetDateStr);
+
+    const isExisting = Boolean(existingRec && (existingRec.id || existingRec.checkIn !== undefined));
+
+    const initIn = isExisting ? (existingRec?.checkIn || '') : '08:30';
+    const initOut = isExisting ? (existingRec?.checkOut || '') : (targetIsThursday ? '13:00' : '17:00');
     const initBreak =
-      initialRecord?.breakMinutes !== undefined
-        ? initialRecord.breakMinutes
+      existingRec?.breakMinutes !== undefined
+        ? existingRec.breakMinutes
         : targetIsThursday
         ? 0
         : 30;
-    const initStatus: DayStatus = initialRecord?.status || 'present';
-    const initNote = initialRecord?.note || '';
+    const initStatus: DayStatus =
+      existingRec?.status ||
+      (existingRec?.checkIn && !existingRec?.checkOut ? 'in_progress' : 'present');
+    const initNote = existingRec?.note || '';
 
     setYear(initY);
     setMonth(initM);
@@ -177,7 +188,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
       status: initStatus,
       note: initNote,
     });
-  }, [isOpen, initialRecord, curY, curM, curD]);
+  }, [isOpen, initialRecord, curY, curM, curD, existingRecords]);
 
   // Form dirty status
   const isDirty = useMemo(() => {
@@ -259,47 +270,104 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
   // 8. Resilient Live Calculation Preview (displays «—» on invalid inputs without throwing)
   const livePreview = useMemo(() => {
-    // If times are missing
-    if (!checkIn.trim() || !checkOut.trim()) {
+    // If check-in is missing
+    if (!checkIn.trim()) {
       return {
         isValid: false,
+        isInProgress: false,
         rawPresenceText: '—',
         breakText: '—',
         netWorkedText: '—',
         balanceMinutes: null,
+        targetCheckOutText: null,
       };
     }
 
     const inMins = timeStringToMinutes(checkIn);
-    const outMins = timeStringToMinutes(checkOut);
-
-    // If times are invalid or check-out is before/equal to check-in
-    if (isNaN(inMins) || isNaN(outMins) || outMins <= inMins) {
+    if (isNaN(inMins)) {
       return {
         isValid: false,
+        isInProgress: false,
         rawPresenceText: '—',
         breakText: '—',
         netWorkedText: '—',
         balanceMinutes: null,
+        targetCheckOutText: null,
+      };
+    }
+
+    const bMins = Number(breakMinutes) || 0;
+    const activeConfig = config || DEFAULT_SHIFT_CONFIG;
+
+    // When checkOut is not entered (in-progress attendance / open record)
+    if (!checkOut.trim()) {
+      try {
+        const metrics = calculateAttendanceMetrics(
+          {
+            date: dateStr,
+            checkIn: checkIn.trim(),
+            checkOut: null,
+            breakMinutes: bMins,
+            status: 'in_progress',
+            note: note.trim(),
+          },
+          activeConfig,
+          leaves
+        );
+
+        return {
+          isValid: true,
+          isInProgress: true,
+          rawPresenceText: 'در حال کار (حضور فعال)',
+          breakText: bMins > 0 ? `${toPersianDigits(bMins)}د` : '۰د',
+          netWorkedText: 'در حال محاسبه...',
+          balanceMinutes: null,
+          targetCheckOutText: metrics.targetCheckOut ? toPersianDigits(metrics.targetCheckOut) : null,
+        };
+      } catch (err) {
+        return {
+          isValid: false,
+          isInProgress: false,
+          rawPresenceText: '—',
+          breakText: '—',
+          netWorkedText: '—',
+          balanceMinutes: null,
+          targetCheckOutText: null,
+        };
+      }
+    }
+
+    const outMins = timeStringToMinutes(checkOut);
+
+    // If times are invalid or check-out is before/equal to check-in
+    if (isNaN(outMins) || outMins <= inMins) {
+      return {
+        isValid: false,
+        isInProgress: false,
+        rawPresenceText: '—',
+        breakText: '—',
+        netWorkedText: '—',
+        balanceMinutes: null,
+        targetCheckOutText: null,
       };
     }
 
     const rawPresence = outMins - inMins;
-    const bMins = Number(breakMinutes) || 0;
 
     // If lunch break exceeds total presence
     if (bMins > rawPresence) {
       return {
         isValid: false,
+        isInProgress: false,
         rawPresenceText: '—',
         breakText: '—',
         netWorkedText: '—',
         balanceMinutes: null,
+        targetCheckOutText: null,
       };
     }
 
     try {
-      const activeConfig = config || DEFAULT_SHIFT_CONFIG;
       const metrics = calculateAttendanceMetrics(
         {
           date: dateStr,
@@ -315,19 +383,23 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
       return {
         isValid: true,
+        isInProgress: false,
         rawPresenceText: `${toPersianDigits(Math.floor(rawPresence / 60))}س و ${toPersianDigits(rawPresence % 60)}د`,
         breakText: `${toPersianDigits(metrics.breakMinutes)}د`,
         netWorkedText: `${toPersianDigits(Math.floor(metrics.workedMinutes / 60))}س و ${toPersianDigits(metrics.workedMinutes % 60)}د`,
         balanceMinutes: metrics.netBalanceMinutes,
+        targetCheckOutText: null,
       };
     } catch (err) {
       console.warn('Live preview calculation notice:', err);
       return {
         isValid: false,
+        isInProgress: false,
         rawPresenceText: '—',
         breakText: '—',
         netWorkedText: '—',
         balanceMinutes: null,
+        targetCheckOutText: null,
       };
     }
   }, [checkIn, checkOut, breakMinutes, status, note, dateStr, config, leaves]);
@@ -349,34 +421,38 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
     const isValidTimeFormat = (val: string) => /^([01]\d|2[0-3]):[0-5]\d$/.test(val.trim());
 
-    // 4. Invalid or empty time checks
-    if (!checkIn || !checkIn.trim()) {
-      newErrors.checkIn = 'ساعت ورود نمی‌تواند خالی باشد.';
-    } else if (!isValidTimeFormat(checkIn)) {
+    const isPresenceStatus = status === 'present' || status === 'in_progress';
+
+    // 4. CheckIn validation
+    if (isPresenceStatus) {
+      if (!checkIn || !checkIn.trim()) {
+        newErrors.checkIn = 'ساعت ورود نمی‌تواند خالی باشد.';
+      } else if (!isValidTimeFormat(checkIn)) {
+        newErrors.checkIn = 'فرمت ساعت ورود نامعتبر است (مثال: ۰۸:۳۰).';
+      }
+    } else if (checkIn && checkIn.trim() && !isValidTimeFormat(checkIn)) {
       newErrors.checkIn = 'فرمت ساعت ورود نامعتبر است (مثال: ۰۸:۳۰).';
     }
 
-    if (!checkOut || !checkOut.trim()) {
-      newErrors.checkOut = 'ساعت خروج نمی‌تواند خالی باشد.';
-    } else if (!isValidTimeFormat(checkOut)) {
-      newErrors.checkOut = 'فرمت ساعت خروج نامعتبر است (مثال: ۱۷:۰۰).';
-    }
+    // CheckOut validation: Optional! (allows editing entrance only when exit is not yet registered)
+    if (checkOut && checkOut.trim()) {
+      if (!isValidTimeFormat(checkOut)) {
+        newErrors.checkOut = 'فرمت ساعت خروج نامعتبر است (مثال: ۱۷:۰۰).';
+      } else if (checkIn && checkIn.trim() && isValidTimeFormat(checkIn)) {
+        const inMins = timeStringToMinutes(checkIn);
+        const outMins = timeStringToMinutes(checkOut);
 
-    // 1. Checkout before or equal to checkin
-    if (checkIn && checkOut && isValidTimeFormat(checkIn) && isValidTimeFormat(checkOut)) {
-      const inMins = timeStringToMinutes(checkIn);
-      const outMins = timeStringToMinutes(checkOut);
-
-      if (outMins < inMins) {
-        newErrors.checkOut = 'ساعت خروج نمی‌تواند قبل از ساعت ورود باشد.';
-      } else if (outMins === inMins) {
-        newErrors.checkOut = 'ساعت خروج نمی‌تواند هم‌زمان با ساعت ورود باشد.';
-      } else {
-        // 3. Lunch break longer than total presence
-        const presenceMins = outMins - inMins;
-        const bMins = Number(breakMinutes) || 0;
-        if (bMins > presenceMins) {
-          newErrors.breakMinutes = `مدت ناهار (${toPersianDigits(bMins)} دقیقه) نمی‌تواند بیشتر از کل مدت حضور (${toPersianDigits(presenceMins)} دقیقه) باشد.`;
+        if (outMins < inMins) {
+          newErrors.checkOut = 'ساعت خروج نمی‌تواند قبل از ساعت ورود باشد.';
+        } else if (outMins === inMins) {
+          newErrors.checkOut = 'ساعت خروج نمی‌تواند هم‌زمان با ساعت ورود باشد.';
+        } else {
+          // Lunch break longer than total presence
+          const presenceMins = outMins - inMins;
+          const bMins = Number(breakMinutes) || 0;
+          if (bMins > presenceMins) {
+            newErrors.breakMinutes = `مدت ناهار (${toPersianDigits(bMins)} دقیقه) نمی‌تواند بیشتر از کل مدت حضور (${toPersianDigits(presenceMins)} دقیقه) باشد.`;
+          }
         }
       }
     }
@@ -413,14 +489,15 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
 
     // Target ID if editing existing record
     const targetId = initialRecord?.id || existingRecordForDate?.id || undefined;
+    const isStillInProgress = Boolean(checkIn && checkIn.trim() && (!checkOut || !checkOut.trim()));
 
     onSave({
       id: targetId,
       date: dateStr,
-      checkIn: checkIn ? checkIn.trim() : null,
-      checkOut: checkOut ? checkOut.trim() : null,
+      checkIn: checkIn && checkIn.trim() ? checkIn.trim() : null,
+      checkOut: checkOut && checkOut.trim() ? checkOut.trim() : null,
       breakMinutes: Number(breakMinutes) || 0,
-      status,
+      status: isStillInProgress ? 'in_progress' : status === 'in_progress' ? 'present' : status,
       note: note.trim(),
     });
     onClose();
@@ -700,9 +777,25 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
             </div>
 
             <div>
-              <label htmlFor="manual-checkout-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
-                ساعت خروج
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="manual-checkout-input" className="block text-xs font-semibold text-[var(--text-main)]">
+                  ساعت خروج
+                  <span className="text-muted font-normal text-[10px] mr-1">(اختیاری)</span>
+                </label>
+                {checkOut && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCheckOut('');
+                      if (errors.checkOut) setErrors((prev) => ({ ...prev, checkOut: '' }));
+                    }}
+                    className="text-[10px] text-muted hover:text-[var(--semantic-danger)] transition-colors focus:outline-none"
+                    title="پاک کردن ساعت خروج"
+                  >
+                    پاک کردن
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="manual-checkout-input"
@@ -720,7 +813,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                   }`}
                 />
               </div>
-              {/* 1 & 4. CheckOut Error Message */}
+              {/* CheckOut Error Message */}
               {errors.checkOut && (
                 <p
                   id="checkout-error"
@@ -780,6 +873,7 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 className="liquid-input w-full px-3 py-2 text-xs font-medium text-[var(--text-main)]"
               >
                 <option value="present" className="bg-[var(--surface)] text-[var(--text-main)]">حاضر عادی</option>
+                <option value="in_progress" className="bg-[var(--surface)] text-[var(--text-main)]">در حال کار (حضور فعال)</option>
                 <option value="leave" className="bg-[var(--surface)] text-[var(--text-main)]">مرخصی</option>
                 <option value="absent" className="bg-[var(--surface)] text-[var(--text-main)]">غیبت</option>
                 <option value="holiday" className="bg-[var(--surface)] text-[var(--text-main)]">تعطیل رسمی</option>
@@ -809,7 +903,12 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
                 <Clock className="h-3.5 w-3.5 text-[var(--accent)]" />
                 <span>پیش‌نمایش زنده محاسبه کارکرد:</span>
               </span>
-              {livePreview.isValid && livePreview.balanceMinutes !== null && (
+              {livePreview.isValid && livePreview.isInProgress && livePreview.targetCheckOutText && (
+                <span className="text-[var(--accent)] font-mono font-semibold">
+                  خروج پیشنهادی: {livePreview.targetCheckOutText}
+                </span>
+              )}
+              {livePreview.isValid && !livePreview.isInProgress && livePreview.balanceMinutes !== null && (
                 <div className="font-mono font-bold">
                   {livePreview.balanceMinutes > 0 ? (
                     <span className="text-[var(--semantic-success)] inline-flex items-center gap-0.5">
@@ -834,7 +933,9 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center text-[11px] pt-1 border-t border-[var(--border)] font-mono">
               <div>
                 <span className="text-muted block mb-0.5 font-sans">کل حضور</span>
-                <strong className="text-[var(--text-main)] text-xs">{livePreview.rawPresenceText}</strong>
+                <strong className={`text-xs ${livePreview.isInProgress ? 'text-[var(--accent)] font-semibold' : 'text-[var(--text-main)]'}`}>
+                  {livePreview.rawPresenceText}
+                </strong>
               </div>
               <div>
                 <span className="text-muted block mb-0.5 font-sans">کسر ناهار</span>
@@ -842,7 +943,9 @@ export const ManualEntryModal: React.FC<ManualEntryModalProps> = ({
               </div>
               <div>
                 <span className="text-muted block mb-0.5 font-sans">کارکرد مفید خالص</span>
-                <strong className="text-[var(--semantic-success)] text-xs font-black">{livePreview.netWorkedText}</strong>
+                <strong className={`text-xs ${livePreview.isInProgress ? 'text-muted font-normal' : 'text-[var(--semantic-success)] font-black'}`}>
+                  {livePreview.netWorkedText}
+                </strong>
               </div>
             </div>
           </div>
