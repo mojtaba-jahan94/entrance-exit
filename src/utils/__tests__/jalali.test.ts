@@ -230,5 +230,116 @@ describe('Jalali Calendar Utilities', () => {
         expect(revolution.title).toContain('انقلاب');
       }
     });
+
+    it('accurately identifies lunar holidays and combines co-occurring titles for 1403', () => {
+      // 1403/01/13: Nature Day + Martyrdom of Imam Ali (21 Ramadan 1445)
+      const day13Farvardin = checkOfficialHoliday(1403, 1, 13);
+      expect(day13Farvardin.isHoliday).toBe(true);
+      expect(day13Farvardin.title).toContain('طبیعت');
+      expect(day13Farvardin.title).toContain('شهادت حضرت علی');
+
+      // 1403/01/22: Eid al-Fitr
+      const eidFitr = checkOfficialHoliday(1403, 1, 22);
+      expect(eidFitr.isHoliday).toBe(true);
+      expect(eidFitr.title).toContain('عید سعید فطر');
+
+      // 1403/06/04: Arbaeen
+      const arbaeen = checkOfficialHoliday(1403, 6, 4);
+      expect(arbaeen.isHoliday).toBe(true);
+      expect(arbaeen.title).toContain('اربعین');
+
+      // 1403/10/25: Father's Day
+      const fathersDay = checkOfficialHoliday(1403, 10, 25);
+      expect(fathersDay.isHoliday).toBe(true);
+      expect(fathersDay.title).toContain('روز پدر');
+
+      // 1403/11/09: Mab'ath
+      const mabath = checkOfficialHoliday(1403, 11, 9);
+      expect(mabath.isHoliday).toBe(true);
+      expect(mabath.title).toContain('مبعث');
+
+      // 1403/11/26: Nimeh Shaban
+      const nimehShaban = checkOfficialHoliday(1403, 11, 26);
+      expect(nimehShaban.isHoliday).toBe(true);
+      expect(nimehShaban.title).toContain('نیمه شعبان');
+    });
+
+    it('accurately identifies calibrated official holidays for 1404 according to Geophysics Calendar Center', () => {
+      // 1404/01/02: Nowruz + Martyrdom of Imam Ali
+      const day2Farvardin = checkOfficialHoliday(1404, 1, 2);
+      expect(day2Farvardin.isHoliday).toBe(true);
+      expect(day2Farvardin.title).toContain('نوروز');
+      expect(day2Farvardin.title).toContain('شهادت حضرت علی');
+
+      // 1404/01/11 & 1404/01/12: Eid Fitr
+      const eidFitr1 = checkOfficialHoliday(1404, 1, 11);
+      expect(eidFitr1.isHoliday).toBe(true);
+      expect(eidFitr1.title).toContain('عید سعید فطر');
+
+      const eidFitr2 = checkOfficialHoliday(1404, 1, 12);
+      expect(eidFitr2.isHoliday).toBe(true);
+      expect(eidFitr2.title).toContain('جمهوری اسلامی');
+      expect(eidFitr2.title).toContain('تعطیلی عید سعید فطر');
+
+      // 1404/05/23: Arbaeen (23 Mordad, NOT 24 Mordad)
+      const arbaeen = checkOfficialHoliday(1404, 5, 23);
+      expect(arbaeen.isHoliday).toBe(true);
+      expect(arbaeen.title).toContain('اربعین');
+      expect(checkOfficialHoliday(1404, 5, 24).isHoliday).toBe(false);
+
+      // 1404/05/31: Departure of the Prophet (31 Mordad, NOT 1 Shahrivar)
+      const prophetDeparture = checkOfficialHoliday(1404, 5, 31);
+      expect(prophetDeparture.isHoliday).toBe(true);
+      expect(prophetDeparture.title).toContain('رحلت پیامبر اکرم');
+
+      // 1404/06/02: Martyrdom of Imam Reza (2 Shahrivar, NOT 3 Shahrivar)
+      const imamReza = checkOfficialHoliday(1404, 6, 2);
+      expect(imamReza.isHoliday).toBe(true);
+      expect(imamReza.title).toContain('امام رضا');
+
+      // 1404/09/03: Martyrdom of Hazrat Fatima (3 Azar, NOT 4 Azar)
+      const fatimaZahra = checkOfficialHoliday(1404, 9, 3);
+      expect(fatimaZahra.isHoliday).toBe(true);
+      expect(fatimaZahra.title).toContain('فاطمه زهرا');
+
+      // 1404/10/13: Father's Day (13 Dey, NOT 14 Dey)
+      const fathersDay = checkOfficialHoliday(1404, 10, 13);
+      expect(fathersDay.isHoliday).toBe(true);
+      expect(fathersDay.title).toContain('روز پدر');
+
+      // 1404/10/27: Mab'ath (27 Dey, NOT 28 Dey)
+      const mabath = checkOfficialHoliday(1404, 10, 27);
+      expect(mabath.isHoliday).toBe(true);
+      expect(mabath.title).toContain('مبعث');
+
+      // 1404/12/20: Second martyrdom of Imam Ali in 1404 (20 Esfand, NOT 29 Esfand)
+      const secondImamAli = checkOfficialHoliday(1404, 12, 20);
+      expect(secondImamAli.isHoliday).toBe(true);
+      expect(secondImamAli.title).toContain('شهادت حضرت علی');
+    });
+
+    it('accurately identifies calibrated official holidays for 1405 according to Geophysics Calendar Center', () => {
+      // 1405/01/01: Nowruz + Eid al-Fitr
+      const day1 = checkOfficialHoliday(1405, 1, 1);
+      expect(day1.isHoliday).toBe(true);
+      expect(day1.title).toContain('نوروز');
+      expect(day1.title).toContain('عید سعید فطر');
+
+      // 1405/03/14: Khomeini Departure + Eid al-Ghadir
+      const day14Khordad = checkOfficialHoliday(1405, 3, 14);
+      expect(day14Khordad.isHoliday).toBe(true);
+      expect(day14Khordad.title).toContain('امام خمینی');
+      expect(day14Khordad.title).toContain('عید سعید غدیر خم');
+
+      // 1405/04/03 & 1405/04/04: Tasua & Ashura
+      expect(checkOfficialHoliday(1405, 4, 3).title).toContain('تاسوعای حسینی');
+      expect(checkOfficialHoliday(1405, 4, 4).title).toContain('عاشورای حسینی');
+
+      // 1405/05/13: Arbaeen
+      expect(checkOfficialHoliday(1405, 5, 13).title).toContain('اربعین');
+
+      // 1405/12/09: Martyrdom of Imam Ali
+      expect(checkOfficialHoliday(1405, 12, 9).title).toContain('شهادت حضرت علی');
+    });
   });
 });
