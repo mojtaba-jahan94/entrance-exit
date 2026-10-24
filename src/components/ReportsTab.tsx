@@ -8,12 +8,16 @@ import {
   Zap,
   Printer,
   FileSpreadsheet,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import { AttendanceRecord, ShiftConfig, MonthlyStats } from '../types';
 import {
   toPersianDigits,
   formatMinutesToTimeString,
   formatMinutesToPersianReadable,
+  PERSIAN_MONTH_NAMES,
+  getCurrentJalaliDate,
 } from '../utils/jalali';
 import { LiquidGlassCard } from './LiquidGlassCard';
 
@@ -23,7 +27,11 @@ interface ReportsTabProps {
   config: ShiftConfig;
   selectedMonthName: string;
   selectedYear: number;
+  selectedMonth: number;
+  onMonthChange: (month: number) => void;
+  onYearChange: (year: number) => void;
   onExportExcel: () => void;
+  onOpenReportModal?: () => void;
 }
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
@@ -31,9 +39,43 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   config,
   selectedMonthName,
   selectedYear,
+  selectedMonth,
+  onMonthChange,
+  onYearChange,
   onExportExcel,
+  onOpenReportModal,
 }) => {
   const isNetPositive = stats.netBalanceMinutes >= 0;
+
+  // Dynamic available years list
+  const availableYears = React.useMemo(() => {
+    const curYear = getCurrentJalaliDate().jy;
+    const minYear = Math.min(1400, selectedYear - 2, curYear - 2);
+    const maxYear = Math.max(1410, selectedYear + 2, curYear + 2);
+    const years: number[] = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      years.push(y);
+    }
+    return years;
+  }, [selectedYear]);
+
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      onMonthChange(12);
+      onYearChange(selectedYear - 1);
+    } else {
+      onMonthChange(selectedMonth - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      onMonthChange(1);
+      onYearChange(selectedYear + 1);
+    } else {
+      onMonthChange(selectedMonth + 1);
+    }
+  };
 
   // Average daily presence among present days
   const avgWorkedDaily =
@@ -42,7 +84,11 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       : 0;
 
   const handlePrint = () => {
-    window.print();
+    if (onOpenReportModal) {
+      onOpenReportModal();
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -51,36 +97,96 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       <LiquidGlassCard
         className="rounded-[28px] sm:rounded-[34px] p-4 sm:p-6 shadow-2xl"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="rounded-2xl bg-[var(--surface-2)] p-3 text-[var(--accent)] border border-[var(--border)] shadow-inner">
               <TrendingUp className="h-6 w-6 sm:h-7 sm:w-7" />
             </div>
             <div>
-              <h2 className="text-base sm:text-xl font-bold text-[var(--text-main)]">
-                گزارش جامع تحلیلی و مالی | {selectedMonthName} {toPersianDigits(selectedYear)}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-xl font-bold text-[var(--text-main)]">
+                  گزارش جامع تحلیلی و مالی | {selectedMonthName} {toPersianDigits(selectedYear)}
+                </h2>
+              </div>
               <p className="text-xs sm:text-sm text-muted mt-0.5">
                 خلاصه ساعات کارکرد موظفی، اضافه کاری، انضباط تردد و برآورد مالی
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onExportExcel}
-              className="badge-success px-4 py-2 text-xs font-semibold rounded-full shadow-md flex items-center gap-1.5"
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>خروجی اکسل</span>
-            </button>
-            <button
-              onClick={handlePrint}
-              className="liquid-pill-btn px-4 py-2 text-xs font-semibold text-[var(--text-main)] flex items-center gap-1.5"
-            >
-              <Printer className="h-4 w-4" />
-              <span>چاپ گزارش</span>
-            </button>
+          {/* Month Navigator & Export Controls */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Month & Year Selectors */}
+            <div className="flex items-center rounded-full bg-[var(--surface-2)] border border-[var(--border)] backdrop-blur-md p-1 shadow-inner">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="p-1.5 rounded-full text-muted hover:text-text hover:bg-[var(--surface)] transition-colors"
+                title="ماه قبل"
+                aria-label="ماه قبل"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              <select
+                value={selectedMonth}
+                onChange={(e) => onMonthChange(parseInt(e.target.value, 10))}
+                className="bg-transparent px-2.5 py-1 text-xs sm:text-sm font-bold text-text focus:outline-none cursor-pointer"
+                aria-label="انتخاب ماه"
+              >
+                {PERSIAN_MONTH_NAMES.map((name, idx) => (
+                  <option key={name} value={idx + 1} className="bg-bg text-text">
+                    {name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedYear}
+                onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
+                className="bg-transparent px-1.5 py-1 text-xs sm:text-sm font-bold text-accent focus:outline-none cursor-pointer font-mono"
+                aria-label="انتخاب سال"
+              >
+                {availableYears.map((yr) => (
+                  <option key={yr} value={yr} className="bg-bg text-text">
+                    {toPersianDigits(yr)}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="p-1.5 rounded-full text-muted hover:text-text hover:bg-[var(--surface)] transition-colors"
+                title="ماه بعد"
+                aria-label="ماه بعد"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onExportExcel}
+                className="badge-success px-3.5 py-2 text-xs font-semibold rounded-full shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                title="دریافت فایل اکسل کامل دو برگه"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>خروجی اکسل</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="liquid-pill-btn-primary px-3.5 py-2 text-xs font-bold rounded-full shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                title="پیش‌نمایش، چاپ و ذخیره PDF رسمی"
+              >
+                <Printer className="h-4 w-4" />
+                <span>چاپ و خروجی PDF</span>
+              </button>
+            </div>
           </div>
         </div>
       </LiquidGlassCard>

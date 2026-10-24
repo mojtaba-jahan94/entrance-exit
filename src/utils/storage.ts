@@ -7,6 +7,7 @@ import {
   getJalaliWeekdayIndex,
   formatMinutesToTimeString,
 } from './jalali';
+import { exportMonthToExcelAdvanced } from './exportEngine';
 
 function getStorageKeys(userId?: string) {
   if (userId) {
@@ -289,52 +290,22 @@ export async function exportMonthToExcel(
   records: AttendanceRecord[],
   jy: number,
   jm: number,
-  monthName: string
+  monthName: string,
+  leaves: LeaveRecord[] = [],
+  config?: ShiftConfig,
+  personnelName?: string
 ): Promise<void> {
-  const XLSX = await import('xlsx');
-  const monthPrefix = `${jy}/${jm < 10 ? '0' + jm : jm}/`;
-  const monthRecords = records
-    .filter((r) => r.date.startsWith(monthPrefix))
-    .sort((a, b) => a.date.localeCompare(b.date));
-
-  const rows = monthRecords.map((r) => {
-    let statusText = 'حاضر';
-    if (r.status === 'absent') statusText = 'غایب';
-    else if (r.status === 'leave') statusText = 'مرخصی';
-    else if (r.status === 'holiday') statusText = 'تعطیل رسمی';
-    else if (r.status === 'weekend') statusText = 'جمعه / تعطیل';
-    else if (r.status === 'in_progress') statusText = 'در حال کار';
-
-    return {
-      'تاریخ (شمسی)': r.date,
-      'روز هفته': PERSIAN_WEEKDAY_NAMES[r.dayOfWeek] || '',
-      'وضعیت': statusText,
-      'ساعت ورود': r.checkIn || '-',
-      'ساعت خروج': r.checkOut || '-',
-      'خروج موظفی هدف': r.targetCheckOut || '-',
-      'استراحت/ناهار (دقیقه)': r.breakMinutes,
-      'کارکرد مفید خالص (ساعت)': formatMinutesToTimeString(r.workedMinutes),
-      'تاخیر ورود (دقیقه)': r.delayMinutes > 0 ? r.delayMinutes : '-',
-      'تعجیل خروج (دقیقه)': r.earlyLeaveMinutes > 0 ? r.earlyLeaveMinutes : '-',
-      'اضافه کار عادی (ساعت)': r.overtimeMinutes > 0 ? formatMinutesToTimeString(r.overtimeMinutes) : '-',
-      'اضافه کار تعطیل (ساعت)': r.holidayOvertimeMinutes > 0 ? formatMinutesToTimeString(r.holidayOvertimeMinutes) : '-',
-      'کسر کار (دقیقه)': r.deficitMinutes > 0 ? r.deficitMinutes : '-',
-      'تراز روز (دقیقه)': r.netBalanceMinutes,
-      'توضیحات و یادداشت': r.note || '',
-    };
-  });
-
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, `کارکرد ${monthName} ${jy}`);
-
-  // Set RTL on sheet if supported
-  if (!worksheet['!views']) {
-    worksheet['!views'] = [{ RTL: true }];
-  }
-
-  const fileName = `گزارش_تردد_${monthName}_${jy}.xlsx`;
-  XLSX.writeFile(workbook, fileName);
+  const effectiveConfig = config || getStoredShiftConfig();
+  const effectiveLeaves = leaves && leaves.length > 0 ? leaves : getStoredLeaveRecords();
+  await exportMonthToExcelAdvanced(
+    records,
+    effectiveLeaves,
+    effectiveConfig,
+    jy,
+    jm,
+    monthName,
+    personnelName
+  );
 }
 
 /**

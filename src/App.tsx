@@ -92,6 +92,10 @@ const BackupModal = React.lazy(() =>
 const ConflictResolutionModal = React.lazy(() =>
   import('./components/ConflictResolutionModal').then((m) => ({ default: m.ConflictResolutionModal }))
 );
+const ReportModal = React.lazy(() =>
+  import('./components/ReportModal').then((m) => ({ default: m.ReportModal }))
+);
+import { OfficialReportDocument } from './components/OfficialReportDocument';
 
 const ViewLoadingFallback: React.FC = () => (
   <div
@@ -146,6 +150,7 @@ function DashboardApp() {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState<boolean>(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState<boolean>(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState<boolean>(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
 
   // Initialize UI settings on mount
   useEffect(() => {
@@ -670,7 +675,15 @@ function DashboardApp() {
 
   // 8. Excel Export
   const handleExportExcel = async () => {
-    await exportMonthToExcel(records, selectedYear, selectedMonth, selectedMonthName);
+    await exportMonthToExcel(
+      records,
+      selectedYear,
+      selectedMonth,
+      selectedMonthName,
+      leaves,
+      config,
+      user?.displayName || user?.username || 'کاربر سیستم'
+    );
   };
 
   // 9. Data restore & Reset
@@ -696,8 +709,10 @@ function DashboardApp() {
 
   return (
     <div data-theme={effectiveTheme} className="relative min-h-screen flex flex-col font-sans transition-colors duration-300">
-      {/* Dynamic Fluid Mesh Background Engine */}
-      <LiquidMeshBackground />
+      {/* Screen-Only App Shell (hidden when printing) */}
+      <div className="screen-content print:hidden flex-1 flex flex-col">
+        {/* Dynamic Fluid Mesh Background Engine */}
+        <LiquidMeshBackground />
 
       {/* Top Navigation Bar with Tabs & User Profile */}
       <Navbar
@@ -933,6 +948,8 @@ function DashboardApp() {
             <React.Suspense fallback={<ViewLoadingFallback />}>
               <AttendanceTable
                 records={records}
+                leaves={leaves}
+                searchQuery={searchQuery}
                 selectedYear={selectedYear}
                 selectedMonth={selectedMonth}
                 config={config}
@@ -948,6 +965,7 @@ function DashboardApp() {
                   setIsManualModalOpen(true);
                 }}
                 onExportExcel={handleExportExcel}
+                onOpenReportModal={() => setIsReportModalOpen(true)}
               />
             </React.Suspense>
           </div>
@@ -988,7 +1006,11 @@ function DashboardApp() {
                 config={config}
                 selectedMonthName={selectedMonthName}
                 selectedYear={selectedYear}
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+                onYearChange={setSelectedYear}
                 onExportExcel={handleExportExcel}
+                onOpenReportModal={() => setIsReportModalOpen(true)}
               />
             </React.Suspense>
           </div>
@@ -1214,6 +1236,41 @@ function DashboardApp() {
             onOverwriteCloud={handleConflictOverwrite}
           />
         </React.Suspense>
+      )}
+      </div>
+
+      {isReportModalOpen && (
+        <React.Suspense fallback={null}>
+          <ReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            records={records}
+            leaves={leaves}
+            config={config}
+            initialYear={selectedYear}
+            initialMonth={selectedMonth}
+            initialPersonnelName={user?.displayName || user?.username || 'کاربر سیستم'}
+          />
+        </React.Suspense>
+      )}
+
+      {/* Standalone Official Report Print Container:
+          Rendered during print only when ReportModal is NOT open */}
+      {!isReportModalOpen && (
+        <div className="hidden print:block">
+          <OfficialReportDocument
+            records={records}
+            leaves={leaves}
+            config={config}
+            stats={monthlyStats}
+            selectedYear={selectedYear}
+            selectedMonth={selectedMonth}
+            selectedMonthName={selectedMonthName}
+            personnelName={user?.displayName || user?.username || 'کاربر سیستم'}
+            orientation="landscape"
+            id="official-print-report"
+          />
+        </div>
       )}
     </div>
   );

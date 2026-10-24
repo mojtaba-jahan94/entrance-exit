@@ -423,20 +423,117 @@ body[data-effects="low"] .liquid-input {
 /* ======================================================== */
 /* 🖨️ PRINT STYLES                                          */
 /* ======================================================== */
+@media screen {
+  #official-print-report:not(.preview-mode) {
+    display: none !important;
+  }
+}
+
+/* ======================================================== */
+/* 🖨️ PRINT STYLES                                          */
+/* ======================================================== */
 @media print {
-  body, #root, [data-theme], [data-theme="dark"], [data-theme="light"] {
+  @page {
+    size: A4 landscape;
+    margin: 6mm 6mm;
+  }
+
+  @page portrait-page {
+    size: A4 portrait;
+    margin: 6mm 5mm;
+  }
+
+  .print-orientation-portrait {
+    page: portrait-page;
+  }
+
+  html,
+  body,
+  #root,
+  [data-theme],
+  [data-theme="dark"],
+  [data-theme="light"] {
     background: #FFFFFF !important;
-    color: #1F2933 !important;
+    color: #111827 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide screen-only and non-printable elements */
+  .screen-content,
+  .print\:hidden,
+  header:not(.official-report-root header),
+  nav,
+  aside,
+  button,
+  .liquid-mesh-background,
+  #app-bottom-dock {
+    display: none !important;
+  }
+
+  /* Modal container reset for printing */
+  [role="dialog"] {
+    position: static !important;
+    inset: auto !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    z-index: auto !important;
+  }
+
+  [role="dialog"] > div {
+    max-width: none !important;
+    max-height: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #FFFFFF !important;
+    overflow: visible !important;
+  }
+
+  /* Official Report Display */
+  .official-report-root,
+  #official-print-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Crucial: remove overflow and max-height scrolling restrictions */
+  .overflow-auto,
+  .overflow-y-auto,
+  .overflow-x-auto,
+  [class*="overflow-"] {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Remove sticky positioning during print */
+  .sticky {
+    position: static !important;
   }
 
   .liquid-glass,
   .liquid-glass-subtle,
   .liquid-glass-modal {
     background: #FFFFFF !important;
-    border: 1px solid #D1D5DB !important;
+    border: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
-    color: #1F2933 !important;
+    color: #111827 !important;
   }
 
   .badge-success,
@@ -446,23 +543,33 @@ body[data-effects="low"] .liquid-input {
   .badge-neutral,
   .badge-accent {
     background: transparent !important;
-    border: 1px solid #6B7280 !important;
-    color: #1F2933 !important;
+    border: 1px solid #71717A !important;
+    color: #111827 !important;
   }
 
   /* Force dark text for print on all textual nodes */
   h1, h2, h3, h4, h5, h6, p, span, td, th, bdi, strong {
-    color: #1F2933 !important;
+    color: #111827 !important;
     text-shadow: none !important;
   }
 
   table {
     border-collapse: collapse !important;
     width: 100% !important;
+    page-break-inside: auto !important;
   }
 
-  th, td {
-    border: 1px solid #D1D5DB !important;
-    background: #FFFFFF !important;
+  thead {
+    display: table-header-group !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  .official-report-root th,
+  .official-report-root td {
+    border: 1px solid #71717A !important;
   }
 }
